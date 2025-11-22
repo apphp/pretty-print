@@ -11,25 +11,29 @@ composer require apphp/pretty-print
 
 ### Global helper functions
 
-```php
-<?php
-
 // Print scalars/strings
+```php
 pprint('Hello', 123, 4.56);            
 // Hello 123 4.5600
+```
 
-// Print multiple 1D rows aligned as a 2D table
+Print multiple 1D rows aligned as a 2D table
+```php
 pprint([1, 23, 456], [12, 3, 45]);
 // [[ 1, 23, 456],
 //  [12,  3,  45]]
+```
 
-// Label + 2D matrix
+Label + 2D matrix
+```php
 pprint('Confusion matrix:', [[1, 23], [456, 7]]);
 // Confusion matrix:
 // [[  1, 23],
 //  [456,  7]]
+```
 
-// 2D tensor-style formatting
+2D tensor-style formatting
+```php
 $matrix = [
     [1,2,3,4,5],
     [6,7,8,9,10],
@@ -41,8 +45,10 @@ pprint($matrix);
 //   [ 6,  7,  8,  9, 10],
 //   [11, 12, 13, 14, 15]
 // ])
+```
 
-// 2D tensor-style formatting with summarization
+2D tensor-style formatting with summarization
+```php
 $matrix = [
     [1,2,3,4,5],
     [6,7,8,9,10],
@@ -54,8 +60,10 @@ pprint($matrix, headRows: 1, tailRows: 1, headCols: 2, tailCols: 2);
 //   ...,
 //   [11, 12, ..., 14, 15]
 // ])
+```
 
-// 3D tensor with head/tail blocks (PyTorch-like)
+3D tensor with head/tail blocks (PyTorch-like)
+```php
 $tensor3d = [
     [[1,2,3],[4,5,6]],
     [[7,8,9],[10,11,12]],
@@ -71,7 +79,10 @@ pprint($tensor3d, headB: 1, tailB: 1, headRows: 1, tailRows: 1, headCols: 1, tai
 //  [[13, ..., 15],
 //   [16, ..., 18]]
 // ])
+```
 
+New line control
+```php
 // No newline at the end (like Python's end="")
 pprint('Same line', end: '');
 // Added newline at the end after printing
@@ -79,16 +90,16 @@ pprint('Add line');
 pprint('Add line', end: "\n");
 // Added addedional 2 newlines at the end after printing
 pprint('Add 2 lines', end: "\n\n");
+```
 
-// Print and then exit the script
+Print and then exit the script
+```php
 ppd('Fatal error');
 ```
 
 ### As an object
 
 ```php
-<?php
-
 use Apphp\PrettyPrint\PrettyPrint;
 
 $pp = new PrettyPrint();
