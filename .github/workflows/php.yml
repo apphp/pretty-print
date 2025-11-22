@@ -37,8 +37,8 @@ jobs:
             ${{ runner.os }}-php-${{ matrix.php-versions }}-composer-
             ${{ runner.os }}-php-
 
-      - name: Install dependencies
-        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Install dependencies (update for library matrix)
+        run: composer update --no-interaction --no-progress --prefer-dist
 
       - name: PHP Lint (syntax)
         run: composer run lint
