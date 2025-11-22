@@ -1,9 +1,21 @@
 {
   "name": "apphp/pretty-print",
   "description": "Callable pretty-printer for PHP arrays with Python-like formatting.",
+  "keywords": [
+    "pretty-print",
+    "pprint",
+    "print",
+    "array",
+    "matrix",
+    "tensor",
+    "formatting",
+    "debug",
+    "logging",
+    "php"
+  ],
+  "homepage": "https://apphp.com",
   "type": "library",
   "license": "MIT",
-  "version": "0.2.1",
   "authors": [
     {
       "name": "Samuel Akopyan"
@@ -27,6 +39,6 @@
   "scripts": {
     "test": "phpunit --no-coverage",
     "test:coverage": "XDEBUG_MODE=coverage phpunit",
-     "lint": "phplint --no-cache --no-ansi src tests"
+    "lint": "phplint --no-cache --no-ansi src tests"
   }
 }
