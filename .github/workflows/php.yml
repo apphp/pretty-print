@@ -25,8 +25,8 @@ jobs:
           coverage: none
           tools: composer:v2
 
-      - name: Validate composer.json
-        run: composer validate --strict
+      - name: Validate composer.json (ignore lock file for library)
+        run: composer validate --strict --no-check-lock
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
