@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    cacheResult="false"
+    xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+    colors="true"
+    processIsolation="false"
+    stopOnError="false"
+    stopOnFailure="false"
+    stopOnDeprecation="false"
+>
+    <testsuites>
+        <testsuite name="PrettyPrint Test Suite">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

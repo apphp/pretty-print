@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Apphp\PrettyPrint;
 
 /**
@@ -387,5 +389,5 @@ class PrettyPrint {
         echo implode(' ', $parts) . $end;
     }
 }
- 
+
 
