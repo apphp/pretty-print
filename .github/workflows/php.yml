@@ -25,8 +25,8 @@ jobs:
           coverage: none
           tools: composer:v2
 
-      - name: Validate composer.json
-        run: composer validate --strict
+      - name: Validate composer.json (ignore lock file for library)
+        run: composer validate --strict --no-check-lock
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
@@ -37,8 +37,8 @@ jobs:
             ${{ runner.os }}-php-${{ matrix.php-versions }}-composer-
             ${{ runner.os }}-php-
 
-      - name: Install dependencies
-        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Install dependencies (update for library matrix)
+        run: composer update --no-interaction --no-progress --prefer-dist
 
       - name: PHP Lint (syntax)
         run: composer run lint
