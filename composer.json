@@ -1,0 +1,18 @@
+{
+  "name": "apphp/pretty-print",
+  "description": "Callable pretty-printer for PHP arrays with Python-like formatting.",
+  "type": "library",
+  "license": "MIT",
+  "version": "0.1.0",
+  "autoload": {
+    "psr-4": {
+      "Apphp\\PrettyPrint\\": "src/"
+    },
+    "files": [
+      "src/functions.php"
+    ]
+  },
+  "require": {
+    "php": ">=8.1"
+  }
+}
