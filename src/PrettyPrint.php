@@ -10,6 +10,8 @@ namespace Apphp\PrettyPrint;
  * Callable pretty-printer for PHP arrays that mimics Python/PyTorch formatting.
  * Use as an object: (new PrettyPrint())(...$args) or via the global function pprint(...$args).
  *
+ * @author Samuel Akopyan <leumas.a@gmail.com>
+ *
  * Examples:
  * - Basic printing (strings, numbers):
  *   (new PrettyPrint())('Hello', 123, 4.56);
@@ -31,9 +33,6 @@ namespace Apphp\PrettyPrint;
  *   $pp('Line without newline', ['end' => '']);
  */
 class PrettyPrint {
-    // version: 0.2.1
-    // Added format2DTorch
-
     // ---- Private helpers ----
     private function formatNumber($v): string {
         if (is_int($v)) return (string)$v;
@@ -82,13 +81,12 @@ class PrettyPrint {
         foreach ($matrix as $r => $row) {
             $frow = [];
             for ($c = 0; $c < $cols; $c++) {
+                $s = '';
                 if (isset($row[$c]) && (is_int($row[$c]) || is_float($row[$c]))) {
                     $s = $this->formatNumber($row[$c]);
                 } else if (isset($row[$c])) {
                     // Non-numeric encountered → fallback generic formatting
                     return '[' . implode(', ', array_map(fn($r2) => $this->formatForArray($r2), $matrix)) . ']';
-                } else {
-                    $s = '';
                 }
                 $frow[$c] = $s;
                 $widths[$c] = max($widths[$c], strlen($s));
@@ -140,12 +138,11 @@ class PrettyPrint {
         foreach ($rowIdxs as $rIndex) {
             $frow = [];
             foreach ($colPositions as $i => $pos) {
+                $s = '';
                 if ($pos === '...') {
                     $s = '...';
                 } else if (isset($matrix[$rIndex][$pos]) && (is_int($matrix[$rIndex][$pos]) || is_float($matrix[$rIndex][$pos]))) {
                     $s = $this->formatNumber($matrix[$rIndex][$pos]);
-                } else {
-                    $s = '';
                 }
                 $frow[$i] = $s;
                 $widths[$i] = max($widths[$i], strlen($s));

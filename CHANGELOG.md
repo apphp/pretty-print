@@ -1,8 +1,9 @@
 
 0.2.0 / 2025-11-22
     - Added Unit Tests
+    - Improved documentation
 
-0.1.0 / 2025-11-22
+0.1.0 / 2025-11-21
     - Updated project structure
     - Added README and License
     - Implemented basic functionality
