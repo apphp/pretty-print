@@ -1,4 +1,8 @@
 
+0.2.1 / 2025-11-22
+    - Added Github Actions
+    - Added PHP Lint
+
 0.2.0 / 2025-11-22
     - Added Unit Tests
     - Improved documentation
