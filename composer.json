@@ -28,6 +28,7 @@
   "scripts": {
     "test": "phpunit --no-coverage",
     "test:coverage": "XDEBUG_MODE=coverage phpunit",
-    "lint": "phplint --no-cache --no-ansi src tests"
+    "lint": "phplint --no-cache --no-ansi src tests",
+    "check": "composer lint && composer test"
   }
 }
