@@ -22,7 +22,7 @@
     "php": ">=8.1"
   },
   "require-dev": {
-    "phpunit/phpunit": "^10.5",
+    "phpunit/phpunit": "^10.5.58",
     "overtrue/phplint": "^9.6.2"
   },
   "scripts": {
