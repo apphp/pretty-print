@@ -9,9 +9,11 @@ composer require apphp/pretty-print
 
 ## Usage
 
+Note: When used in web (non-CLI) environments, output is automatically wrapped in `<pre>` to preserve spacing. In CLI, no wrapping is applied.
+
 ### Global helper functions
 
-// Print scalars/strings
+Print scalars/strings
 ```php
 pprint('Hello', 123, 4.56);            
 // Hello 123 4.5600

@@ -1,7 +1,8 @@
-0.3.0
+0.3.0 / 2025-11-24
     - Improved documentation
-    - Add "start" option to PrettyPrint for prefix control
-    - Add custom "label" support for tensor formatting in PrettyPrint
+    - Added "start" option to PrettyPrint for prefix control
+    - Added custom "label" support for tensor formatting in PrettyPrint
+    - Added web environment `<pre>` wrapping support
 
 0.2.1 / 2025-11-22
     - Added Github Actions

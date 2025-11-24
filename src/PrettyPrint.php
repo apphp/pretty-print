@@ -108,6 +108,13 @@ class PrettyPrint {
             }
         }
 
+        // Auto-wrap with <pre> for web (non-CLI) usage
+        $isCli = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
+        if (!$isCli) {
+            $start = '<pre>' . $start;
+            $end = $end . '</pre>';
+        }
+
         $args = array_values($args);
 
         // Label + single 3D tensor
