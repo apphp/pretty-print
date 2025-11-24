@@ -74,7 +74,7 @@ class PrettyPrint {
         // Extract optional tensor formatting options from trailing options array
         $fmt = [];
         // 1) Support PHP named arguments for formatting keys
-        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols'];
+        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label'];
         foreach ($fmtKeys as $k) {
             if (array_key_exists($k, $args)) {
                 $fmt[$k] = $args[$k];
@@ -119,7 +119,8 @@ class PrettyPrint {
                 (int)($fmt['headRows'] ?? 2),
                 (int)($fmt['tailRows'] ?? 3),
                 (int)($fmt['headCols'] ?? 3),
-                (int)($fmt['tailCols'] ?? 3)
+                (int)($fmt['tailCols'] ?? 3),
+                (string)($fmt['label'] ?? 'tensor')
             );
             echo $start . $out . $end;
             return;
@@ -170,7 +171,8 @@ class PrettyPrint {
                         (int)($fmt['headRows'] ?? 2),
                         (int)($fmt['tailRows'] ?? 3),
                         (int)($fmt['headCols'] ?? 3),
-                        (int)($fmt['tailCols'] ?? 3)
+                        (int)($fmt['tailCols'] ?? 3),
+                        (string)($fmt['label'] ?? 'tensor')
                     );
                 } elseif ($this->is2D($arg)) {
                     $parts[] = $this->format2DTorch(
@@ -178,7 +180,8 @@ class PrettyPrint {
                         (int)($fmt['headRows'] ?? 2),
                         (int)($fmt['tailRows'] ?? 3),
                         (int)($fmt['headCols'] ?? 3),
-                        (int)($fmt['tailCols'] ?? 3)
+                        (int)($fmt['tailCols'] ?? 3),
+                        (string)($fmt['label'] ?? 'tensor')
                     );
                 } else {
                     $parts[] = $this->formatForArray($arg);
@@ -418,9 +421,10 @@ class PrettyPrint {
      * @param int $tailRows Number of tail rows per 2D slice.
      * @param int $headCols Number of head columns per 2D slice.
      * @param int $tailCols Number of tail columns per 2D slice.
+     * @param string $label Prefix label used instead of "tensor".
      * @return string
      */
-    private function format3DTorch(array $tensor3d, int $headB = 3, int $tailB = 3, int $headRows = 2, int $tailRows = 3, int $headCols = 3, int $tailCols = 3): string {
+    private function format3DTorch(array $tensor3d, int $headB = 3, int $tailB = 3, int $headRows = 2, int $tailRows = 3, int $headCols = 3, int $tailCols = 3, string $label = 'tensor'): string {
         $B = count($tensor3d);
         $idxs = [];
         $useBEllipsis = false;
@@ -452,7 +456,7 @@ class PrettyPrint {
         }
 
         $joined = implode(",\n\n ", $blocks);
-        return "tensor([\n " . $joined . "\n])";
+        return $label . "([\n " . $joined . "\n])";
     }
 
     /**
@@ -463,15 +467,16 @@ class PrettyPrint {
      * @param int $tailRows Number of tail rows to display.
      * @param int $headCols Number of head columns to display.
      * @param int $tailCols Number of tail columns to display.
+     * @param string $label Prefix label used instead of "tensor".
      * @return string
      */
-    private function format2DTorch(array $matrix, int $headRows = 2, int $tailRows = 3, int $headCols = 3, int $tailCols = 3): string {
+    private function format2DTorch(array $matrix, int $headRows = 2, int $tailRows = 3, int $headCols = 3, int $tailCols = 3, string $label = 'tensor'): string {
         $s = $this->format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols);
         // Replace the very first '[' with 'tensor([['
         if (strlen($s) > 0 && $s[0] === '[') {
-            $s = "tensor([\n  " . substr($s, 1);
+            $s = $label . "([\n  " . substr($s, 1);
         } else {
-            return 'tensor(' . $s . ')';
+            return $label . '(' . $s . ')';
         }
         // Indent subsequent lines by one extra space to align under the double braket
         $s = str_replace("\n ", "\n  ", $s);

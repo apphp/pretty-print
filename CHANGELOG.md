@@ -1,6 +1,7 @@
 0.3.0
     - Improved documentation
     - Add "start" option to PrettyPrint for prefix control
+    - Add custom "label" support for tensor formatting in PrettyPrint
 
 0.2.1 / 2025-11-22
     - Added Github Actions

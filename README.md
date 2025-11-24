@@ -47,6 +47,16 @@ pprint($matrix);
 // ])
 ```
 
+Custom label instead of "tensor"
+```php
+pprint($matrix, label: 'arr');
+// arr([
+//   [ 1,  2,  3,  4,  5],
+//   [ 6,  7,  8,  9, 10],
+//   [11, 12, 13, 14, 15]
+// ])
+```
+
 2D tensor-style formatting with summarization
 ```php
 $matrix = [
@@ -127,6 +137,7 @@ $pp('Metrics:', [[0.91, 0.02], [0.03, 0.88]]);
 
 - **start**: string. Prefix printed before the content. Example: `pprint('Hello', ['start' => "\t"])`.
 - **end**: string. Line terminator, default to new line. Example: `pprint('no newline', ['end' => '']);`
+- **label**: string. Prefix label for 2D/3D formatted arrays, default `tensor`. Example: `pprint($m, ['label' => 'arr'])`.
 - **headB / tailB**: ints. Number of head/tail 2D blocks shown for 3D tensors.
 - **headRows / tailRows**: ints. Rows shown per 2D slice with ellipsis between.
 - **headCols / tailCols**: ints. Columns shown per 2D slice with ellipsis between.
