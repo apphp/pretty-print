@@ -146,6 +146,28 @@ final class PrettyPrintTest extends TestCase
     }
 
     #[Test]
+    #[TestDox('respects start option passed as trailing array')]
+    public function startOptionTrailingArray(): void
+    {
+        $pp = new PrettyPrint();
+        ob_start();
+        $pp('Hello', ['start' => "\t", 'end' => '']);
+        $out = ob_get_clean();
+        self::assertSame("\tHello", $out);
+    }
+
+    #[Test]
+    #[TestDox('respects named start option (PHP named args)')]
+    public function startOptionNamedArgument(): void
+    {
+        $pp = new PrettyPrint();
+        ob_start();
+        $pp('World', start: '>>> ' , end: '');
+        $out = ob_get_clean();
+        self::assertSame('>>> World', $out);
+    }
+
+    #[Test]
     #[TestDox('prints label followed by formatted 3D tensor')]
     public function labelPlus3DTensor(): void
     {

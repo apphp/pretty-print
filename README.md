@@ -81,7 +81,7 @@ pprint($tensor3d, headB: 1, tailB: 1, headRows: 1, tailRows: 1, headCols: 1, tai
 // ])
 ```
 
-New line control
+Postfix and prefix control
 ```php
 // No newline at the end (like Python's end="")
 pprint('Same line', end: '');
@@ -90,6 +90,11 @@ pprint('Add line');
 pprint('Add line', end: "\n");
 // Added addedional 2 newlines at the end after printing
 pprint('Add 2 lines', end: "\n\n");
+
+// Add a prefix at the start of the printed string
+pprint('Tabbed', start: "\t");
+// Combine with end to avoid newline
+pprint('Prompted', start: '>>> ', end: '');
 ```
 
 Print and then exit the script
@@ -120,6 +125,7 @@ $pp('Metrics:', [[0.91, 0.02], [0.03, 0.88]]);
 
 ### Options reference
 
+- **start**: string. Prefix printed before the content. Example: `pprint('Hello', ['start' => "\t"])`.
 - **end**: string. Line terminator, default to new line. Example: `pprint('no newline', ['end' => '']);`
 - **headB / tailB**: ints. Number of head/tail 2D blocks shown for 3D tensors.
 - **headRows / tailRows**: ints. Rows shown per 2D slice with ellipsis between.

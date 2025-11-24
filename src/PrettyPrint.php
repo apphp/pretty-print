@@ -59,34 +59,47 @@ class PrettyPrint {
      */
     public function __invoke(...$args) {
         $end = PHP_EOL;
+        $start = '';
+
+        // Named args for simple options
         if (isset($args['end'])) {
             $end = (string)$args['end'];
             unset($args['end']);
-        } else if (!empty($args)) {
-            $last = end($args);
-            if (is_array($last) && array_key_exists('end', $last)) {
-                $end = (string)($last['end'] ?? '');
-                array_pop($args);
-            }
-            reset($args);
+        }
+        if (isset($args['start'])) {
+            $start = (string)$args['start'];
+            unset($args['start']);
         }
 
         // Extract optional tensor formatting options from trailing options array
         $fmt = [];
         // 1) Support PHP named arguments for formatting keys
-        $fmtKeys = ['headB','tailB','headRows','tailRows','headCols','tailCols'];
+        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols'];
         foreach ($fmtKeys as $k) {
             if (array_key_exists($k, $args)) {
                 $fmt[$k] = $args[$k];
                 unset($args[$k]);
             }
         }
+        // 2) Trailing array options: may contain start/end and/or formatting keys
         if (!empty($args)) {
             $last = end($args);
             if (is_array($last)) {
-                $hasFmt = false;
-                foreach ($fmtKeys as $k) { if (array_key_exists($k, $last)) { $hasFmt = true; break; } }
-                if ($hasFmt) {
+                $hasOptions = false;
+                $optionKeys = array_merge(['end', 'start'], $fmtKeys);
+                foreach ($optionKeys as $k) {
+                    if (array_key_exists($k, $last)) {
+                        $hasOptions = true;
+                        break;
+                    }
+                }
+                if ($hasOptions) {
+                    if (array_key_exists('end', $last)) {
+                        $end = (string)$last['end'];
+                    }
+                    if (array_key_exists('start', $last)) {
+                        $start = (string)$last['start'];
+                    }
                     // Merge trailing array options (takes precedence over named if both provided)
                     $fmt = array_merge($fmt, $last);
                     array_pop($args);
@@ -108,7 +121,7 @@ class PrettyPrint {
                 (int)($fmt['headCols'] ?? 3),
                 (int)($fmt['tailCols'] ?? 3)
             );
-            echo $out . $end;
+            echo $start . $out . $end;
             return;
         }
 
@@ -116,12 +129,13 @@ class PrettyPrint {
         if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && $this->is2D($args[1])) {
             $label = is_bool($args[0]) ? ($args[0] ? 'True' : 'False') : (is_null($args[0]) ? 'None' : (string)$args[0]);
             $out = $this->format2DAligned($args[1]);
-            echo ($label . "\n" . $out) . $end;
+            echo $start . ($label . "\n" . $out) . $end;
             return;
         }
 
         // Multiple 1D rows → align
-        $label = null; $rows = [];
+        $label = null;
+        $rows = [];
         if (count($args) > 1) {
             $startIndex = 0;
             if (!is_array($args[0])) {
@@ -130,11 +144,16 @@ class PrettyPrint {
             }
             $allRows = true;
             for ($i = $startIndex; $i < count($args); $i++) {
-                if ($this->is1D($args[$i])) { $rows[] = $args[$i]; } else { $allRows = false; break; }
+                if ($this->is1D($args[$i])) {
+                    $rows[] = $args[$i];
+                } else {
+                    $allRows = false;
+                    break;
+                }
             }
             if ($allRows && count($rows) > 1) {
                 $out = $this->format2DAligned($rows);
-                echo (($label !== null) ? ($label . "\n" . $out) : $out) . $end;
+                echo $start . ((($label !== null) ? ($label . "\n" . $out) : $out)) . $end;
                 return;
             }
         }
@@ -175,10 +194,11 @@ class PrettyPrint {
             }
         }
 
-        echo implode(' ', $parts) . $end;
+        echo $start . implode(' ', $parts) . $end;
     }
 
     // ---- Private helpers ----
+
     /**
      * Format a value as a number when possible.
      *
@@ -301,7 +321,11 @@ class PrettyPrint {
     private function format2DSummarized(array $matrix, int $headRows = 2, int $tailRows = 2, int $headCols = 3, int $tailCols = 3): string {
         $rows = count($matrix);
         $cols = 0;
-        foreach ($matrix as $row) { if (is_array($row)) { $cols = max($cols, count($row)); } }
+        foreach ($matrix as $row) {
+            if (is_array($row)) {
+                $cols = max($cols, count($row));
+            }
+        }
 
         $rowIdxs = [];
         $useRowEllipsis = false;
@@ -339,7 +363,9 @@ class PrettyPrint {
             }
             $formatted[] = $frow;
         }
-        foreach ($colPositions as $i => $pos) { if ($pos === '...') $widths[$i] = max($widths[$i], 3); }
+        foreach ($colPositions as $i => $pos) {
+            if ($pos === '...') $widths[$i] = max($widths[$i], 3);
+        }
 
         // Build lines from pre-formatted rows
         $buildRow = function (array $frow) use ($widths) {

@@ -1,5 +1,6 @@
 0.3.0
     - Improved documentation
+    - Add "start" option to PrettyPrint for prefix control
 
 0.2.1 / 2025-11-22
     - Added Github Actions
