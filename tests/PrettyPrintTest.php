@@ -146,6 +146,54 @@ final class PrettyPrintTest extends TestCase
     }
 
     #[Test]
+    #[TestDox('respects start option passed as trailing array')]
+    public function startOptionTrailingArray(): void
+    {
+        $pp = new PrettyPrint();
+        ob_start();
+        $pp('Hello', ['start' => "\t", 'end' => '']);
+        $out = ob_get_clean();
+        self::assertSame("\tHello", $out);
+    }
+
+    #[Test]
+    #[TestDox('respects named start option (PHP named args)')]
+    public function startOptionNamedArgument(): void
+    {
+        $pp = new PrettyPrint();
+        ob_start();
+        $pp('World', start: '>>> ' , end: '');
+        $out = ob_get_clean();
+        self::assertSame('>>> World', $out);
+    }
+
+    #[Test]
+    #[TestDox('allows custom label for 2D tensor formatting')]
+    public function customLabel2D(): void
+    {
+        $pp = new PrettyPrint();
+        $m = [[1,2],[3,4]];
+        ob_start();
+        $pp($m, label: 'arr');
+        $out = ob_get_clean();
+        self::assertTrue(str_starts_with($out, 'arr(['));
+        self::assertTrue(str_ends_with($out, "])\n"));
+    }
+
+    #[Test]
+    #[TestDox('allows custom label for 3D tensor formatting')]
+    public function customLabel3D(): void
+    {
+        $pp = new PrettyPrint();
+        $t = [[[1,2],[3,4]], [[5,6],[7,8]]];
+        ob_start();
+        $pp($t, ['label' => 'ndarray']);
+        $out = ob_get_clean();
+        self::assertTrue(str_starts_with($out, 'ndarray(['));
+        self::assertTrue(str_ends_with($out, "])\n"));
+    }
+
+    #[Test]
     #[TestDox('prints label followed by formatted 3D tensor')]
     public function labelPlus3DTensor(): void
     {

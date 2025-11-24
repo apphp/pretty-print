@@ -33,13 +33,203 @@ namespace Apphp\PrettyPrint;
  *   $pp('Line without newline', ['end' => '']);
  */
 class PrettyPrint {
+    // ---- Callable main entry ----
+    /**
+     * Invoke the pretty printer.
+     *
+     * Supported arguments patterns:
+     * - Scalars/strings: will be printed space-separated.
+     * - Multiple 1D arrays: treated as rows and aligned in columns.
+     * - Label + 2D array: prints label on first line and aligned matrix below.
+     * - Label + 3D array: prints label on first line and tensor([...]) below.
+     * - Single 2D array: prints tensor([[...]], ...) like PyTorch.
+     * - Single 3D array: prints tensor([...]) with head/tail summarization.
+     *
+     * Options (pass as trailing array):
+     * - 'end' => string            // line terminator, default "\n"
+     * - 'headB' => int, 'tailB' => int       // number of head/tail 2D blocks for 3D tensors
+     * - 'headRows' => int, 'tailRows' => int // rows per 2D slice to show (with ellipsis if truncated)
+     * - 'headCols' => int, 'tailCols' => int // columns per 2D slice to show (with ellipsis if truncated)
+     *
+     * Call examples:
+     *   (new PrettyPrint())('Metrics:', ['end' => "\n\n"]);
+     *   (new PrettyPrint())([1,2,3], [4,5,6]);
+     *   (new PrettyPrint())($matrix2d, ['headRows' => 4, 'tailRows' => 0]);
+     *   (new PrettyPrint())($tensor3d, ['headB' => 4, 'tailB' => 2]);
+     */
+    public function __invoke(...$args) {
+        $end = PHP_EOL;
+        $start = '';
+
+        // Named args for simple options
+        if (isset($args['end'])) {
+            $end = (string)$args['end'];
+            unset($args['end']);
+        }
+        if (isset($args['start'])) {
+            $start = (string)$args['start'];
+            unset($args['start']);
+        }
+
+        // Extract optional tensor formatting options from trailing options array
+        $fmt = [];
+        // 1) Support PHP named arguments for formatting keys
+        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label'];
+        foreach ($fmtKeys as $k) {
+            if (array_key_exists($k, $args)) {
+                $fmt[$k] = $args[$k];
+                unset($args[$k]);
+            }
+        }
+        // 2) Trailing array options: may contain start/end and/or formatting keys
+        if (!empty($args)) {
+            $last = end($args);
+            if (is_array($last)) {
+                $hasOptions = false;
+                $optionKeys = array_merge(['end', 'start'], $fmtKeys);
+                foreach ($optionKeys as $k) {
+                    if (array_key_exists($k, $last)) {
+                        $hasOptions = true;
+                        break;
+                    }
+                }
+                if ($hasOptions) {
+                    if (array_key_exists('end', $last)) {
+                        $end = (string)$last['end'];
+                    }
+                    if (array_key_exists('start', $last)) {
+                        $start = (string)$last['start'];
+                    }
+                    // Merge trailing array options (takes precedence over named if both provided)
+                    $fmt = array_merge($fmt, $last);
+                    array_pop($args);
+                    reset($args);
+                }
+            }
+        }
+
+        // Auto-wrap with <pre> for web (non-CLI) usage
+        $isCli = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
+        if (!$isCli) {
+            $start = '<pre>' . $start;
+            $end = $end . '</pre>';
+        }
+
+        $args = array_values($args);
+
+        // Label + single 3D tensor
+        if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && $this->is3D($args[1])) {
+            $out = $this->format3DTorch(
+                $args[1],
+                (int)($fmt['headB'] ?? 3),
+                (int)($fmt['tailB'] ?? 3),
+                (int)($fmt['headRows'] ?? 2),
+                (int)($fmt['tailRows'] ?? 3),
+                (int)($fmt['headCols'] ?? 3),
+                (int)($fmt['tailCols'] ?? 3),
+                (string)($fmt['label'] ?? 'tensor')
+            );
+            echo $start . $out . $end;
+            return;
+        }
+
+        // Label + 2D matrix
+        if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && $this->is2D($args[1])) {
+            $label = is_bool($args[0]) ? ($args[0] ? 'True' : 'False') : (is_null($args[0]) ? 'None' : (string)$args[0]);
+            $out = $this->format2DAligned($args[1]);
+            echo $start . ($label . "\n" . $out) . $end;
+            return;
+        }
+
+        // Multiple 1D rows → align
+        $label = null;
+        $rows = [];
+        if (count($args) > 1) {
+            $startIndex = 0;
+            if (!is_array($args[0])) {
+                $label = is_bool($args[0]) ? ($args[0] ? 'True' : 'False') : (is_null($args[0]) ? 'None' : (string)$args[0]);
+                $startIndex = 1;
+            }
+            $allRows = true;
+            for ($i = $startIndex; $i < count($args); $i++) {
+                if ($this->is1D($args[$i])) {
+                    $rows[] = $args[$i];
+                } else {
+                    $allRows = false;
+                    break;
+                }
+            }
+            if ($allRows && count($rows) > 1) {
+                $out = $this->format2DAligned($rows);
+                echo $start . ((($label !== null) ? ($label . "\n" . $out) : $out)) . $end;
+                return;
+            }
+        }
+
+        // Default formatting
+        $parts = [];
+        foreach ($args as $arg) {
+            if (is_array($arg)) {
+                if ($this->is3D($arg)) {
+                    $parts[] = $this->format3DTorch(
+                        $arg,
+                        (int)($fmt['headB'] ?? 3),
+                        (int)($fmt['tailB'] ?? 3),
+                        (int)($fmt['headRows'] ?? 2),
+                        (int)($fmt['tailRows'] ?? 3),
+                        (int)($fmt['headCols'] ?? 3),
+                        (int)($fmt['tailCols'] ?? 3),
+                        (string)($fmt['label'] ?? 'tensor')
+                    );
+                } elseif ($this->is2D($arg)) {
+                    $parts[] = $this->format2DTorch(
+                        $arg,
+                        (int)($fmt['headRows'] ?? 2),
+                        (int)($fmt['tailRows'] ?? 3),
+                        (int)($fmt['headCols'] ?? 3),
+                        (int)($fmt['tailCols'] ?? 3),
+                        (string)($fmt['label'] ?? 'tensor')
+                    );
+                } else {
+                    $parts[] = $this->formatForArray($arg);
+                }
+            } elseif (is_bool($arg)) {
+                $parts[] = $arg ? 'True' : 'False';
+            } elseif (is_null($arg)) {
+                $parts[] = 'None';
+            } elseif (is_int($arg) || is_float($arg)) {
+                $parts[] = $this->formatNumber($arg);
+            } else {
+                $parts[] = (string)$arg;
+            }
+        }
+
+        echo $start . implode(' ', $parts) . $end;
+    }
+
     // ---- Private helpers ----
+
+    /**
+     * Format a value as a number when possible.
+     *
+     * Integers are returned verbatim; floats are rendered with 4 decimal places;
+     * non-numeric values are cast to string.
+     *
+     * @param mixed $v
+     * @return string
+     */
     private function formatNumber($v): string {
         if (is_int($v)) return (string)$v;
         if (is_float($v)) return number_format($v, 4, '.', '');
         return (string)$v;
     }
 
+    /**
+     * Determine if the given value is a 1D array of numeric scalars.
+     *
+     * @param mixed $value
+     * @return bool True if $value is an array where every element is int or float.
+     */
     private function is1D($value): bool {
         if (!is_array($value)) return false;
         foreach ($value as $cell) {
@@ -48,6 +238,14 @@ class PrettyPrint {
         return true;
     }
 
+    /**
+     * Determine if the given value is a 2D numeric matrix.
+     *
+     * Accepts empty arrays as 2D.
+     *
+     * @param mixed $value
+     * @return bool True if $value is an array of arrays of int|float.
+     */
     private function is2D($value): bool {
         if (!is_array($value)) return false;
         if (empty($value)) return true;
@@ -60,6 +258,12 @@ class PrettyPrint {
         return true;
     }
 
+    /**
+     * Determine if the given value is a 3D tensor of numeric matrices.
+     *
+     * @param mixed $value
+     * @return bool True if $value is an array of 2D numeric arrays.
+     */
     private function is3D($value): bool {
         if (!is_array($value)) return false;
         foreach ($value as $matrix) {
@@ -68,6 +272,12 @@ class PrettyPrint {
         return true;
     }
 
+    /**
+     * Format a 2D numeric matrix with aligned columns.
+     *
+     * @param array $matrix 2D array of ints/floats.
+     * @return string
+     */
     private function format2DAligned(array $matrix): string {
         $cols = 0;
         foreach ($matrix as $row) {
@@ -108,10 +318,24 @@ class PrettyPrint {
         return "[" . implode(",\n ", $lines) . "]";
     }
 
+    /**
+     * Format a 2D matrix showing head/tail rows and columns with ellipses in-between.
+     *
+     * @param array $matrix 2D array of ints/floats.
+     * @param int $headRows Number of head rows to display.
+     * @param int $tailRows Number of tail rows to display.
+     * @param int $headCols Number of head columns to display.
+     * @param int $tailCols Number of tail columns to display.
+     * @return string
+     */
     private function format2DSummarized(array $matrix, int $headRows = 2, int $tailRows = 2, int $headCols = 3, int $tailCols = 3): string {
         $rows = count($matrix);
         $cols = 0;
-        foreach ($matrix as $row) { if (is_array($row)) { $cols = max($cols, count($row)); } }
+        foreach ($matrix as $row) {
+            if (is_array($row)) {
+                $cols = max($cols, count($row));
+            }
+        }
 
         $rowIdxs = [];
         $useRowEllipsis = false;
@@ -149,7 +373,9 @@ class PrettyPrint {
             }
             $formatted[] = $frow;
         }
-        foreach ($colPositions as $i => $pos) { if ($pos === '...') $widths[$i] = max($widths[$i], 3); }
+        foreach ($colPositions as $i => $pos) {
+            if ($pos === '...') $widths[$i] = max($widths[$i], 3);
+        }
 
         // Build lines from pre-formatted rows
         $buildRow = function (array $frow) use ($widths) {
@@ -174,6 +400,12 @@ class PrettyPrint {
         return '[' . trim(implode(",\n ", $lines)) . ']';
     }
 
+    /**
+     * Generic array-aware formatter producing Python-like representations.
+     *
+     * @param mixed $value Scalar or array value to format.
+     * @return string
+     */
     private function formatForArray($value): string {
         if (is_array($value)) {
             if ($this->is2D($value)) return $this->format2DAligned($value);
@@ -186,7 +418,20 @@ class PrettyPrint {
         return "'" . addslashes((string)$value) . "'";
     }
 
-    private function format3DTorch(array $tensor3d, int $headB = 3, int $tailB = 3, int $headRows = 2, int $tailRows = 3, int $headCols = 3, int $tailCols = 3): string {
+    /**
+     * Format a 3D numeric tensor in a PyTorch-like multiline representation.
+     *
+     * @param array $tensor3d 3D array of ints/floats.
+     * @param int $headB Number of head 2D slices to display.
+     * @param int $tailB Number of tail 2D slices to display.
+     * @param int $headRows Number of head rows per 2D slice.
+     * @param int $tailRows Number of tail rows per 2D slice.
+     * @param int $headCols Number of head columns per 2D slice.
+     * @param int $tailCols Number of tail columns per 2D slice.
+     * @param string $label Prefix label used instead of "tensor".
+     * @return string
+     */
+    private function format3DTorch(array $tensor3d, int $headB = 3, int $tailB = 3, int $headRows = 2, int $tailRows = 3, int $headCols = 3, int $tailCols = 3, string $label = 'tensor'): string {
         $B = count($tensor3d);
         $idxs = [];
         $useBEllipsis = false;
@@ -218,17 +463,27 @@ class PrettyPrint {
         }
 
         $joined = implode(",\n\n ", $blocks);
-        return "tensor([\n " . $joined . "\n])";
+        return $label . "([\n " . $joined . "\n])";
     }
 
-    // 2D tensor pretty-print in PyTorch style using summarized 2D formatter
-    private function format2DTorch(array $matrix, int $headRows = 2, int $tailRows = 3, int $headCols = 3, int $tailCols = 3): string {
+    /**
+     * Format a 2D numeric matrix in a PyTorch-like representation with summarization.
+     *
+     * @param array $matrix 2D array of ints/floats.
+     * @param int $headRows Number of head rows to display.
+     * @param int $tailRows Number of tail rows to display.
+     * @param int $headCols Number of head columns to display.
+     * @param int $tailCols Number of tail columns to display.
+     * @param string $label Prefix label used instead of "tensor".
+     * @return string
+     */
+    private function format2DTorch(array $matrix, int $headRows = 2, int $tailRows = 3, int $headCols = 3, int $tailCols = 3, string $label = 'tensor'): string {
         $s = $this->format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols);
         // Replace the very first '[' with 'tensor([['
         if (strlen($s) > 0 && $s[0] === '[') {
-            $s = "tensor([\n  " . substr($s, 1);
+            $s = $label . "([\n  " . substr($s, 1);
         } else {
-            return 'tensor(' . $s . ')';
+            return $label . '(' . $s . ')';
         }
         // Indent subsequent lines by one extra space to align under the double braket
         $s = str_replace("\n ", "\n  ", $s);
@@ -239,151 +494,6 @@ class PrettyPrint {
             $s = substr($s, 0, -1) . "\n])";
         }
         return $s;
-    }
-
-    // ---- Callable main entry ----
-    /**
-     * Invoke the pretty printer.
-     *
-     * Supported arguments patterns:
-     * - Scalars/strings: will be printed space-separated.
-     * - Multiple 1D arrays: treated as rows and aligned in columns.
-     * - Label + 2D array: prints label on first line and aligned matrix below.
-     * - Label + 3D array: prints label on first line and tensor([...]) below.
-     * - Single 2D array: prints tensor([[...]], ...) like PyTorch.
-     * - Single 3D array: prints tensor([...]) with head/tail summarization.
-     *
-     * Options (pass as trailing array):
-     * - 'end' => string            // line terminator, default "\n"
-     * - 'headB' => int, 'tailB' => int       // number of head/tail 2D blocks for 3D tensors
-     * - 'headRows' => int, 'tailRows' => int // rows per 2D slice to show (with ellipsis if truncated)
-     * - 'headCols' => int, 'tailCols' => int // columns per 2D slice to show (with ellipsis if truncated)
-     *
-     * Call examples:
-     *   (new PrettyPrint())('Metrics:', ['end' => "\n\n"]);
-     *   (new PrettyPrint())([1,2,3], [4,5,6]);
-     *   (new PrettyPrint())($matrix2d, ['headRows' => 4, 'tailRows' => 0]);
-     *   (new PrettyPrint())($tensor3d, ['headB' => 4, 'tailB' => 2]);
-     */
-    public function __invoke(...$args) {
-        $end = PHP_EOL;
-        if (isset($args['end'])) {
-            $end = (string)$args['end'];
-            unset($args['end']);
-        } else if (!empty($args)) {
-            $last = end($args);
-            if (is_array($last) && array_key_exists('end', $last)) {
-                $end = (string)($last['end'] ?? '');
-                array_pop($args);
-            }
-            reset($args);
-        }
-
-        // Extract optional tensor formatting options from trailing options array
-        $fmt = [];
-        // 1) Support PHP named arguments for formatting keys
-        $fmtKeys = ['headB','tailB','headRows','tailRows','headCols','tailCols'];
-        foreach ($fmtKeys as $k) {
-            if (array_key_exists($k, $args)) {
-                $fmt[$k] = $args[$k];
-                unset($args[$k]);
-            }
-        }
-        if (!empty($args)) {
-            $last = end($args);
-            if (is_array($last)) {
-                $hasFmt = false;
-                foreach ($fmtKeys as $k) { if (array_key_exists($k, $last)) { $hasFmt = true; break; } }
-                if ($hasFmt) {
-                    // Merge trailing array options (takes precedence over named if both provided)
-                    $fmt = array_merge($fmt, $last);
-                    array_pop($args);
-                    reset($args);
-                }
-            }
-        }
-
-        $args = array_values($args);
-
-        // Label + single 3D tensor
-        if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && $this->is3D($args[1])) {
-            $out = $this->format3DTorch(
-                $args[1],
-                (int)($fmt['headB'] ?? 3),
-                (int)($fmt['tailB'] ?? 3),
-                (int)($fmt['headRows'] ?? 2),
-                (int)($fmt['tailRows'] ?? 3),
-                (int)($fmt['headCols'] ?? 3),
-                (int)($fmt['tailCols'] ?? 3)
-            );
-            echo $out . $end;
-            return;
-        }
-
-        // Label + 2D matrix
-        if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && $this->is2D($args[1])) {
-            $label = is_bool($args[0]) ? ($args[0] ? 'True' : 'False') : (is_null($args[0]) ? 'None' : (string)$args[0]);
-            $out = $this->format2DAligned($args[1]);
-            echo ($label . "\n" . $out) . $end;
-            return;
-        }
-
-        // Multiple 1D rows → align
-        $label = null; $rows = [];
-        if (count($args) > 1) {
-            $startIndex = 0;
-            if (!is_array($args[0])) {
-                $label = is_bool($args[0]) ? ($args[0] ? 'True' : 'False') : (is_null($args[0]) ? 'None' : (string)$args[0]);
-                $startIndex = 1;
-            }
-            $allRows = true;
-            for ($i = $startIndex; $i < count($args); $i++) {
-                if ($this->is1D($args[$i])) { $rows[] = $args[$i]; } else { $allRows = false; break; }
-            }
-            if ($allRows && count($rows) > 1) {
-                $out = $this->format2DAligned($rows);
-                echo (($label !== null) ? ($label . "\n" . $out) : $out) . $end;
-                return;
-            }
-        }
-
-        // Default formatting
-        $parts = [];
-        foreach ($args as $arg) {
-            if (is_array($arg)) {
-                if ($this->is3D($arg)) {
-                    $parts[] = $this->format3DTorch(
-                        $arg,
-                        (int)($fmt['headB'] ?? 3),
-                        (int)($fmt['tailB'] ?? 3),
-                        (int)($fmt['headRows'] ?? 2),
-                        (int)($fmt['tailRows'] ?? 3),
-                        (int)($fmt['headCols'] ?? 3),
-                        (int)($fmt['tailCols'] ?? 3)
-                    );
-                } elseif ($this->is2D($arg)) {
-                    $parts[] = $this->format2DTorch(
-                        $arg,
-                        (int)($fmt['headRows'] ?? 2),
-                        (int)($fmt['tailRows'] ?? 3),
-                        (int)($fmt['headCols'] ?? 3),
-                        (int)($fmt['tailCols'] ?? 3)
-                    );
-                } else {
-                    $parts[] = $this->formatForArray($arg);
-                }
-            } elseif (is_bool($arg)) {
-                $parts[] = $arg ? 'True' : 'False';
-            } elseif (is_null($arg)) {
-                $parts[] = 'None';
-            } elseif (is_int($arg) || is_float($arg)) {
-                $parts[] = $this->formatNumber($arg);
-            } else {
-                $parts[] = (string)$arg;
-            }
-        }
-
-        echo implode(' ', $parts) . $end;
     }
 }
 
