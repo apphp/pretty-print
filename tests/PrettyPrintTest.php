@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Apphp\PrettyPrint\Tests;
+
 use Apphp\PrettyPrint\PrettyPrint;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -30,9 +32,9 @@ final class PrettyPrintTest extends TestCase
     {
         $pp = new PrettyPrint();
         $m = [
-            [1,2,3,4],
-            [5,6,7,8],
-            [9,10,11,12],
+            [1, 2, 3, 4],
+            [5, 6, 7, 8],
+            [9, 10, 11, 12],
         ];
         ob_start();
         $pp($m, headRows: 1, tailRows: 1, headCols: 1, tailCols: 1);
@@ -47,9 +49,9 @@ final class PrettyPrintTest extends TestCase
     {
         $pp = new PrettyPrint();
         $m = [
-            [1,2,3,4],
-            [5,6,7,8],
-            [9,10,11,12],
+            [1, 2, 3, 4],
+            [5, 6, 7, 8],
+            [9, 10, 11, 12],
         ];
         ob_start();
         // Named args would show no ellipsis; trailing array forces ellipsis
@@ -94,7 +96,7 @@ final class PrettyPrintTest extends TestCase
         $out = ob_get_clean();
 
         // Relaxed check: structure and values present, accounting for padding/indentation
-        self::assertTrue(str_starts_with($out, "tensor(["));
+        self::assertTrue(str_starts_with($out, 'tensor(['));
         self::assertTrue(str_ends_with($out, "])\n"));
         self::assertMatchesRegularExpression('/tensor\(\[.*\[\s*1,\s*2\s*\],\s*\n\s*\[\s*3,\s*4\s*\].*\]\)/s', rtrim($out));
     }
@@ -113,7 +115,7 @@ final class PrettyPrintTest extends TestCase
         $out = ob_get_clean();
 
         // Basic structure checks
-        self::assertTrue(str_starts_with($out, "tensor(["));
+        self::assertTrue(str_starts_with($out, 'tensor(['));
         self::assertTrue(str_ends_with($out, "])\n"));
 
         // Should contain two 2D blocks formatted; allow padding spaces
@@ -162,7 +164,7 @@ final class PrettyPrintTest extends TestCase
     {
         $pp = new PrettyPrint();
         ob_start();
-        $pp('World', start: '>>> ' , end: '');
+        $pp('World', start: '>>> ', end: '');
         $out = ob_get_clean();
         self::assertSame('>>> World', $out);
     }
@@ -172,7 +174,7 @@ final class PrettyPrintTest extends TestCase
     public function customLabel2D(): void
     {
         $pp = new PrettyPrint();
-        $m = [[1,2],[3,4]];
+        $m = [[1, 2], [3, 4]];
         ob_start();
         $pp($m, label: 'arr');
         $out = ob_get_clean();
@@ -185,7 +187,7 @@ final class PrettyPrintTest extends TestCase
     public function customLabel3D(): void
     {
         $pp = new PrettyPrint();
-        $t = [[[1,2],[3,4]], [[5,6],[7,8]]];
+        $t = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]];
         ob_start();
         $pp($t, ['label' => 'ndarray']);
         $out = ob_get_clean();
@@ -198,7 +200,7 @@ final class PrettyPrintTest extends TestCase
     public function labelPlus3DTensor(): void
     {
         $pp = new PrettyPrint();
-        $tensor = array_fill(0, 2, [[1,2],[3,4]]);
+        $tensor = array_fill(0, 2, [[1, 2], [3, 4]]);
         ob_start();
         $pp('Tensor:', $tensor);
         $out = ob_get_clean();
@@ -214,9 +216,9 @@ final class PrettyPrintTest extends TestCase
         $pp = new PrettyPrint();
         // 3x4 matrix so that with headRows=1, tailRows=1, headCols=1, tailCols=1 we get ellipses
         $m = [
-            [1,2,3,4],
-            [5,6,7,8],
-            [9,10,11,12],
+            [1, 2, 3, 4],
+            [5, 6, 7, 8],
+            [9, 10, 11, 12],
         ];
         ob_start();
         $pp($m, ['headRows' => 1, 'tailRows' => 1, 'headCols' => 1, 'tailCols' => 1]);
@@ -234,7 +236,7 @@ final class PrettyPrintTest extends TestCase
     {
         $pp = new PrettyPrint();
         // Build 5 blocks so headB=2, tailB=2 produces a middle ellipsis
-        $block = [[1,2,3],[4,5,6]];
+        $block = [[1, 2, 3], [4, 5, 6]];
         $t = [$block, $block, $block, $block, $block];
         ob_start();
         $pp($t, ['headB' => 2, 'tailB' => 2, 'headRows' => 1, 'tailRows' => 1, 'headCols' => 1, 'tailCols' => 1]);
@@ -328,7 +330,7 @@ final class PrettyPrintTest extends TestCase
     {
         $pp = new PrettyPrint();
         ob_start();
-        $pp('Label', [1,2], [3,4]);
+        $pp('Label', [1, 2], [3, 4]);
         $out = ob_get_clean();
         self::assertSame("Label\n[[1, 2],\n [3, 4]]\n", $out);
     }
@@ -338,7 +340,9 @@ final class PrettyPrintTest extends TestCase
     public function formatNumberFallbackCoversString(): void
     {
         $pp = new PrettyPrint();
-        $caller = \Closure::bind(function($v) { return $this->formatNumber($v); }, $pp, PrettyPrint::class);
+        $caller = \Closure::bind(function ($v) {
+            return $this->formatNumber($v);
+        }, $pp, PrettyPrint::class);
         $result = $caller('abc');
         self::assertSame('abc', $result);
     }

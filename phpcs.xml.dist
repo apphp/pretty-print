@@ -9,6 +9,13 @@
   <file>tests</file>
 
   <rule ref="PSR12"/>
+  <rule ref="Generic.Files.LineLength">
+    <properties>
+      <property name="lineLimit" value="200"/>
+      <property name="absoluteLineLimit" value="0"/>
+      <property name="ignoreComments" value="true"/>
+    </properties>
+  </rule>
   <rule ref="PHPCompatibility"/>
 
   <arg name="basepath" value="."/>

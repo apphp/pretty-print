@@ -248,9 +248,14 @@ class PrettyPrint
      * @param mixed $v
      * @return string
      */
-    private function formatNumber($v): string {
-        if (is_int($v)) return (string)$v;
-        if (is_float($v)) return number_format($v, $this->precision, '.', '');
+    private function formatNumber($v): string
+    {
+        if (is_int($v)) {
+            return (string)$v;
+        }
+        if (is_float($v)) {
+            return number_format($v, $this->precision, '.', '');
+        }
         return (string)$v;
     }
 
@@ -260,10 +265,15 @@ class PrettyPrint
      * @param mixed $value
      * @return bool True if $value is an array where every element is int or float.
      */
-    private function is1D($value): bool {
-        if (!is_array($value)) return false;
+    private function is1D($value): bool
+    {
+        if (!is_array($value)) {
+            return false;
+        }
         foreach ($value as $cell) {
-            if (!is_int($cell) && !is_float($cell)) return false;
+            if (!is_int($cell) && !is_float($cell)) {
+                return false;
+            }
         }
         return true;
     }
@@ -276,13 +286,22 @@ class PrettyPrint
      * @param mixed $value
      * @return bool True if $value is an array of arrays of int|float.
      */
-    private function is2D($value): bool {
-        if (!is_array($value)) return false;
-        if (empty($value)) return true;
+    private function is2D($value): bool
+    {
+        if (!is_array($value)) {
+            return false;
+        }
+        if (empty($value)) {
+            return true;
+        }
         foreach ($value as $row) {
-            if (!is_array($row)) return false;
+            if (!is_array($row)) {
+                return false;
+            }
             foreach ($row as $cell) {
-                if (!is_int($cell) && !is_float($cell)) return false;
+                if (!is_int($cell) && !is_float($cell)) {
+                    return false;
+                }
             }
         }
         return true;
@@ -294,10 +313,15 @@ class PrettyPrint
      * @param mixed $value
      * @return bool True if $value is an array of 2D numeric arrays.
      */
-    private function is3D($value): bool {
-        if (!is_array($value)) return false;
+    private function is3D($value): bool
+    {
+        if (!is_array($value)) {
+            return false;
+        }
         foreach ($value as $matrix) {
-            if (!$this->is2D($matrix)) return false;
+            if (!$this->is2D($matrix)) {
+                return false;
+            }
         }
         return true;
     }
@@ -308,12 +332,17 @@ class PrettyPrint
      * @param array $matrix 2D array of ints/floats.
      * @return string
      */
-    private function format2DAligned(array $matrix): string {
+    private function format2DAligned(array $matrix): string
+    {
         $cols = 0;
         foreach ($matrix as $row) {
-            if (is_array($row)) $cols = max($cols, count($row));
+            if (is_array($row)) {
+                $cols = max($cols, count($row));
+            }
         }
-        if ($cols === 0) return '[]';
+        if ($cols === 0) {
+            return '[]';
+        }
 
         // Pre-format all numeric cells and compute widths in one pass
         $widths = array_fill(0, $cols, 0);
@@ -326,7 +355,7 @@ class PrettyPrint
                     $s = $this->formatNumber($row[$c]);
                 } elseif (isset($row[$c])) {
                     // Non-numeric encountered → fallback generic formatting
-                    return '[' . implode(', ', array_map(fn($r2) => $this->formatForArray($r2), $matrix)) . ']';
+                    return '[' . implode(', ', array_map(fn ($r2) => $this->formatForArray($r2), $matrix)) . ']';
                 }
                 $frow[$c] = $s;
                 $widths[$c] = max($widths[$c], strlen($s));
@@ -344,8 +373,10 @@ class PrettyPrint
             $lines[] = '[' . implode(', ', $cells) . ']';
         }
 
-        if (count($lines) === 1) return '[' . $lines[0] . ']';
-        return "[" . implode(",\n ", $lines) . "]";
+        if (count($lines) === 1) {
+            return '[' . $lines[0] . ']';
+        }
+        return '[' . implode(",\n ", $lines) . ']';
     }
 
     /**
@@ -358,7 +389,8 @@ class PrettyPrint
      * @param int $tailCols Number of tail columns to display.
      * @return string
      */
-    private function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5): string {
+    private function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5): string
+    {
 
         $rows = count($matrix);
         $cols = 0;
@@ -369,22 +401,32 @@ class PrettyPrint
         }
 
         $rowIdxs = [];
-        $useRowEllipsis = false;
         if ($rows <= $headRows + $tailRows) {
-            for ($r = 0; $r < $rows; $r++) $rowIdxs[] = $r;
+            for ($r = 0; $r < $rows; $r++) {
+                $rowIdxs[] = $r;
+            }
         } else {
-            for ($r = 0; $r < $headRows; $r++) $rowIdxs[] = $r;
-            $useRowEllipsis = true;
-            for ($r = $rows - $tailRows; $r < $rows; $r++) $rowIdxs[] = $r;
+            for ($r = 0; $r < $headRows; $r++) {
+                $rowIdxs[] = $r;
+            }
+            for ($r = $rows - $tailRows; $r < $rows; $r++) {
+                $rowIdxs[] = $r;
+            }
         }
 
         $colPositions = [];
         if ($cols <= $headCols + $tailCols) {
-            for ($c = 0; $c < $cols; $c++) $colPositions[] = $c;
+            for ($c = 0; $c < $cols; $c++) {
+                $colPositions[] = $c;
+            }
         } else {
-            for ($c = 0; $c < $headCols; $c++) $colPositions[] = $c;
+            for ($c = 0; $c < $headCols; $c++) {
+                $colPositions[] = $c;
+            }
             $colPositions[] = '...';
-            for ($c = $cols - $tailCols; $c < $cols; $c++) $colPositions[] = $c;
+            for ($c = $cols - $tailCols; $c < $cols; $c++) {
+                $colPositions[] = $c;
+            }
         }
 
         // Pre-format selected cells and compute widths in one pass
@@ -405,7 +447,9 @@ class PrettyPrint
             $formatted[] = $frow;
         }
         foreach ($colPositions as $i => $pos) {
-            if ($pos === '...') $widths[$i] = max($widths[$i], 3);
+            if ($pos === '...') {
+                $widths[$i] = max($widths[$i], 3);
+            }
         }
 
         // Build lines from pre-formatted rows
@@ -420,14 +464,22 @@ class PrettyPrint
 
         $lines = [];
         $headCount = ($rows <= $headRows + $tailRows) ? count($rowIdxs) : $headRows;
-        for ($i = 0; $i < $headCount; $i++) $lines[] = $buildRow($formatted[$i]);
-        if ($rows > $headRows + $tailRows) $lines[] = ' ...';
+        for ($i = 0; $i < $headCount; $i++) {
+            $lines[] = $buildRow($formatted[$i]);
+        }
+        if ($rows > $headRows + $tailRows) {
+            $lines[] = ' ...';
+        }
         if ($rows > $headRows + $tailRows) {
             $total = count($formatted);
-            for ($i = $headCount; $i < $total; $i++) $lines[] = $buildRow($formatted[$i]);
+            for ($i = $headCount; $i < $total; $i++) {
+                $lines[] = $buildRow($formatted[$i]);
+            }
         }
 
-        if (count($lines) === 1) return '[' . $lines[0] . ']';
+        if (count($lines) === 1) {
+            return '[' . $lines[0] . ']';
+        }
         return '[' . trim(implode(",\n ", $lines)) . ']';
     }
 
@@ -443,7 +495,7 @@ class PrettyPrint
             if ($this->is2D($value)) {
                 return $this->format2DAligned($value);
             }
-            $formattedItems = array_map(fn($v) => $this->formatForArray($v), $value);
+            $formattedItems = array_map(fn ($v) => $this->formatForArray($v), $value);
             return '[' . implode(', ', $formattedItems) . ']';
         }
         if (is_int($value) || is_float($value)) {
