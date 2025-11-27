@@ -62,15 +62,18 @@ pprint($matrix, label: 'arr');
 2D tensor-style formatting with summarization
 ```php
 $matrix = [
-    [1,2,3,4,5],
-    [6,7,8,9,10],
-    [11,12,13,14,15],
+    [ 1,  2,  3,  4,  5],
+    [ 6,  7,  8,  9, 10],
+    [11, 12, 13, 14, 15],
+    [16, 17, 18, 19, 20],
+    [21, 22, 23, 24, 25],
 ];
-pprint($matrix, headRows: 1, tailRows: 1, headCols: 2, tailCols: 2);
+pprint($matrix, headRows: 2, tailRows: 1, headCols: 2, tailCols: 2);
 // tensor([
 //   [ 1,  2, ...,  4,  5],
+//   [ 6,  7, ...,  9, 10],
 //   ...,
-//   [11, 12, ..., 14, 15]
+//   [21, 22, ..., 24, 25]
 // ])
 ```
 
