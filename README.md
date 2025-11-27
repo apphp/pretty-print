@@ -143,6 +143,7 @@ $pp('Metrics:', [[0.91, 0.02], [0.03, 0.88]]);
 - **start**: string. Prefix printed before the content. Example: `pprint('Hello', ['start' => "\t"])`.
 - **end**: string. Line terminator, default to new line. Example: `pprint('no newline', ['end' => '']);`
 - **label**: string. Prefix label for 2D/3D formatted arrays, default `tensor`. Example: `pprint($m, ['label' => 'arr'])`.
+- **precision**: int. Number of digits after the decimal point for floats. Example: `pprint(3.14159, precision: 2)` prints `3.14`.
 - **headB / tailB**: ints. Number of head/tail 2D blocks shown for 3D tensors.
 - **headRows / tailRows**: ints. Rows shown per 2D slice with ellipsis between.
 - **headCols / tailCols**: ints. Columns shown per 2D slice with ellipsis between.
@@ -153,6 +154,7 @@ All options can be passed as:
 
 #### Defaults
 - **label**: `tensor`
+- **precision**: `4`
 - **headB / tailB**: `5`
 - **headRows / tailRows**: `5`
 - **headCols / tailCols**: `5`

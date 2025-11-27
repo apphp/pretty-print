@@ -33,6 +33,8 @@ namespace Apphp\PrettyPrint;
  *   $pp('Line without newline', ['end' => '']);
  */
 class PrettyPrint {
+    private int $precision = 4;
+
     // ---- Callable main entry ----
     /**
      * Invoke the pretty printer.
@@ -74,7 +76,7 @@ class PrettyPrint {
         // Extract optional tensor formatting options from trailing options array
         $fmt = [];
         // 1) Support PHP named arguments for formatting keys
-        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label'];
+        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label', 'precision'];
         foreach ($fmtKeys as $k) {
             if (array_key_exists($k, $args)) {
                 $fmt[$k] = $args[$k];
@@ -115,7 +117,19 @@ class PrettyPrint {
             $end = $end . '</pre>';
         }
 
+        // Remove any unknown named arguments so they don't get printed as stray scalars
+        foreach ($args as $k => $_v) {
+            if (!is_int($k)) {
+                unset($args[$k]);
+            }
+        }
         $args = array_values($args);
+
+        // Apply numeric precision if provided; remember previous to restore later
+        $prevPrecision = $this->precision;
+        if (isset($fmt['precision'])) {
+            $this->precision = max(0, (int)$fmt['precision']);
+        }
 
         // Label + single 3D tensor
         if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && $this->is3D($args[1])) {
@@ -130,6 +144,7 @@ class PrettyPrint {
                 (string)($fmt['label'] ?? 'tensor')
             );
             echo $start . $out . $end;
+            $this->precision = $prevPrecision;
             return;
         }
 
@@ -138,6 +153,7 @@ class PrettyPrint {
             $label = is_bool($args[0]) ? ($args[0] ? 'True' : 'False') : (is_null($args[0]) ? 'None' : (string)$args[0]);
             $out = $this->format2DAligned($args[1]);
             echo $start . ($label . "\n" . $out) . $end;
+            $this->precision = $prevPrecision;
             return;
         }
 
@@ -162,12 +178,21 @@ class PrettyPrint {
             if ($allRows && count($rows) > 1) {
                 $out = $this->format2DAligned($rows);
                 echo $start . ((($label !== null) ? ($label . "\n" . $out) : $out)) . $end;
+                $this->precision = $prevPrecision;
                 return;
             }
         }
 
         // Default formatting
         $parts = [];
+        $containsArray = false;
+        foreach ($args as $a) {
+            if (is_array($a)) {
+                $containsArray = true;
+                break;
+            }
+        }
+
         foreach ($args as $arg) {
             if (is_array($arg)) {
                 if ($this->is3D($arg)) {
@@ -193,18 +218,21 @@ class PrettyPrint {
                 } else {
                     $parts[] = $this->formatForArray($arg);
                 }
-            } elseif (is_bool($arg)) {
-                $parts[] = $arg ? 'True' : 'False';
-            } elseif (is_null($arg)) {
-                $parts[] = 'None';
-            } elseif (is_int($arg) || is_float($arg)) {
-                $parts[] = $this->formatNumber($arg);
-            } else {
-                $parts[] = (string)$arg;
+            } else if (!$containsArray) {
+                if (is_bool($arg)) {
+                    $parts[] = $arg ? 'True' : 'False';
+                } elseif (is_null($arg)) {
+                    $parts[] = 'None';
+                } elseif (is_int($arg) || is_float($arg)) {
+                    $parts[] = $this->formatNumber($arg);
+                } else {
+                    $parts[] = (string)$arg;
+                }
             }
         }
 
         echo $start . implode(' ', $parts) . $end;
+        $this->precision = $prevPrecision;
     }
 
     // ---- Private helpers ----
@@ -220,7 +248,7 @@ class PrettyPrint {
      */
     private function formatNumber($v): string {
         if (is_int($v)) return (string)$v;
-        if (is_float($v)) return number_format($v, 4, '.', '');
+        if (is_float($v)) return number_format($v, $this->precision, '.', '');
         return (string)$v;
     }
 
@@ -329,7 +357,7 @@ class PrettyPrint {
      * @return string
      */
     private function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5): string {
-        
+
         $rows = count($matrix);
         $cols = 0;
         foreach ($matrix as $row) {
