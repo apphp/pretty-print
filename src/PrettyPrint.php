@@ -121,12 +121,12 @@ class PrettyPrint {
         if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && $this->is3D($args[1])) {
             $out = $this->format3DTorch(
                 $args[1],
-                (int)($fmt['headB'] ?? 3),
-                (int)($fmt['tailB'] ?? 3),
-                (int)($fmt['headRows'] ?? 2),
-                (int)($fmt['tailRows'] ?? 3),
-                (int)($fmt['headCols'] ?? 3),
-                (int)($fmt['tailCols'] ?? 3),
+                (int)($fmt['headB'] ?? 5),
+                (int)($fmt['tailB'] ?? 5),
+                (int)($fmt['headRows'] ?? 5),
+                (int)($fmt['tailRows'] ?? 5),
+                (int)($fmt['headCols'] ?? 5),
+                (int)($fmt['tailCols'] ?? 5),
                 (string)($fmt['label'] ?? 'tensor')
             );
             echo $start . $out . $end;
@@ -173,21 +173,21 @@ class PrettyPrint {
                 if ($this->is3D($arg)) {
                     $parts[] = $this->format3DTorch(
                         $arg,
-                        (int)($fmt['headB'] ?? 3),
-                        (int)($fmt['tailB'] ?? 3),
-                        (int)($fmt['headRows'] ?? 2),
-                        (int)($fmt['tailRows'] ?? 3),
-                        (int)($fmt['headCols'] ?? 3),
-                        (int)($fmt['tailCols'] ?? 3),
+                        (int)($fmt['headB'] ?? 5),
+                        (int)($fmt['tailB'] ?? 5),
+                        (int)($fmt['headRows'] ?? 5),
+                        (int)($fmt['tailRows'] ?? 5),
+                        (int)($fmt['headCols'] ?? 5),
+                        (int)($fmt['tailCols'] ?? 5),
                         (string)($fmt['label'] ?? 'tensor')
                     );
                 } elseif ($this->is2D($arg)) {
                     $parts[] = $this->format2DTorch(
                         $arg,
-                        (int)($fmt['headRows'] ?? 2),
-                        (int)($fmt['tailRows'] ?? 3),
-                        (int)($fmt['headCols'] ?? 3),
-                        (int)($fmt['tailCols'] ?? 3),
+                        (int)($fmt['headRows'] ?? 5),
+                        (int)($fmt['tailRows'] ?? 5),
+                        (int)($fmt['headCols'] ?? 5),
+                        (int)($fmt['tailCols'] ?? 5),
                         (string)($fmt['label'] ?? 'tensor')
                     );
                 } else {
@@ -328,7 +328,8 @@ class PrettyPrint {
      * @param int $tailCols Number of tail columns to display.
      * @return string
      */
-    private function format2DSummarized(array $matrix, int $headRows = 2, int $tailRows = 2, int $headCols = 3, int $tailCols = 3): string {
+    private function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5): string {
+        
         $rows = count($matrix);
         $cols = 0;
         foreach ($matrix as $row) {
@@ -431,7 +432,7 @@ class PrettyPrint {
      * @param string $label Prefix label used instead of "tensor".
      * @return string
      */
-    private function format3DTorch(array $tensor3d, int $headB = 3, int $tailB = 3, int $headRows = 2, int $tailRows = 3, int $headCols = 3, int $tailCols = 3, string $label = 'tensor'): string {
+    private function format3DTorch(array $tensor3d, int $headB = 5, int $tailB = 5, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor'): string {
         $B = count($tensor3d);
         $idxs = [];
         $useBEllipsis = false;
@@ -477,7 +478,7 @@ class PrettyPrint {
      * @param string $label Prefix label used instead of "tensor".
      * @return string
      */
-    private function format2DTorch(array $matrix, int $headRows = 2, int $tailRows = 3, int $headCols = 3, int $tailCols = 3, string $label = 'tensor'): string {
+    private function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor'): string {
         $s = $this->format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols);
         // Replace the very first '[' with 'tensor([['
         if (strlen($s) > 0 && $s[0] === '[') {

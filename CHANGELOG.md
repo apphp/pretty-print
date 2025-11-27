@@ -1,3 +1,6 @@
+0.3.1 /
+    - Adjust default formatting dimensions in PrettyPrint tensor methods
+
 0.3.0 / 2025-11-24
     - Improved documentation
     - Added "start" option to PrettyPrint for prefix control

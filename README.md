@@ -147,3 +147,9 @@ $pp('Metrics:', [[0.91, 0.02], [0.03, 0.88]]);
 All options can be passed as:
 - trailing array: `pprint($m, ['headRows' => 1, ...])`
 - named args (PHP 8+): `$pp($m, headRows: 1, ...)`
+
+#### Defaults
+- **label**: `tensor`
+- **headB / tailB**: `5`
+- **headRows / tailRows**: `5`
+- **headCols / tailCols**: `5`
