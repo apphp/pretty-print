@@ -269,6 +269,60 @@ final class PrettyPrintTest extends TestCase
     }
 
     #[Test]
+    #[TestDox('formats floats with custom precision via named arg')]
+    public function precisionNamedArgumentScalar(): void
+    {
+        $pp = new PrettyPrint();
+        ob_start();
+        $pp(3.14159, precision: 2);
+        $out = ob_get_clean();
+        self::assertSame("3.14\n", $out);
+    }
+
+    #[Test]
+    #[TestDox('formats floats with custom precision via trailing options array')]
+    public function precisionTrailingArrayScalar(): void
+    {
+        $pp = new PrettyPrint();
+        ob_start();
+        $pp(3.14159, ['precision' => 6]);
+        $out = ob_get_clean();
+        self::assertSame("3.141590\n", $out);
+    }
+
+    #[Test]
+    #[TestDox('restores default precision after a call that overrides it')]
+    public function precisionRestoredBetweenCalls(): void
+    {
+        $pp = new PrettyPrint();
+        ob_start();
+        $pp(1.2345, precision: 2);
+        $first = ob_get_clean();
+        ob_start();
+        $pp(1.2345);
+        $second = ob_get_clean();
+        self::assertSame("1.23\n", $first);
+        self::assertSame("1.2345\n", $second);
+    }
+
+    #[Test]
+    #[TestDox('applies precision to 2D tensor formatting')]
+    public function precisionAppliedIn2DFormatting(): void
+    {
+        $pp = new PrettyPrint();
+        $m = [[1.2, 3.4567], [9.0, 10.9999]];
+        ob_start();
+        $pp($m, precision: 2);
+        $out = ob_get_clean();
+        self::assertTrue(str_starts_with($out, 'tensor(['));
+        self::assertTrue(str_ends_with($out, "])\n"));
+        self::assertMatchesRegularExpression('/\b1\.20\b/', $out);
+        self::assertMatchesRegularExpression('/\b3\.46\b/', $out);
+        self::assertMatchesRegularExpression('/\b9\.00\b/', $out);
+        self::assertMatchesRegularExpression('/\b11\.00\b/', $out);
+    }
+
+    #[Test]
     #[TestDox('aligns multiple 1D rows with an optional label')]
     public function multipleRowsWithLabel(): void
     {

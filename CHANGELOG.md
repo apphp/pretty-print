@@ -1,6 +1,7 @@
 0.3.1 /
     - Adjust default formatting dimensions in PrettyPrint tensor methods
     - README.md example updates
+    - Add precision option to PrettyPrint for float formatting
 
 0.3.0 / 2025-11-24
     - Improved documentation
