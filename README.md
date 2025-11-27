@@ -138,6 +138,23 @@ $pp($tensor3d, headB: 2, tailB: 1, headRows: 1, tailRows: 1, headCols: 1, tailCo
 $pp('Metrics:', [[0.91, 0.02], [0.03, 0.88]]);
 ```
 
+## Running tests
+
+```bash
+# install dev dependencies
+composer install
+
+# run test suite
+composer test
+
+# run tests with coverage (requires Xdebug or PCOV)
+composer test:coverage
+```
+
+Notes:
+- **Coverage drivers**: You need Xdebug (xdebug.mode=coverage) or PCOV enabled for coverage reports. Without a driver, PHPUnit will warn and exit non‑zero.
+- You can also run PHPUnit directly: `vendor/bin/phpunit`.
+
 ### Options reference
 
 - **start**: string. Prefix printed before the content. Example: `pprint('Hello', ['start' => "\t"])`.
