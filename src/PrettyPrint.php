@@ -32,7 +32,8 @@ namespace Apphp\PrettyPrint;
  * - Custom line terminator (like Python's end=):
  *   $pp('Line without newline', ['end' => '']);
  */
-class PrettyPrint {
+class PrettyPrint
+{
     private int $precision = 4;
 
     // ---- Callable main entry ----
@@ -59,7 +60,8 @@ class PrettyPrint {
      *   (new PrettyPrint())($matrix2d, ['headRows' => 4, 'tailRows' => 0]);
      *   (new PrettyPrint())($tensor3d, ['headB' => 4, 'tailB' => 2]);
      */
-    public function __invoke(...$args) {
+    public function __invoke(...$args)
+    {
         $end = PHP_EOL;
         $start = '';
 
@@ -218,7 +220,7 @@ class PrettyPrint {
                 } else {
                     $parts[] = $this->formatForArray($arg);
                 }
-            } else if (!$containsArray) {
+            } elseif (!$containsArray) {
                 if (is_bool($arg)) {
                     $parts[] = $arg ? 'True' : 'False';
                 } elseif (is_null($arg)) {
@@ -322,7 +324,7 @@ class PrettyPrint {
                 $s = '';
                 if (isset($row[$c]) && (is_int($row[$c]) || is_float($row[$c]))) {
                     $s = $this->formatNumber($row[$c]);
-                } else if (isset($row[$c])) {
+                } elseif (isset($row[$c])) {
                     // Non-numeric encountered → fallback generic formatting
                     return '[' . implode(', ', array_map(fn($r2) => $this->formatForArray($r2), $matrix)) . ']';
                 }
@@ -394,7 +396,7 @@ class PrettyPrint {
                 $s = '';
                 if ($pos === '...') {
                     $s = '...';
-                } else if (isset($matrix[$rIndex][$pos]) && (is_int($matrix[$rIndex][$pos]) || is_float($matrix[$rIndex][$pos]))) {
+                } elseif (isset($matrix[$rIndex][$pos]) && (is_int($matrix[$rIndex][$pos]) || is_float($matrix[$rIndex][$pos]))) {
                     $s = $this->formatNumber($matrix[$rIndex][$pos]);
                 }
                 $frow[$i] = $s;
@@ -435,15 +437,24 @@ class PrettyPrint {
      * @param mixed $value Scalar or array value to format.
      * @return string
      */
-    private function formatForArray($value): string {
+    private function formatForArray($value): string
+    {
         if (is_array($value)) {
-            if ($this->is2D($value)) return $this->format2DAligned($value);
+            if ($this->is2D($value)) {
+                return $this->format2DAligned($value);
+            }
             $formattedItems = array_map(fn($v) => $this->formatForArray($v), $value);
             return '[' . implode(', ', $formattedItems) . ']';
         }
-        if (is_int($value) || is_float($value)) return $this->formatNumber($value);
-        if (is_bool($value)) return $value ? 'True' : 'False';
-        if (is_null($value)) return 'None';
+        if (is_int($value) || is_float($value)) {
+            return $this->formatNumber($value);
+        }
+        if (is_bool($value)) {
+            return $value ? 'True' : 'False';
+        }
+        if (is_null($value)) {
+            return 'None';
+        }
         return "'" . addslashes((string)$value) . "'";
     }
 
@@ -460,16 +471,23 @@ class PrettyPrint {
      * @param string $label Prefix label used instead of "tensor".
      * @return string
      */
-    private function format3DTorch(array $tensor3d, int $headB = 5, int $tailB = 5, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor'): string {
+    private function format3DTorch(array $tensor3d, int $headB = 5, int $tailB = 5, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor'): string
+    {
         $B = count($tensor3d);
         $idxs = [];
         $useBEllipsis = false;
         if ($B <= $headB + $tailB) {
-            for ($i = 0; $i < $B; $i++) $idxs[] = $i;
+            for ($i = 0; $i < $B; $i++) {
+                $idxs[] = $i;
+            }
         } else {
-            for ($i = 0; $i < $headB; $i++) $idxs[] = $i;
+            for ($i = 0; $i < $headB; $i++) {
+                $idxs[] = $i;
+            }
             $useBEllipsis = true;
-            for ($i = $B - $tailB; $i < $B; $i++) $idxs[] = $i;
+            for ($i = $B - $tailB; $i < $B; $i++) {
+                $idxs[] = $i;
+            }
         }
 
         $blocks = [];
@@ -483,7 +501,9 @@ class PrettyPrint {
             // Indent entire block by a single space efficiently
             $blocks[] = ' ' . str_replace("\n", "\n ", $formatted2d);
         }
-        if ($useBEllipsis) $blocks[] = ' ...';
+        if ($useBEllipsis) {
+            $blocks[] = ' ...';
+        }
         if ($useBEllipsis) {
             for ($i = $limitHead; $i < count($idxs); $i++) {
                 $formatted2d = $format2d($tensor3d[$idxs[$i]]);
@@ -506,7 +526,8 @@ class PrettyPrint {
      * @param string $label Prefix label used instead of "tensor".
      * @return string
      */
-    private function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor'): string {
+    private function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor'): string
+    {
         $s = $this->format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols);
         // Replace the very first '[' with 'tensor([['
         if (strlen($s) > 0 && $s[0] === '[') {
@@ -525,5 +546,3 @@ class PrettyPrint {
         return $s;
     }
 }
-
-

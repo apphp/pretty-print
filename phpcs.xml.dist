@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<ruleset name="PrettyPrint Code Style">
+  <description>PSR-12 with PHP 8.1 compatibility checks.</description>
+
+  <config name="installed_paths" value="vendor/phpcompatibility/php-compatibility"/>
+  <config name="testVersion" value="8.1-"/>
+
+  <file>src</file>
+  <file>tests</file>
+
+  <rule ref="PSR12"/>
+  <rule ref="PHPCompatibility"/>
+
+  <arg name="basepath" value="."/>
+  <arg name="extensions" value="php"/>
+  <arg name="colors"/>
+  <arg name="parallel" value="8"/>
+</ruleset>
