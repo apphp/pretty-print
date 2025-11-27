@@ -2,4 +2,4 @@
 build
 vendor
 composer.lock
-tests/test.php
+scripts/*
