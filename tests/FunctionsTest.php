@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Apphp\PrettyPrint\Tests;
+
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;

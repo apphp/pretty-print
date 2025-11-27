@@ -62,15 +62,18 @@ pprint($matrix, label: 'arr');
 2D tensor-style formatting with summarization
 ```php
 $matrix = [
-    [1,2,3,4,5],
-    [6,7,8,9,10],
-    [11,12,13,14,15],
+    [ 1,  2,  3,  4,  5],
+    [ 6,  7,  8,  9, 10],
+    [11, 12, 13, 14, 15],
+    [16, 17, 18, 19, 20],
+    [21, 22, 23, 24, 25],
 ];
-pprint($matrix, headRows: 1, tailRows: 1, headCols: 2, tailCols: 2);
+pprint($matrix, headRows: 2, tailRows: 1, headCols: 2, tailCols: 2);
 // tensor([
 //   [ 1,  2, ...,  4,  5],
+//   [ 6,  7, ...,  9, 10],
 //   ...,
-//   [11, 12, ..., 14, 15]
+//   [21, 22, ..., 24, 25]
 // ])
 ```
 
@@ -135,11 +138,29 @@ $pp($tensor3d, headB: 2, tailB: 1, headRows: 1, tailRows: 1, headCols: 1, tailCo
 $pp('Metrics:', [[0.91, 0.02], [0.03, 0.88]]);
 ```
 
+## Running tests
+
+```bash
+# install dev dependencies
+composer install
+
+# run test suite
+composer test
+
+# run tests with coverage (requires Xdebug or PCOV)
+composer test:coverage
+```
+
+Notes:
+- **Coverage drivers**: You need Xdebug (xdebug.mode=coverage) or PCOV enabled for coverage reports. Without a driver, PHPUnit will warn and exit non‑zero.
+- You can also run PHPUnit directly: `vendor/bin/phpunit`.
+
 ### Options reference
 
 - **start**: string. Prefix printed before the content. Example: `pprint('Hello', ['start' => "\t"])`.
 - **end**: string. Line terminator, default to new line. Example: `pprint('no newline', ['end' => '']);`
 - **label**: string. Prefix label for 2D/3D formatted arrays, default `tensor`. Example: `pprint($m, ['label' => 'arr'])`.
+- **precision**: int. Number of digits after the decimal point for floats. Example: `pprint(3.14159, precision: 2)` prints `3.14`.
 - **headB / tailB**: ints. Number of head/tail 2D blocks shown for 3D tensors.
 - **headRows / tailRows**: ints. Rows shown per 2D slice with ellipsis between.
 - **headCols / tailCols**: ints. Columns shown per 2D slice with ellipsis between.
@@ -147,3 +168,21 @@ $pp('Metrics:', [[0.91, 0.02], [0.03, 0.88]]);
 All options can be passed as:
 - trailing array: `pprint($m, ['headRows' => 1, ...])`
 - named args (PHP 8+): `$pp($m, headRows: 1, ...)`
+
+#### Defaults
+- **label**: `tensor`
+- **precision**: `4`
+- **headB / tailB**: `5`
+- **headRows / tailRows**: `5`
+- **headCols / tailCols**: `5`
+
+#### Limits
+- **precision**: max `10`
+- **headB / tailB / headRows / tailRows / headCols / tailCols**: max `50`
+- **label**: max length `50` characters (longer labels are truncated)
+- **positional args (MAX_ARGS)**: up to `32` positional args are accepted; extras are ignored.
+
+Positional policy:
+- First arg can be a string label, number, or array.
+- Exactly two positional args are allowed only for `string label, array`.
+- Named/trailing options are applied only when the first arg is an array.

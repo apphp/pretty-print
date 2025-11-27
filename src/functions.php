@@ -11,7 +11,8 @@ namespace {
      * @param ...$args
      * @return void
      */
-    function pprint(...$args): void {
+    function pprint(...$args): void
+    {
         (new PrettyPrint())(...$args);
     }
 
@@ -20,7 +21,8 @@ namespace {
      * @param ...$args
      * @return void
      */
-    function pp(...$args): void {
+    function pp(...$args): void
+    {
         pprint(...$args);
     }
 
@@ -29,7 +31,8 @@ namespace {
      * @param ...$args
      * @return void
      */
-    function ppd(...$args): void {
+    function ppd(...$args): void
+    {
         pprint(...$args);
         exit;
     }
