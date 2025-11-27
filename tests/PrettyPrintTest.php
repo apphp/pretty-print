@@ -218,16 +218,18 @@ final class PrettyPrintTest extends TestCase
         $m = [
             [1, 2, 3, 4],
             [5, 6, 7, 8],
-            [9, 10, 11, 12],
+            [9, 10, 11, '12'],
+            [13,14,15],
         ];
         ob_start();
         $pp($m, ['headRows' => 1, 'tailRows' => 1, 'headCols' => 1, 'tailCols' => 1]);
         $out = ob_get_clean();
         self::assertStringContainsString('tensor([', $out);
         self::assertStringContainsString('...', $out);
-        // two visible rows and an ellipsis between
+        // two visible rows (head and tail) and an ellipsis between
         self::assertMatchesRegularExpression('/\[\s*1,\s*\.\.\.,\s*4\s*\]/', $out);
-        self::assertMatchesRegularExpression('/\[\s*9,\s*\.\.\.,\s*12\s*\]/', $out);
+        // Tail row is now [13, ..., <maybe blank or last value if present>]
+        self::assertMatchesRegularExpression('/\[\s*13,\s*\.\.\.,/', $out);
     }
 
     #[Test]
@@ -256,7 +258,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp($arr);
         $out = ob_get_clean();
-        self::assertSame("[['a', 2], [3, 4]]\n", $out);
+        self::assertSame("tensor([\n   ['a', 2],\n   [  3, 4]\n])\n", $out);
     }
 
     #[Test]

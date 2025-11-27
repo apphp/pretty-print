@@ -175,7 +175,7 @@ class PrettyPrint
             return;
         }
 
-        // Label + 2D matrix
+        // Label + 2D matrix (supports numeric and string matrices)
         if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && $this->is2D($args[1])) {
             $label = is_bool($args[0]) ? ($args[0] ? 'True' : 'False') : (is_null($args[0]) ? 'None' : (string)$args[0]);
             $out = $this->format2DAligned($args[1]);
@@ -324,7 +324,7 @@ class PrettyPrint
                 return false;
             }
             foreach ($row as $cell) {
-                if (!is_int($cell) && !is_float($cell)) {
+                if (!is_int($cell) && !is_float($cell) && !is_string($cell)) {
                     return false;
                 }
             }
@@ -344,8 +344,35 @@ class PrettyPrint
             return false;
         }
         foreach ($value as $matrix) {
-            if (!$this->is2D($matrix)) {
+            if (!$this->is2DNumeric($matrix)) {
                 return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Determine if the given value is a 2D numeric matrix (ints/floats only).
+     *
+     * @param mixed $value
+     * @return bool
+     */
+    private function is2DNumeric($value): bool
+    {
+        if (!is_array($value)) {
+            return false;
+        }
+        if (empty($value)) {
+            return true;
+        }
+        foreach ($value as $row) {
+            if (!is_array($row)) {
+                return false;
+            }
+            foreach ($row as $cell) {
+                if (!is_int($cell) && !is_float($cell)) {
+                    return false;
+                }
             }
         }
         return true;
@@ -369,18 +396,26 @@ class PrettyPrint
             return '[]';
         }
 
-        // Pre-format all numeric cells and compute widths in one pass
+        // Pre-format all cells (numbers and strings) and compute widths in one pass
         $widths = array_fill(0, $cols, 0);
         $formatted = [];
         foreach ($matrix as $r => $row) {
             $frow = [];
             for ($c = 0; $c < $cols; $c++) {
                 $s = '';
-                if (isset($row[$c]) && (is_int($row[$c]) || is_float($row[$c]))) {
-                    $s = $this->formatNumber($row[$c]);
-                } elseif (isset($row[$c])) {
-                    // Non-numeric encountered → fallback generic formatting
-                    return '[' . implode(', ', array_map(fn ($r2) => $this->formatForArray($r2), $matrix)) . ']';
+                if (array_key_exists($c, $row)) {
+                    $cell = $row[$c];
+                    if (is_int($cell) || is_float($cell)) {
+                        $s = $this->formatNumber($cell);
+                    } elseif (is_string($cell)) {
+                        $s = "'" . addslashes($cell) . "'";
+                    } elseif (is_bool($cell)) {
+                        $s = $cell ? 'True' : 'False';
+                    } elseif (is_null($cell)) {
+                        $s = 'None';
+                    } else {
+                        $s = (string)$cell;
+                    }
                 }
                 $frow[$c] = $s;
                 $widths[$c] = max($widths[$c], strlen($s));
@@ -454,7 +489,7 @@ class PrettyPrint
             }
         }
 
-        // Pre-format selected cells and compute widths in one pass
+        // Pre-format selected cells and compute widths in one pass (support numbers and strings)
         $widths = array_fill(0, count($colPositions), 0);
         $formatted = [];
         foreach ($rowIdxs as $rIndex) {
@@ -463,8 +498,19 @@ class PrettyPrint
                 $s = '';
                 if ($pos === '...') {
                     $s = '...';
-                } elseif (isset($matrix[$rIndex][$pos]) && (is_int($matrix[$rIndex][$pos]) || is_float($matrix[$rIndex][$pos]))) {
-                    $s = $this->formatNumber($matrix[$rIndex][$pos]);
+                } elseif (isset($matrix[$rIndex][$pos])) {
+                    $cell = $matrix[$rIndex][$pos];
+                    if (is_int($cell) || is_float($cell)) {
+                        $s = $this->formatNumber($cell);
+                    } elseif (is_string($cell)) {
+                        $s = "'" . addslashes($cell) . "'";
+                    } elseif (is_bool($cell)) {
+                        $s = $cell ? 'True' : 'False';
+                    } elseif (is_null($cell)) {
+                        $s = 'None';
+                    } else {
+                        $s = (string)$cell;
+                    }
                 }
                 $frow[$i] = $s;
                 $widths[$i] = max($widths[$i], strlen($s));
