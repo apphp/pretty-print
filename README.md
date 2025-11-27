@@ -175,3 +175,14 @@ All options can be passed as:
 - **headB / tailB**: `5`
 - **headRows / tailRows**: `5`
 - **headCols / tailCols**: `5`
+
+#### Limits
+- **precision**: max `10`
+- **headB / tailB / headRows / tailRows / headCols / tailCols**: max `50`
+- **label**: max length `50` characters (longer labels are truncated)
+- **positional args (MAX_ARGS)**: up to `32` positional args are accepted; extras are ignored.
+
+Positional policy:
+- First arg can be a string label, number, or array.
+- Exactly two positional args are allowed only for `string label, array`.
+- Named/trailing options are applied only when the first arg is an array.

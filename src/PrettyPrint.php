@@ -34,6 +34,10 @@ namespace Apphp\PrettyPrint;
  */
 class PrettyPrint
 {
+    private const MAX_PRECISION = 10;
+    private const MAX_HEAD_TAIL = 50;
+    private const MAX_LABEL_LEN = 50;
+    private const MAX_ARGS = 32;
     private int $precision = 4;
 
     // ---- Callable main entry ----
@@ -112,6 +116,24 @@ class PrettyPrint
             }
         }
 
+        // Sanitize formatting options: clamp ranges and label length
+        if (!empty($fmt)) {
+            if (isset($fmt['precision'])) {
+                $fmt['precision'] = max(0, min(self::MAX_PRECISION, (int)$fmt['precision']));
+            }
+            foreach (['headB','tailB','headRows','tailRows','headCols','tailCols'] as $key) {
+                if (isset($fmt[$key])) {
+                    $fmt[$key] = max(0, min(self::MAX_HEAD_TAIL, (int)$fmt[$key]));
+                }
+            }
+            if (isset($fmt['label'])) {
+                $fmt['label'] = (string)$fmt['label'];
+                if (strlen($fmt['label']) > self::MAX_LABEL_LEN) {
+                    $fmt['label'] = substr($fmt['label'], 0, self::MAX_LABEL_LEN);
+                }
+            }
+        }
+
         // Auto-wrap with <pre> for web (non-CLI) usage
         $isCli = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
         if (!$isCli) {
@@ -126,6 +148,9 @@ class PrettyPrint
             }
         }
         $args = array_values($args);
+        if (count($args) > self::MAX_ARGS) {
+            $args = array_slice($args, 0, self::MAX_ARGS);
+        }
 
         // Apply numeric precision if provided; remember previous to restore later
         $prevPrecision = $this->precision;

@@ -3,6 +3,7 @@
     - README.md example updates
     - Add precision option to PrettyPrint for float formatting
     - Refactor PrettyPrint for coding standards compliance and improve script configurations in composer.json
+    - Added MAX limitation for arguments
 
 0.3.0 / 2025-11-24
     - Improved documentation
