@@ -2,6 +2,9 @@
 
 namespace Apphp\PrettyPrint;
 
+/**
+ * Validator for pretty-printing arrays.
+ */
 class Validator
 {
     /**

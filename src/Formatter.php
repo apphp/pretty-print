@@ -2,6 +2,9 @@
 
 namespace Apphp\PrettyPrint;
 
+/**
+ * Formatter for pretty-printing arrays.
+ */
 class Formatter
 {
     /**

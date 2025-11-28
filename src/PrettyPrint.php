@@ -265,8 +265,6 @@ class PrettyPrint
 
     // ---- Private helpers ----
 
-    // TODO: >>>>>>>>
-
     /**
      * Format a 2D matrix showing head/tail rows and columns with ellipses in-between.
      *
@@ -498,4 +496,4 @@ class PrettyPrint
     }
 }
 
-// 672/605/== 493
+// 672/605/499/==
