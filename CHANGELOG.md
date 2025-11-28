@@ -6,7 +6,7 @@
  - Improved `PrettyPrintTest` with proper `ob` level handling
  - Updated `CHANGELOG` for version `0.4.0`
  - Refactor PrettyPrint: remove unused `is2DNumeric` method and simplify array handling logic
- - Refactor PrettyPrint: delegate 2D matrix formatting to `Formatter::format2DAligned`, added tests in `FormatterTest`.
+ - Refactor PrettyPrint: delegate 2D matrix formatting to `Formatter::format2DAligned`, added tests in `FormatterTest`
 
 0.3.2 / 2025-11-28
  - Adjusted is1D and is2D to support `int|float|string|bool|null`

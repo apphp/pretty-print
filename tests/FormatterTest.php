@@ -111,11 +111,20 @@ final class FormatterTest extends TestCase
                 2,
                 '[[Object]]',
             ],
-            'resource cell renders as Unknown' => [
+            'resource cell renders as Resource' => [
                 [[fopen('php://memory', 'r')]],
                 2,
-                '[[Unknown]]',
+                '[[Resource]]',
             ],
+            'closed resource renders as Unknown' => (function () {
+                $h = fopen('php://temp', 'r+');
+                fclose($h);
+                return [
+                    [[$h]],
+                    2,
+                    '[[Unknown]]',
+                ];
+            })(),
         ];
     }
 

@@ -61,10 +61,12 @@ class Formatter
                         $s = $cell ? 'True' : 'False';
                     } elseif (is_null($cell)) {
                         $s = 'None';
-                    } elseif (is_object($cell)) {
-                        $s = 'Object';
                     } elseif (is_array($cell)) {
                         $s = 'Array';
+                    } elseif (is_object($cell)) {
+                        $s = 'Object';
+                    } elseif (is_resource($cell)) {
+                        $s = 'Resource';
                     } else {
                         $s = 'Unknown';
                     }

@@ -245,8 +245,16 @@ class PrettyPrint
                     $parts[] = 'None';
                 } elseif (is_int($arg) || is_float($arg)) {
                     $parts[] = Formatter::formatNumber($arg, $this->precision);
+                } elseif (is_string($arg)) {
+                    $parts[] = "'" . addslashes($arg) . "'";
+                } elseif (is_array($arg)) {
+                    $parts[] = 'Array';
+                } elseif (is_object($arg)) {
+                    $parts[] = 'Class';
+                } elseif (is_resource($arg)) {
+                    $parts[] = 'Resource';
                 } else {
-                    $parts[] = (string)$arg;
+                    $parts[] = 'Unknown';
                 }
             }
         }
