@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Apphp\PrettyPrint\Tests;
 
 use Apphp\PrettyPrint\Validator;
-use Apphp\PrettyPrint\PrettyPrint;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -68,16 +67,16 @@ final class ValidatorTest extends TestCase
     public static function is3DProvider(): array
     {
         return [
-            'empty outer array'                         => [[], true],
-            'single empty 2D matrix'                    => [[[]], true],
-            'multiple empty 2D matrices'                => [[[], []], true],
-            'single 2D numeric matrix'                  => [[[[1,2,3],[4,5,6]]], true],
-            'two 2D matrices ragged rows'               => [[[[1,2],[3]], [[4,5,6],[7]]], true],
-            '2D matrices with mixed scalars'            => [[[[1,'2',true,null],[3.5,'x',false,0]]], true],
-            'outer contains non-array (invalid)'        => [[1,2,3], false],
-            'matrix has row that is not array (invalid)'=> [[ [1,2,3] ], false],
-            'matrix contains nested array cell (invalid)'=> [[ [[1,[2],3]] ], false],
-            'not an array invalid'                      => ['abc', false],
+            'empty outer array'                           => [[], true],
+            'single empty 2D matrix'                      => [[[]], true],
+            'multiple empty 2D matrices'                  => [[[], []], true],
+            'single 2D numeric matrix'                    => [[[[1,2,3],[4,5,6]]], true],
+            'two 2D matrices ragged rows'                 => [[[[1,2],[3]], [[4,5,6],[7]]], true],
+            '2D matrices with mixed scalars'              => [[[[1,'2',true,null],[3.5,'x',false,0]]], true],
+            'outer contains non-array (invalid)'          => [[1,2,3], false],
+            'matrix has row that is not array (invalid)'  => [[ [1,2,3] ], false],
+            'matrix contains nested array cell (invalid)' => [[ [[1,[2],3]] ], false],
+            'not an array invalid'                        => ['abc', false],
         ];
     }
 

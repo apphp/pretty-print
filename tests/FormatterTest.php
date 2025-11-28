@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Apphp\PrettyPrint\Tests;
 
 use Apphp\PrettyPrint\Formatter;
-use Apphp\PrettyPrint\PrettyPrint;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -89,7 +88,7 @@ final class FormatterTest extends TestCase
             'booleans and null rendered' => [
                 [[true, false, null]],
                 2,
-                "[[True, False, None]]",
+                '[[True, False, None]]',
             ],
             'floats obey precision' => [
                 [[1.2, 3.4567], [9.0, 10.9999]],
