@@ -212,13 +212,6 @@ class PrettyPrint
 
         // Default formatting
         $parts = [];
-        $containsArray = false;
-        foreach ($args as $a) {
-            if (is_array($a)) {
-                $containsArray = true;
-                break;
-            }
-        }
 
         foreach ($args as $arg) {
             if (is_array($arg)) {
@@ -265,34 +258,6 @@ class PrettyPrint
     // ---- Private helpers ----
 
     // TODO: >>>>>>>>
-
-
-    /**
-     * Determine if the given value is a 2D numeric matrix (ints/floats only).
-     *
-     * @param mixed $value
-     * @return bool
-     */
-    private function is2DNumeric($value): bool
-    {
-        if (!is_array($value)) {
-            return false;
-        }
-        if (empty($value)) {
-            return true;
-        }
-        foreach ($value as $row) {
-            if (!is_array($row)) {
-                return false;
-            }
-            foreach ($row as $cell) {
-                if (!is_int($cell) && !is_float($cell)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
 
     /**
      * Format a 2D numeric matrix with aligned columns.
@@ -414,7 +379,7 @@ class PrettyPrint
                 $s = '';
                 if ($pos === '...') {
                     $s = '...';
-                } elseif (isset($matrix[$rIndex][$pos])) {
+                } elseif (array_key_exists($pos, $matrix[$rIndex])) {
                     $cell = $matrix[$rIndex][$pos];
                     if (is_int($cell) || is_float($cell)) {
                         $s = Formatter::formatNumber($cell, $this->precision);
@@ -586,4 +551,4 @@ class PrettyPrint
     }
 }
 
-// 672/605==
+// 672/605/== 554
