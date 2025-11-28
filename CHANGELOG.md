@@ -1,3 +1,7 @@
+0.3.2 / 
+    - Adjusted is1D and is2D to support int|float|string|bool|null
+    - Extracted some functions to separate helper class
+
 0.3.1 / 2025-11-27
     - Adjust default formatting dimensions in PrettyPrint tensor methods
     - README.md example updates
