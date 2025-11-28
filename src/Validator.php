@@ -2,29 +2,11 @@
 
 namespace Apphp\PrettyPrint;
 
-class Helper
+/**
+ * Validator for pretty-printing arrays.
+ */
+class Validator
 {
-    /**
-     * Format a value as a number when possible.
-     *
-     * Integers are returned verbatim; floats are rendered with 4 decimal places;
-     * non-numeric values are cast to string.
-     *
-     * @param mixed $v
-     * @param int $precision
-     * @return string
-     */
-    public static function formatNumber(mixed $v, int $precision = 2): string
-    {
-        if (is_int($v)) {
-            return (string)$v;
-        }
-        if (is_float($v)) {
-            return number_format($v, $precision, '.', '');
-        }
-        return (string)$v;
-    }
-
     /**
      * Determine if a value is a 1D array of int|float|string|bool|null.
      *
@@ -68,6 +50,25 @@ class Helper
                 if (!is_scalar($cell) && $cell !== null) {
                     return false;
                 }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Determine if the given value is a 3D tensor of matrices.
+     *
+     * @param mixed $value
+     * @return bool True if $value is an array of 2D arrays.
+     */
+    public static function is3D(mixed $value): bool
+    {
+        if (!is_array($value)) {
+            return false;
+        }
+        foreach ($value as $matrix) {
+            if (!self::is2D($matrix)) {
+                return false;
             }
         }
         return true;

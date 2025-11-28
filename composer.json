@@ -12,7 +12,8 @@
   ],
   "autoload": {
     "psr-4": {
-      "Apphp\\PrettyPrint\\": "src/"
+      "Apphp\\PrettyPrint\\": "src/",
+      "Apphp\\PrettyPrint\\Tests\\": "tests/"
     },
     "files": [
       "src/functions.php"

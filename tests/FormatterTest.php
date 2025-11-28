@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Apphp\PrettyPrint\Tests;
 
-use Apphp\PrettyPrint\Helper;
-use Apphp\PrettyPrint\PrettyPrint;
+use Apphp\PrettyPrint\Formatter;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -13,9 +12,9 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\Attributes\DataProvider;
 
-#[CoversClass(PrettyPrint::class)]
-#[Group('Helper')]
-final class HelperTest extends TestCase
+#[CoversClass(Formatter::class)]
+#[Group('PrettyPrint')]
+final class FormatterTest extends TestCase
 {
     public static function formatNumberProvider(): array
     {
@@ -57,7 +56,7 @@ final class HelperTest extends TestCase
     #[DataProvider('formatNumberProvider')]
     public function testFormatNumber(mixed $value, int $precision, string $expected): void
     {
-        self::assertSame($expected, Helper::formatNumber($value, $precision));
+        self::assertSame($expected, Formatter::formatNumber($value, $precision));
     }
 
     #[Test]
@@ -65,54 +64,74 @@ final class HelperTest extends TestCase
     #[DataProvider('defaultFormatNumberProvider')]
     public function testFormatNumberDefaultPrecision(mixed $value, string $expected): void
     {
-        self::assertSame($expected, Helper::formatNumber($value));
+        self::assertSame($expected, Formatter::formatNumber($value));
     }
 
-    public static function is1DProvider(): array
+    public static function format2DAlignedProvider(): array
     {
         return [
-            'ints only'        => [[1, 2, 3], true],
-            'floats only'      => [[1.0, 2.5, -3.14], true],
-            'ints and floats'  => [[1, 2.0, -3.5], true],
-            'empty array'      => [[], true],
-            'contains string'  => [[1, '2', 3], true],
-            'contains bool'    => [[1, true, 3], true],
-            'contains null'    => [[1, null, 3], true],
-            'nested array'     => [[1, [2], 3], false],
-            'non-array int'    => [123, false],
-            'non-array string' => ['abc', false],
+            'two numeric rows align' => [
+                [[1, 23, 456], [12, 3, 45]],
+                2,
+                "[[ 1, 23, 456],\n [12,  3,  45]]",
+            ],
+            'ragged rows pad missing cells' => [
+                [[1, 23], [12, 3, 45]],
+                2,
+                "[[ 1, 23,   ],\n [12,  3, 45]]",
+            ],
+            'strings quoted and escaped' => [
+                [["a'b", 'c']],
+                2,
+                "[['a\'b', 'c']]",
+            ],
+            'booleans and null rendered' => [
+                [[true, false, null]],
+                2,
+                '[[True, False, None]]',
+            ],
+            'floats obey precision' => [
+                [[1.2, 3.4567], [9.0, 10.9999]],
+                2,
+                "[[1.20,  3.46],\n [9.00, 11.00]]",
+            ],
+            'empty matrix' => [
+                [],
+                2,
+                '[]',
+            ],
+            'array cell casts via (string)$cell' => [
+                [[[1, 2]]],
+                2,
+                '[[Array]]',
+            ],
+            'object cell renders as Object' => [
+                [[(object)['a' => 1]]],
+                2,
+                '[[Object]]',
+            ],
+            'resource cell renders as Resource' => [
+                [[fopen('php://memory', 'r')]],
+                2,
+                '[[Resource]]',
+            ],
+            'closed resource renders as Unknown' => (function () {
+                $h = fopen('php://temp', 'r+');
+                fclose($h);
+                return [
+                    [[$h]],
+                    2,
+                    '[[Unknown]]',
+                ];
+            })(),
         ];
     }
 
     #[Test]
-    #[TestDox('is1D returns true only for 1D arrays of int|float|string|bool|null')]
-    #[DataProvider('is1DProvider')]
-    public function testIs1D(mixed $value, bool $expected): void
+    #[TestDox('format2DAligned formats 2D arrays with alignment, quoting, and precision')]
+    #[DataProvider('format2DAlignedProvider')]
+    public function testFormat2DAligned(array $matrix, int $precision, string $expected): void
     {
-        self::assertSame($expected, Helper::is1D($value));
-    }
-
-    public static function is2DProvider(): array
-    {
-        return [
-            'empty outer array'                   => [[], true],
-            'single empty row'                    => [[[ ]], true],
-            'multiple empty rows'                 => [[[ ], [ ]], true],
-            'numeric matrix'                      => [[[1,2,3],[4,5,6]], true],
-            'mixed scalars'                       => [[[1,'2',true,null],[3.5, 'x', false, 0]], true],
-            'ragged rows allowed'                 => [[[1,2],[3,4,5]], true],
-            'assoc rows allowed'                  => [[['a' => 1,'b' => 2], ['c' => 3]], true],
-            'row contains array (nested) invalid' => [[[1,[2],3]], false],
-            'row is not array invalid'            => [[1,2,3], false],
-            'outer non-array invalid'             => [123, false],
-        ];
-    }
-
-    #[Test]
-    #[TestDox('is2D returns true only for arrays-of-arrays with scalar|null cells')]
-    #[DataProvider('is2DProvider')]
-    public function testIs2D(mixed $value, bool $expected): void
-    {
-        self::assertSame($expected, Helper::is2D($value));
+        self::assertSame($expected, Formatter::format2DAligned($matrix, $precision));
     }
 }

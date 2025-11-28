@@ -23,7 +23,7 @@ final class FunctionsTest extends TestCase
         ob_start();
         pprint('Hello');
         $out = ob_get_clean();
-        self::assertSame("Hello\n", $out);
+        self::assertSame("'Hello'\n", $out);
     }
 
     #[Test]

@@ -15,6 +15,23 @@ use PHPUnit\Framework\Attributes\CoversClass;
 #[Group('PrettyPrint')]
 final class PrettyPrintTest extends TestCase
 {
+    private int $obLevel = 0;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->obLevel = ob_get_level();
+    }
+
+    protected function tearDown(): void
+    {
+        // Ensure any stray buffers opened during a test are closed
+        while (ob_get_level() > $this->obLevel) {
+            @ob_end_clean();
+        }
+        parent::tearDown();
+    }
+
     #[Test]
     #[TestDox('prints scalars and strings with number formatting and newline')]
     public function scalarsAndStrings(): void
@@ -23,7 +40,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Hello', 123, 4.56);
         $out = ob_get_clean();
-        self::assertSame("Hello 123 4.5600\n", $out);
+        self::assertSame("'Hello' 123 4.5600\n", $out);
     }
 
     #[Test]
@@ -133,7 +150,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Line without newline', ['end' => '']);
         $out = ob_get_clean();
-        self::assertSame('Line without newline', $out);
+        self::assertSame("'Line without newline'", $out);
     }
 
     #[Test]
@@ -144,7 +161,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Named', end: '');
         $out = ob_get_clean();
-        self::assertSame('Named', $out);
+        self::assertSame("'Named'", $out);
     }
 
     #[Test]
@@ -155,7 +172,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Hello', ['start' => "\t", 'end' => '']);
         $out = ob_get_clean();
-        self::assertSame("\tHello", $out);
+        self::assertSame("\t'Hello'", $out);
     }
 
     #[Test]
@@ -166,7 +183,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('World', start: '>>> ', end: '');
         $out = ob_get_clean();
-        self::assertSame('>>> World', $out);
+        self::assertSame(">>> 'World'", $out);
     }
 
     #[Test]
