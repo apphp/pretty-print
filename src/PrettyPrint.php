@@ -159,7 +159,7 @@ class PrettyPrint
         }
 
         // Label + single 3D tensor
-        if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && $this->is3D($args[1])) {
+        if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && Validator::is3D($args[1])) {
             $out = $this->format3DTorch(
                 $args[1],
                 (int)($fmt['headB'] ?? 5),
@@ -176,7 +176,7 @@ class PrettyPrint
         }
 
         // Label + 2D matrix (supports numeric and string matrices)
-        if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && Helper::is2D($args[1])) {
+        if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && Validator::is2D($args[1])) {
             $label = is_bool($args[0]) ? ($args[0] ? 'True' : 'False') : (is_null($args[0]) ? 'None' : (string)$args[0]);
             $out = $this->format2DAligned($args[1]);
             echo $start . ($label . "\n" . $out) . $end;
@@ -195,7 +195,7 @@ class PrettyPrint
             }
             $allRows = true;
             for ($i = $startIndex; $i < count($args); $i++) {
-                if (Helper::is1D($args[$i])) {
+                if (Validator::is1D($args[$i])) {
                     $rows[] = $args[$i];
                 } else {
                     $allRows = false;
@@ -222,7 +222,7 @@ class PrettyPrint
 
         foreach ($args as $arg) {
             if (is_array($arg)) {
-                if ($this->is3D($arg)) {
+                if (Validator::is3D($arg)) {
                     $parts[] = $this->format3DTorch(
                         $arg,
                         (int)($fmt['headB'] ?? 5),
@@ -233,7 +233,7 @@ class PrettyPrint
                         (int)($fmt['tailCols'] ?? 5),
                         (string)($fmt['label'] ?? 'tensor')
                     );
-                } elseif (Helper::is2D($arg)) {
+                } elseif (Validator::is2D($arg)) {
                     $parts[] = $this->format2DTorch(
                         $arg,
                         (int)($fmt['headRows'] ?? 5),
@@ -251,7 +251,7 @@ class PrettyPrint
                 } elseif (is_null($arg)) {
                     $parts[] = 'None';
                 } elseif (is_int($arg) || is_float($arg)) {
-                    $parts[] = Helper::formatNumber($arg, $this->precision);
+                    $parts[] = Formatter::formatNumber($arg, $this->precision);
                 } else {
                     $parts[] = (string)$arg;
                 }
@@ -265,24 +265,7 @@ class PrettyPrint
     // ---- Private helpers ----
 
     // TODO: >>>>>>>>
-    /**
-     * Determine if the given value is a 3D tensor of numeric matrices.
-     *
-     * @param mixed $value
-     * @return bool True if $value is an array of 2D numeric arrays.
-     */
-    private function is3D($value): bool
-    {
-        if (!is_array($value)) {
-            return false;
-        }
-        foreach ($value as $matrix) {
-            if (!$this->is2DNumeric($matrix)) {
-                return false;
-            }
-        }
-        return true;
-    }
+
 
     /**
      * Determine if the given value is a 2D numeric matrix (ints/floats only).
@@ -339,7 +322,7 @@ class PrettyPrint
                 if (array_key_exists($c, $row)) {
                     $cell = $row[$c];
                     if (is_int($cell) || is_float($cell)) {
-                        $s = Helper::formatNumber($cell, $this->precision);
+                        $s = Formatter::formatNumber($cell, $this->precision);
                     } elseif (is_string($cell)) {
                         $s = "'" . addslashes($cell) . "'";
                     } elseif (is_bool($cell)) {
@@ -434,7 +417,7 @@ class PrettyPrint
                 } elseif (isset($matrix[$rIndex][$pos])) {
                     $cell = $matrix[$rIndex][$pos];
                     if (is_int($cell) || is_float($cell)) {
-                        $s = Helper::formatNumber($cell, $this->precision);
+                        $s = Formatter::formatNumber($cell, $this->precision);
                     } elseif (is_string($cell)) {
                         $s = "'" . addslashes($cell) . "'";
                     } elseif (is_bool($cell)) {
@@ -496,14 +479,14 @@ class PrettyPrint
     private function formatForArray($value): string
     {
         if (is_array($value)) {
-            if (Helper::is2D($value)) {
+            if (Validator::is2D($value)) {
                 return $this->format2DAligned($value);
             }
             $formattedItems = array_map(fn ($v) => $this->formatForArray($v), $value);
             return '[' . implode(', ', $formattedItems) . ']';
         }
         if (is_int($value) || is_float($value)) {
-            return Helper::formatNumber($value, $this->precision);
+            return Formatter::formatNumber($value, $this->precision);
         }
         if (is_bool($value)) {
             return $value ? 'True' : 'False';

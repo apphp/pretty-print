@@ -15,6 +15,23 @@ use PHPUnit\Framework\Attributes\CoversClass;
 #[Group('PrettyPrint')]
 final class PrettyPrintTest extends TestCase
 {
+    private int $obLevel = 0;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->obLevel = ob_get_level();
+    }
+
+    protected function tearDown(): void
+    {
+        // Ensure any stray buffers opened during a test are closed
+        while (ob_get_level() > $this->obLevel) {
+            @ob_end_clean();
+        }
+        parent::tearDown();
+    }
+
     #[Test]
     #[TestDox('prints scalars and strings with number formatting and newline')]
     public function scalarsAndStrings(): void
