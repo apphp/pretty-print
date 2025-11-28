@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\CoversClass;
 
 #[CoversClass(PrettyPrint::class)]
-#[Group('prettyprint')]
+#[Group('PrettyPrint')]
 final class PrettyPrintTest extends TestCase
 {
     #[Test]
@@ -335,17 +335,5 @@ final class PrettyPrintTest extends TestCase
         $pp('Label', [1, 2], [3, 4]);
         $out = ob_get_clean();
         self::assertSame("Label\n[[1, 2],\n [3, 4]]\n", $out);
-    }
-
-    #[Test]
-    #[TestDox('covers fallback branch in formatNumber for non-numeric values')]
-    public function formatNumberFallbackCoversString(): void
-    {
-        $pp = new PrettyPrint();
-        $caller = \Closure::bind(function ($v) {
-            return $this->formatNumber($v);
-        }, $pp, PrettyPrint::class);
-        $result = $caller('abc');
-        self::assertSame('abc', $result);
     }
 }
