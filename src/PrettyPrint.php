@@ -245,7 +245,7 @@ class PrettyPrint
                 } else {
                     $parts[] = $this->formatForArray($arg);
                 }
-            } elseif (!$containsArray) {
+            } else {
                 if (is_bool($arg)) {
                     $parts[] = $arg ? 'True' : 'False';
                 } elseif (is_null($arg)) {
