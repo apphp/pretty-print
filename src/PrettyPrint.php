@@ -178,7 +178,7 @@ class PrettyPrint
         // Label + 2D matrix (supports numeric and string matrices)
         if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && Validator::is2D($args[1])) {
             $label = is_bool($args[0]) ? ($args[0] ? 'True' : 'False') : (is_null($args[0]) ? 'None' : (string)$args[0]);
-            $out = $this->format2DAligned($args[1]);
+            $out = Formatter::format2DAligned($args[1], $this->precision);
             echo $start . ($label . "\n" . $out) . $end;
             $this->precision = $prevPrecision;
             return;
@@ -203,7 +203,7 @@ class PrettyPrint
                 }
             }
             if ($allRows && count($rows) > 1) {
-                $out = $this->format2DAligned($rows);
+                $out = Formatter::format2DAligned($rows, $this->precision);
                 echo $start . ((($label !== null) ? ($label . "\n" . $out) : $out)) . $end;
                 $this->precision = $prevPrecision;
                 return;
@@ -258,67 +258,6 @@ class PrettyPrint
     // ---- Private helpers ----
 
     // TODO: >>>>>>>>
-
-    /**
-     * Format a 2D numeric matrix with aligned columns.
-     *
-     * @param array $matrix 2D array of ints/floats.
-     * @return string
-     */
-    private function format2DAligned(array $matrix): string
-    {
-        $cols = 0;
-        foreach ($matrix as $row) {
-            if (is_array($row)) {
-                $cols = max($cols, count($row));
-            }
-        }
-        if ($cols === 0) {
-            return '[]';
-        }
-
-        // Pre-format all cells (numbers and strings) and compute widths in one pass
-        $widths = array_fill(0, $cols, 0);
-        $formatted = [];
-        foreach ($matrix as $r => $row) {
-            $frow = [];
-            for ($c = 0; $c < $cols; $c++) {
-                $s = '';
-                if (array_key_exists($c, $row)) {
-                    $cell = $row[$c];
-                    if (is_int($cell) || is_float($cell)) {
-                        $s = Formatter::formatNumber($cell, $this->precision);
-                    } elseif (is_string($cell)) {
-                        $s = "'" . addslashes($cell) . "'";
-                    } elseif (is_bool($cell)) {
-                        $s = $cell ? 'True' : 'False';
-                    } elseif (is_null($cell)) {
-                        $s = 'None';
-                    } else {
-                        $s = (string)$cell;
-                    }
-                }
-                $frow[$c] = $s;
-                $widths[$c] = max($widths[$c], strlen($s));
-            }
-            $formatted[$r] = $frow;
-        }
-
-        // Build lines using precomputed widths
-        $lines = [];
-        foreach ($formatted as $frow) {
-            $cells = [];
-            for ($c = 0; $c < $cols; $c++) {
-                $cells[] = str_pad($frow[$c] ?? '', $widths[$c], ' ', STR_PAD_LEFT);
-            }
-            $lines[] = '[' . implode(', ', $cells) . ']';
-        }
-
-        if (count($lines) === 1) {
-            return '[' . $lines[0] . ']';
-        }
-        return '[' . implode(",\n ", $lines) . ']';
-    }
 
     /**
      * Format a 2D matrix showing head/tail rows and columns with ellipses in-between.
@@ -445,7 +384,7 @@ class PrettyPrint
     {
         if (is_array($value)) {
             if (Validator::is2D($value)) {
-                return $this->format2DAligned($value);
+                return Formatter::format2DAligned($value, $this->precision);
             }
             $formattedItems = array_map(fn ($v) => $this->formatForArray($v), $value);
             return '[' . implode(', ', $formattedItems) . ']';
@@ -551,4 +490,4 @@ class PrettyPrint
     }
 }
 
-// 672/605/== 554
+// 672/605/== 493

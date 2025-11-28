@@ -67,4 +67,63 @@ final class FormatterTest extends TestCase
     {
         self::assertSame($expected, Formatter::formatNumber($value));
     }
+
+    public static function format2DAlignedProvider(): array
+    {
+        return [
+            'two numeric rows align' => [
+                [[1, 23, 456], [12, 3, 45]],
+                2,
+                "[[ 1, 23, 456],\n [12,  3,  45]]",
+            ],
+            'ragged rows pad missing cells' => [
+                [[1, 23], [12, 3, 45]],
+                2,
+                "[[ 1, 23,   ],\n [12,  3, 45]]",
+            ],
+            'strings quoted and escaped' => [
+                [["a'b", 'c']],
+                2,
+                "[['a\'b', 'c']]",
+            ],
+            'booleans and null rendered' => [
+                [[true, false, null]],
+                2,
+                "[[True, False, None]]",
+            ],
+            'floats obey precision' => [
+                [[1.2, 3.4567], [9.0, 10.9999]],
+                2,
+                "[[1.20,  3.46],\n [9.00, 11.00]]",
+            ],
+            'empty matrix' => [
+                [],
+                2,
+                '[]',
+            ],
+            'array cell casts via (string)$cell' => [
+                [[[1, 2]]],
+                2,
+                '[[Array]]',
+            ],
+            'object cell renders as Object' => [
+                [[(object)['a' => 1]]],
+                2,
+                '[[Object]]',
+            ],
+            'resource cell renders as Unknown' => [
+                [[fopen('php://memory', 'r')]],
+                2,
+                '[[Unknown]]',
+            ],
+        ];
+    }
+
+    #[Test]
+    #[TestDox('format2DAligned formats 2D arrays with alignment, quoting, and precision')]
+    #[DataProvider('format2DAlignedProvider')]
+    public function testFormat2DAligned(array $matrix, int $precision, string $expected): void
+    {
+        self::assertSame($expected, Formatter::format2DAligned($matrix, $precision));
+    }
 }
