@@ -210,6 +210,16 @@ class PrettyPrint
             }
         }
 
+        // Default formatting
+        $parts = [];
+        $containsArray = false;
+        foreach ($args as $a) {
+            if (is_array($a)) {
+                $containsArray = true;
+                break;
+            }
+        }
+
         foreach ($args as $arg) {
             if (is_array($arg)) {
                 if ($this->is3D($arg)) {
