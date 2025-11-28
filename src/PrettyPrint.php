@@ -210,16 +210,6 @@ class PrettyPrint
             }
         }
 
-        // Default formatting
-        $parts = [];
-        $containsArray = false;
-        foreach ($args as $a) {
-            if (is_array($a)) {
-                $containsArray = true;
-                break;
-            }
-        }
-
         foreach ($args as $arg) {
             if (is_array($arg)) {
                 if ($this->is3D($arg)) {
@@ -264,6 +254,7 @@ class PrettyPrint
 
     // ---- Private helpers ----
 
+    // TODO: >>>>>>>>
     /**
      * Determine if the given value is a 3D tensor of numeric matrices.
      *
