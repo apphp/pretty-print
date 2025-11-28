@@ -1,4 +1,4 @@
-0.4.0 /
+0.4.0 / 2025-11-28
  - Renamed `Helper` to `Validator` and moved formatting logic to new `Formatter` class
  - Added `is3D` support in `Validator`
  - Updated tests for `Validator` and introduced `FormatterTest`
