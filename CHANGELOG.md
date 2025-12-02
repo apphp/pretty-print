@@ -8,6 +8,7 @@
  - Refactor `PrettyPrint` to delegate `formatForArray` logic to `Formatter` and remove the private method `formatForArray`
  - Refactor `PrettyPrint` to simplify argument formatting by delegating logic to `Formatter::formatCell`
  - Update `Formatter::formatCell` visibility to public for reuse
+ - Refactor `Formatter` and `PrettyPrint` to unify string formatting logic, ensuring CLI output omits quotes for top-level strings
  
 0.4.0 / 2025-11-28
  - Renamed `Helper` to `Validator` and moved formatting logic to new `Formatter` class

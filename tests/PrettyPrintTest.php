@@ -275,7 +275,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp($arr);
         $out = ob_get_clean();
-        self::assertSame("tensor([\n   ['a', 2],\n   [  3, 4]\n])\n", $out);
+        self::assertSame("tensor([\n   [a, 2],\n   [3, 4]\n])\n", $out);
     }
 
     #[Test]

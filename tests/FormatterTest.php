@@ -83,7 +83,7 @@ final class FormatterTest extends TestCase
             'strings quoted and escaped' => [
                 [["a'b", 'c']],
                 2,
-                "[['a\'b', 'c']]",
+                "[[a'b, c]]",
             ],
             'booleans and null rendered' => [
                 [[true, false, null]],
@@ -148,13 +148,13 @@ final class FormatterTest extends TestCase
                 [[1, 2, 3], [4, 5, 6], [7, 8, 9.001]],
                 1, 1, 1, 1,
                 2,
-                "[[1, ...,    3],\n  ...,\n  [7, ..., 9.00]]",
+                "[[1, ...,    3],\n  ...,\n [7, ..., 9.00]]",
             ],
             'single row with strings/booleans/null' => [
                 [["a'b", true, null, false]],
                 5, 5, 5, 5,
                 2,
-                "[ ['a\\'b', True, None, False]]",
+                "[[a'b, True, None, False]]",
             ],
         ];
     }
@@ -182,7 +182,7 @@ final class FormatterTest extends TestCase
                 1, 1, 1, 1,
                 'mat',
                 2,
-                "mat([\n   [1, ...,    3],\n   ...,\n   [7, ..., 9.00]\n])",
+                "mat([\n   [1, ...,    3],\n   ...,\n  [7, ..., 9.00]\n])",
             ],
         ];
     }

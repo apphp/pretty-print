@@ -155,19 +155,19 @@ class Formatter
         }
 
         // Build lines from pre-formatted rows
-        $buildRow = function (array $frow) use ($widths) {
+        $buildRow = function (array $frow, int $headCount) use ($widths) {
             $cells = [];
             foreach ($frow as $i => $s) {
                 $cells[] = str_pad($s, $widths[$i], ' ', STR_PAD_LEFT);
             }
             // Add extra space to align columns like earlier tweak
-            return ' [' . implode(', ', $cells) . ']';
+            return ($headCount === 1 ? '' : ' ') . '[' . implode(', ', $cells) . ']';
         };
 
         $lines = [];
         $headCount = ($rows <= $headRows + $tailRows) ? count($rowIdxs) : $headRows;
         for ($i = 0; $i < $headCount; $i++) {
-            $lines[] = $buildRow($formatted[$i]);
+            $lines[] = $buildRow($formatted[$i], $headCount);
         }
         if ($rows > $headRows + $tailRows) {
             $lines[] = ' ...';
@@ -175,7 +175,7 @@ class Formatter
         if ($rows > $headRows + $tailRows) {
             $total = count($formatted);
             for ($i = $headCount; $i < $total; $i++) {
-                $lines[] = $buildRow($formatted[$i]);
+                $lines[] = $buildRow($formatted[$i], $headCount);
             }
         }
 
@@ -215,7 +215,6 @@ class Formatter
         return $s;
     }
 
-
     /**
      * Generic array-aware formatter producing Python-like representations.
      *
@@ -248,7 +247,12 @@ class Formatter
         if (is_int($cell) || is_float($cell)) {
             $s = self::formatNumber($cell, $precision);
         } elseif (is_string($cell)) {
-            $s = "'" . addslashes($cell) . "'";
+            $isCli = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
+            if ($isCli) {
+                $s = $cell;
+            } else {
+                $s = addslashes($cell);
+            }
         } elseif (is_bool($cell)) {
             $s = $cell ? 'True' : 'False';
         } elseif (is_null($cell)) {
