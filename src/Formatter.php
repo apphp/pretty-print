@@ -56,22 +56,7 @@ class Formatter
                 $s = '';
                 if (array_key_exists($c, $row)) {
                     $cell = $row[$c];
-                    $s = 'Unknown';
-                    if (is_int($cell) || is_float($cell)) {
-                        $s = self::formatNumber($cell, $precision);
-                    } elseif (is_string($cell)) {
-                        $s = "'" . addslashes($cell) . "'";
-                    } elseif (is_bool($cell)) {
-                        $s = $cell ? 'True' : 'False';
-                    } elseif (is_null($cell)) {
-                        $s = 'None';
-                    } elseif (is_array($cell)) {
-                        $s = 'Array';
-                    } elseif (is_object($cell)) {
-                        $s = 'Object';
-                    } elseif (is_resource($cell)) {
-                        $s = 'Resource';
-                    }
+                    $s = self::formatCell($cell, $precision);
                 }
                 $frow[$c] = $s;
                 $widths[$c] = max($widths[$c], strlen($s));
@@ -156,22 +141,7 @@ class Formatter
                     $s = '...';
                 } elseif (array_key_exists($pos, $matrix[$rIndex])) {
                     $cell = $matrix[$rIndex][$pos];
-                    $s = 'Unknown';
-                    if (is_int($cell) || is_float($cell)) {
-                        $s = self::formatNumber($cell, $precision);
-                    } elseif (is_string($cell)) {
-                        $s = "'" . addslashes($cell) . "'";
-                    } elseif (is_bool($cell)) {
-                        $s = $cell ? 'True' : 'False';
-                    } elseif (is_null($cell)) {
-                        $s = 'None';
-                    } elseif (is_array($cell)) {
-                        $s = 'Array';
-                    } elseif (is_object($cell)) {
-                        $s = 'Object';
-                    } elseif (is_resource($cell)) {
-                        $s = 'Resource';
-                    }
+                    $s = self::formatCell($cell, $precision);
                 }
                 $frow[$i] = $s;
                 $widths[$i] = max($widths[$i], strlen($s));
@@ -241,6 +211,33 @@ class Formatter
         // Replace the final ']' with '])'
         if (str_ends_with($s, ']')) {
             $s = substr($s, 0, -1) . "\n])";
+        }
+        return $s;
+    }
+
+    /**
+     * Format a single cell.
+     *
+     * @param mixed $cell
+     * @param int $precision
+     * @return string
+     */
+    protected static function formatCell(mixed $cell, int $precision): string {
+        $s = 'Unknown';
+        if (is_int($cell) || is_float($cell)) {
+            $s = self::formatNumber($cell, $precision);
+        } elseif (is_string($cell)) {
+            $s = "'" . addslashes($cell) . "'";
+        } elseif (is_bool($cell)) {
+            $s = $cell ? 'True' : 'False';
+        } elseif (is_null($cell)) {
+            $s = 'None';
+        } elseif (is_array($cell)) {
+            $s = 'Array';
+        } elseif (is_object($cell)) {
+            $s = 'Object';
+        } elseif (is_resource($cell)) {
+            $s = 'Resource';
         }
         return $s;
     }

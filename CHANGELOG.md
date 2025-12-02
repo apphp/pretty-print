@@ -4,6 +4,7 @@
  - Refactor `PrettyPrint` to delegate `format2DSummarized` logic to `Formatter`
  - Revise tests to align with updated string output conventions.
  - Refactor `PrettyPrint` to delegate `format2DTorch` logic to `Formatter` and add corresponding tests in `FormatterTest`.
+ - Refactor `Formatter` to extract cell formatting logic into `formatCell` for reuse and clarity.
  
 0.4.0 / 2025-11-28
  - Renamed `Helper` to `Validator` and moved formatting logic to new `Formatter` class
