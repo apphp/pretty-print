@@ -134,4 +134,36 @@ final class FormatterTest extends TestCase
     {
         self::assertSame($expected, Formatter::format2DAligned($matrix, $precision));
     }
+
+    public static function format2DSummarizedProvider(): array
+    {
+        return [
+            'no truncation behaves like aligned (ints)' => [
+                [[1, 23, 456], [12, 3, 45]],
+                5, 5, 5, 5,
+                2,
+                "[[ 1, 23, 456],\n  [12,  3,  45]]",
+            ],
+            'row and column truncation with ellipses (floats with precision)' => [
+                [[1, 2, 3], [4, 5, 6], [7, 8, 9.001]],
+                1, 1, 1, 1,
+                2,
+                "[[1, ...,    3],\n  ...,\n  [7, ..., 9.00]]",
+            ],
+            'single row with strings/booleans/null' => [
+                [["a'b", true, null, false]],
+                5, 5, 5, 5,
+                2,
+                "[ ['a\\'b', True, None, False]]",
+            ],
+        ];
+    }
+
+    #[Test]
+    #[TestDox('format2DSummarized formats with head/tail rows/cols and quotes/precision')]
+    #[DataProvider('format2DSummarizedProvider')]
+    public function testFormat2DSummarized(array $matrix, int $headRows, int $tailRows, int $headCols, int $tailCols, int $precision, string $expected): void
+    {
+        self::assertSame($expected, Formatter::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision));
+    }
 }

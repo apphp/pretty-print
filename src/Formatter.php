@@ -95,4 +95,119 @@ class Formatter
         }
         return '[' . implode(",\n ", $lines) . ']';
     }
+
+    /**
+     * Format a 2D matrix showing head/tail rows and columns with ellipses in-between.
+     *
+     * @param array $matrix 2D array of ints/floats.
+     * @param int $headRows Number of head rows to display.
+     * @param int $tailRows Number of tail rows to display.
+     * @param int $headCols Number of head columns to display.
+     * @param int $tailCols Number of tail columns to display.
+     * @param int $precision
+     * @return string
+     */
+    public static function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, int $precision = 2): string
+    {
+        $rows = count($matrix);
+        $cols = 0;
+        foreach ($matrix as $row) {
+            if (is_array($row)) {
+                $cols = max($cols, count($row));
+            }
+        }
+
+        $rowIdxs = [];
+        if ($rows <= $headRows + $tailRows) {
+            for ($r = 0; $r < $rows; $r++) {
+                $rowIdxs[] = $r;
+            }
+        } else {
+            for ($r = 0; $r < $headRows; $r++) {
+                $rowIdxs[] = $r;
+            }
+            for ($r = $rows - $tailRows; $r < $rows; $r++) {
+                $rowIdxs[] = $r;
+            }
+        }
+
+        $colPositions = [];
+        if ($cols <= $headCols + $tailCols) {
+            for ($c = 0; $c < $cols; $c++) {
+                $colPositions[] = $c;
+            }
+        } else {
+            for ($c = 0; $c < $headCols; $c++) {
+                $colPositions[] = $c;
+            }
+            $colPositions[] = '...';
+            for ($c = $cols - $tailCols; $c < $cols; $c++) {
+                $colPositions[] = $c;
+            }
+        }
+
+        // Pre-format selected cells and compute widths in one pass (support numbers and strings)
+        $widths = array_fill(0, count($colPositions), 0);
+        $formatted = [];
+        foreach ($rowIdxs as $rIndex) {
+            $frow = [];
+            foreach ($colPositions as $i => $pos) {
+                $s = '';
+                if ($pos === '...') {
+                    $s = '...';
+                } elseif (array_key_exists($pos, $matrix[$rIndex])) {
+                    $cell = $matrix[$rIndex][$pos];
+                    if (is_int($cell) || is_float($cell)) {
+                        $s = Formatter::formatNumber($cell, $precision);
+                    } elseif (is_string($cell)) {
+                        $s = "'" . addslashes($cell) . "'";
+                    } elseif (is_bool($cell)) {
+                        $s = $cell ? 'True' : 'False';
+                    } elseif (is_null($cell)) {
+                        $s = 'None';
+                    } else {
+                        $s = (string)$cell;
+                    }
+                }
+                $frow[$i] = $s;
+                $widths[$i] = max($widths[$i], strlen($s));
+            }
+            $formatted[] = $frow;
+        }
+        foreach ($colPositions as $i => $pos) {
+            if ($pos === '...') {
+                $widths[$i] = max($widths[$i], 3);
+            }
+        }
+
+        // Build lines from pre-formatted rows
+        $buildRow = function (array $frow) use ($widths) {
+            $cells = [];
+            foreach ($frow as $i => $s) {
+                $cells[] = str_pad($s, $widths[$i], ' ', STR_PAD_LEFT);
+            }
+            // Add extra space to align columns like earlier tweak
+            return ' [' . implode(', ', $cells) . ']';
+        };
+
+        $lines = [];
+        $headCount = ($rows <= $headRows + $tailRows) ? count($rowIdxs) : $headRows;
+        for ($i = 0; $i < $headCount; $i++) {
+            $lines[] = $buildRow($formatted[$i]);
+        }
+        if ($rows > $headRows + $tailRows) {
+            $lines[] = ' ...';
+        }
+        if ($rows > $headRows + $tailRows) {
+            $total = count($formatted);
+            for ($i = $headCount; $i < $total; $i++) {
+                $lines[] = $buildRow($formatted[$i]);
+            }
+        }
+
+        if (count($lines) === 1) {
+            return '[' . $lines[0] . ']';
+        }
+        return '[' . trim(implode(",\n ", $lines)) . ']';
+    }
 }
