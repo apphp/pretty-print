@@ -56,6 +56,7 @@ class Formatter
                 $s = '';
                 if (array_key_exists($c, $row)) {
                     $cell = $row[$c];
+                    $s = 'Unknown';
                     if (is_int($cell) || is_float($cell)) {
                         $s = self::formatNumber($cell, $precision);
                     } elseif (is_string($cell)) {
@@ -70,8 +71,6 @@ class Formatter
                         $s = 'Object';
                     } elseif (is_resource($cell)) {
                         $s = 'Resource';
-                    } else {
-                        $s = 'Unknown';
                     }
                 }
                 $frow[$c] = $s;
@@ -157,16 +156,21 @@ class Formatter
                     $s = '...';
                 } elseif (array_key_exists($pos, $matrix[$rIndex])) {
                     $cell = $matrix[$rIndex][$pos];
+                    $s = 'Unknown';
                     if (is_int($cell) || is_float($cell)) {
-                        $s = Formatter::formatNumber($cell, $precision);
+                        $s = self::formatNumber($cell, $precision);
                     } elseif (is_string($cell)) {
                         $s = "'" . addslashes($cell) . "'";
                     } elseif (is_bool($cell)) {
                         $s = $cell ? 'True' : 'False';
                     } elseif (is_null($cell)) {
                         $s = 'None';
-                    } else {
-                        $s = (string)$cell;
+                    } elseif (is_array($cell)) {
+                        $s = 'Array';
+                    } elseif (is_object($cell)) {
+                        $s = 'Object';
+                    } elseif (is_resource($cell)) {
+                        $s = 'Resource';
                     }
                 }
                 $frow[$i] = $s;

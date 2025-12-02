@@ -171,11 +171,11 @@ final class FormatterTest extends TestCase
     {
         return [
             'default label tensor with no truncation' => [
-                [[1, 23, 456], [12, 3, []]],
+                [[1, 23, 456], [fopen('php://memory', 'r'), [], (object)[]]],
                 5, 5, 5, 5,
                 'tensor',
                 2,
-                "tensor([\n   [ 1, 23,   456],\n   [12,  3, Array]\n])",
+                "tensor([\n   [       1,    23,    456],\n   [Resource, Array, Object]\n])",
             ],
             'custom label and precision, with truncation' => [
                 [[1, 2, 3], [4, 5, 6], [7, 8, 9.001]],
