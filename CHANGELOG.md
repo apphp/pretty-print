@@ -1,6 +1,8 @@
 0.4.1 / 
  - Enhance `PrettyPrint::formatValue` to handle objects, resources, and unknown types
- - Revise `PrettyPrint` to output top-level strings without quotes.
+ - Revise `PrettyPrint` to output top-level strings without quotes
+ - Refactor `PrettyPrint` to delegate `format2DSummarized` logic to `Formatter`
+ - Revise tests to align with updated string output conventions.
  
 0.4.0 / 2025-11-28
  - Renamed `Helper` to `Validator` and moved formatting logic to new `Formatter` class
