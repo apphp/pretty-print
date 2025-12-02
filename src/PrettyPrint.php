@@ -227,13 +227,14 @@ class PrettyPrint
                         (string)($fmt['label'] ?? 'tensor')
                     );
                 } elseif (Validator::is2D($arg)) {
-                    $parts[] = $this->format2DTorch(
+                    $parts[] = Formatter::format2DTorch(
                         $arg,
                         (int)($fmt['headRows'] ?? 5),
                         (int)($fmt['tailRows'] ?? 5),
                         (int)($fmt['headCols'] ?? 5),
                         (int)($fmt['tailCols'] ?? 5),
-                        (string)($fmt['label'] ?? 'tensor')
+                        (string)($fmt['label'] ?? 'tensor'),
+                        $this->precision
                     );
                 } else {
                     $parts[] = $this->formatForArray($arg);
@@ -359,36 +360,6 @@ class PrettyPrint
         return $label . "([\n " . $joined . "\n])";
     }
 
-    /**
-     * Format a 2D numeric matrix in a PyTorch-like representation with summarization.
-     *
-     * @param array $matrix 2D array of ints/floats.
-     * @param int $headRows Number of head rows to display.
-     * @param int $tailRows Number of tail rows to display.
-     * @param int $headCols Number of head columns to display.
-     * @param int $tailCols Number of tail columns to display.
-     * @param string $label Prefix label used instead of "tensor".
-     * @return string
-     */
-    private function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor'): string
-    {
-        $s = Formatter::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $this->precision);
-        // Replace the very first '[' with 'tensor([['
-        if (strlen($s) > 0 && $s[0] === '[') {
-            $s = $label . "([\n  " . substr($s, 1);
-        } else {
-            return $label . '(' . $s . ')';
-        }
-        // Indent subsequent lines by one extra space to align under the double braket
-        $s = str_replace("\n ", "\n  ", $s);
-        // Remove a trailing comma before the closing bracket if present
-        $s = preg_replace('/,\s*\]$/m', ']', $s);
-        // Replace the final ']' with '])'
-        if (str_ends_with($s, ']')) {
-            $s = substr($s, 0, -1) . "\n])";
-        }
-        return $s;
-    }
 }
 
-// 672/605/499/394==
+// 672/605/499/365==

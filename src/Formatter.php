@@ -104,7 +104,7 @@ class Formatter
      * @param int $tailRows Number of tail rows to display.
      * @param int $headCols Number of head columns to display.
      * @param int $tailCols Number of tail columns to display.
-     * @param int $precision
+     * @param int $precision Number of decimal places to use for floats.
      * @return string
      */
     public static function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, int $precision = 2): string
@@ -209,5 +209,35 @@ class Formatter
             return '[' . $lines[0] . ']';
         }
         return '[' . trim(implode(",\n ", $lines)) . ']';
+    }
+
+    /**
+     * Format a 2D numeric matrix in a PyTorch-like representation with summarization.
+     *
+     * @param array $matrix 2D array of ints/floats.
+     * @param int $headRows Number of head rows to display.
+     * @param int $tailRows Number of tail rows to display.
+     * @param int $headCols Number of head columns to display.
+     * @param int $tailCols Number of tail columns to display.
+     * @param string $label Prefix label used instead of "tensor".
+     * @param int $precision Number of decimal places to use for floats.
+     * @return string
+     */
+    public static function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor', int $precision = 2): string
+    {
+        $s = Formatter::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision);
+        // Replace the very first '[' with 'tensor([['
+        if (strlen($s) > 0 && $s[0] === '[') {
+            $s = $label . "([\n  " . substr($s, 1);
+        }
+        // Indent subsequent lines by one extra space to align under the double braket
+        $s = str_replace("\n ", "\n  ", $s);
+        // Remove a trailing comma before the closing bracket if present
+        $s = preg_replace('/,\s*\]$/m', ']', $s);
+        // Replace the final ']' with '])'
+        if (str_ends_with($s, ']')) {
+            $s = substr($s, 0, -1) . "\n])";
+        }
+        return $s;
     }
 }
