@@ -1,10 +1,11 @@
-0.4.1 / 
+0.4.1 / 2025-12-02 
  - Enhance `PrettyPrint::formatValue` to handle objects, resources, and unknown types
  - Revise `PrettyPrint` to output top-level strings without quotes
  - Refactor `PrettyPrint` to delegate `format2DSummarized` logic to `Formatter`
  - Revise tests to align with updated string output conventions.
  - Refactor `PrettyPrint` to delegate `format2DTorch` logic to `Formatter` and add corresponding tests in `FormatterTest`.
  - Refactor `Formatter` to extract cell formatting logic into `formatCell` for reuse and clarity.
+ - Refactor `PrettyPrint` to delegate `formatForArray` logic to `Formatter` and remove the private method `formatForArray`.
  
 0.4.0 / 2025-11-28
  - Renamed `Helper` to `Validator` and moved formatting logic to new `Formatter` class

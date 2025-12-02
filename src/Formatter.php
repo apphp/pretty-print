@@ -199,7 +199,7 @@ class Formatter
      */
     public static function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor', int $precision = 2): string
     {
-        $s = Formatter::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision);
+        $s = self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision);
         // Replace the very first '[' with 'tensor([['
         if (strlen($s) > 0 && $s[0] === '[') {
             $s = $label . "([\n  " . substr($s, 1);
@@ -213,6 +213,27 @@ class Formatter
             $s = substr($s, 0, -1) . "\n])";
         }
         return $s;
+    }
+
+
+    /**
+     * Generic array-aware formatter producing Python-like representations.
+     *
+     * @param mixed $value Scalar or array value to format.
+     * @param int $precision Number of decimal places to use for floats.
+     * @return string
+     */
+    public static function formatForArray($value, int $precision = 2): string
+    {
+        if (is_array($value)) {
+            if (Validator::is2D($value)) {
+                return self::format2DAligned($value, $precision);
+            }
+            $formattedItems = array_map(fn ($v) => self::formatForArray($v), $value);
+            return '[' . implode(', ', $formattedItems) . ']';
+        }
+
+        return self::formatCell($value, $precision);
     }
 
     /**

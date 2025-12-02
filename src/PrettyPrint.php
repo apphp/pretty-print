@@ -237,7 +237,7 @@ class PrettyPrint
                         $this->precision
                     );
                 } else {
-                    $parts[] = $this->formatForArray($arg);
+                    $parts[] = Formatter::formatForArray($arg, $this->precision);
                 }
             } else {
                 if (is_bool($arg)) {
@@ -266,42 +266,6 @@ class PrettyPrint
     }
 
     // ---- Private helpers ----
-
-    /**
-     * Generic array-aware formatter producing Python-like representations.
-     *
-     * @param mixed $value Scalar or array value to format.
-     * @return string
-     */
-    private function formatForArray($value): string
-    {
-        if (is_array($value)) {
-            if (Validator::is2D($value)) {
-                return Formatter::format2DAligned($value, $this->precision);
-            }
-            $formattedItems = array_map(fn ($v) => $this->formatForArray($v), $value);
-            return '[' . implode(', ', $formattedItems) . ']';
-        }
-        if (is_int($value) || is_float($value)) {
-            return Formatter::formatNumber($value, $this->precision);
-        }
-        if (is_bool($value)) {
-            return $value ? 'True' : 'False';
-        }
-        if (is_null($value)) {
-            return 'None';
-        }
-        if (is_string($value)) {
-            return "'" . addslashes($value) . "'";
-        }
-        if (is_object($value)) {
-            return 'Object';
-        }
-        if (is_resource($value)) {
-            return 'Resource';
-        }
-        return 'Unknown';
-    }
 
     /**
      * Format a 3D numeric tensor in a PyTorch-like multiline representation.
