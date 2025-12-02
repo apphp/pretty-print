@@ -240,24 +240,7 @@ class PrettyPrint
                     $parts[] = Formatter::formatForArray($arg, $this->precision);
                 }
             } else {
-                if (is_bool($arg)) {
-                    $parts[] = $arg ? 'True' : 'False';
-                } elseif (is_null($arg)) {
-                    $parts[] = 'None';
-                } elseif (is_int($arg) || is_float($arg)) {
-                    $parts[] = Formatter::formatNumber($arg, $this->precision);
-                } elseif (is_string($arg)) {
-                    // Top-level strings: print as-is (no quotes)
-                    $parts[] = $arg;
-                } elseif (is_array($arg)) {
-                    $parts[] = 'Array';
-                } elseif (is_object($arg)) {
-                    $parts[] = 'Class';
-                } elseif (is_resource($arg)) {
-                    $parts[] = 'Resource';
-                } else {
-                    $parts[] = 'Unknown';
-                }
+                $parts[] = Formatter::formatCell($arg, $this->precision);
             }
         }
 
@@ -326,4 +309,4 @@ class PrettyPrint
 
 }
 
-// 672/605/499/394==
+// 672/605/499/312==
