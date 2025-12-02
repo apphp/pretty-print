@@ -40,7 +40,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Hello', 123, 4.56);
         $out = ob_get_clean();
-        self::assertSame("'Hello' 123 4.5600\n", $out);
+        self::assertSame("Hello 123 4.5600\n", $out);
     }
 
     #[Test]
@@ -150,7 +150,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Line without newline', ['end' => '']);
         $out = ob_get_clean();
-        self::assertSame("'Line without newline'", $out);
+        self::assertSame('Line without newline', $out);
     }
 
     #[Test]
@@ -161,7 +161,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Named', end: '');
         $out = ob_get_clean();
-        self::assertSame("'Named'", $out);
+        self::assertSame('Named', $out);
     }
 
     #[Test]
@@ -172,7 +172,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Hello', ['start' => "\t", 'end' => '']);
         $out = ob_get_clean();
-        self::assertSame("\t'Hello'", $out);
+        self::assertSame("\tHello", $out);
     }
 
     #[Test]
@@ -183,7 +183,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('World', start: '>>> ', end: '');
         $out = ob_get_clean();
-        self::assertSame(">>> 'World'", $out);
+        self::assertSame('>>> World', $out);
     }
 
     #[Test]
@@ -275,7 +275,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp($arr);
         $out = ob_get_clean();
-        self::assertSame("tensor([\n   ['a', 2],\n   [  3, 4]\n])\n", $out);
+        self::assertSame("tensor([\n   [a, 2],\n   [3, 4]\n])\n", $out);
     }
 
     #[Test]

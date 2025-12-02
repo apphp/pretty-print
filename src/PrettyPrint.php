@@ -227,35 +227,20 @@ class PrettyPrint
                         (string)($fmt['label'] ?? 'tensor')
                     );
                 } elseif (Validator::is2D($arg)) {
-                    $parts[] = $this->format2DTorch(
+                    $parts[] = Formatter::format2DTorch(
                         $arg,
                         (int)($fmt['headRows'] ?? 5),
                         (int)($fmt['tailRows'] ?? 5),
                         (int)($fmt['headCols'] ?? 5),
                         (int)($fmt['tailCols'] ?? 5),
-                        (string)($fmt['label'] ?? 'tensor')
+                        (string)($fmt['label'] ?? 'tensor'),
+                        $this->precision
                     );
                 } else {
-                    $parts[] = $this->formatForArray($arg);
+                    $parts[] = Formatter::formatForArray($arg, $this->precision);
                 }
             } else {
-                if (is_bool($arg)) {
-                    $parts[] = $arg ? 'True' : 'False';
-                } elseif (is_null($arg)) {
-                    $parts[] = 'None';
-                } elseif (is_int($arg) || is_float($arg)) {
-                    $parts[] = Formatter::formatNumber($arg, $this->precision);
-                } elseif (is_string($arg)) {
-                    $parts[] = "'" . addslashes($arg) . "'";
-                } elseif (is_array($arg)) {
-                    $parts[] = 'Array';
-                } elseif (is_object($arg)) {
-                    $parts[] = 'Class';
-                } elseif (is_resource($arg)) {
-                    $parts[] = 'Resource';
-                } else {
-                    $parts[] = 'Unknown';
-                }
+                $parts[] = Formatter::formatCell($arg, $this->precision);
             }
         }
 
@@ -264,148 +249,6 @@ class PrettyPrint
     }
 
     // ---- Private helpers ----
-
-    /**
-     * Format a 2D matrix showing head/tail rows and columns with ellipses in-between.
-     *
-     * @param array $matrix 2D array of ints/floats.
-     * @param int $headRows Number of head rows to display.
-     * @param int $tailRows Number of tail rows to display.
-     * @param int $headCols Number of head columns to display.
-     * @param int $tailCols Number of tail columns to display.
-     * @return string
-     */
-    private function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5): string
-    {
-
-        $rows = count($matrix);
-        $cols = 0;
-        foreach ($matrix as $row) {
-            if (is_array($row)) {
-                $cols = max($cols, count($row));
-            }
-        }
-
-        $rowIdxs = [];
-        if ($rows <= $headRows + $tailRows) {
-            for ($r = 0; $r < $rows; $r++) {
-                $rowIdxs[] = $r;
-            }
-        } else {
-            for ($r = 0; $r < $headRows; $r++) {
-                $rowIdxs[] = $r;
-            }
-            for ($r = $rows - $tailRows; $r < $rows; $r++) {
-                $rowIdxs[] = $r;
-            }
-        }
-
-        $colPositions = [];
-        if ($cols <= $headCols + $tailCols) {
-            for ($c = 0; $c < $cols; $c++) {
-                $colPositions[] = $c;
-            }
-        } else {
-            for ($c = 0; $c < $headCols; $c++) {
-                $colPositions[] = $c;
-            }
-            $colPositions[] = '...';
-            for ($c = $cols - $tailCols; $c < $cols; $c++) {
-                $colPositions[] = $c;
-            }
-        }
-
-        // Pre-format selected cells and compute widths in one pass (support numbers and strings)
-        $widths = array_fill(0, count($colPositions), 0);
-        $formatted = [];
-        foreach ($rowIdxs as $rIndex) {
-            $frow = [];
-            foreach ($colPositions as $i => $pos) {
-                $s = '';
-                if ($pos === '...') {
-                    $s = '...';
-                } elseif (array_key_exists($pos, $matrix[$rIndex])) {
-                    $cell = $matrix[$rIndex][$pos];
-                    if (is_int($cell) || is_float($cell)) {
-                        $s = Formatter::formatNumber($cell, $this->precision);
-                    } elseif (is_string($cell)) {
-                        $s = "'" . addslashes($cell) . "'";
-                    } elseif (is_bool($cell)) {
-                        $s = $cell ? 'True' : 'False';
-                    } elseif (is_null($cell)) {
-                        $s = 'None';
-                    } else {
-                        $s = (string)$cell;
-                    }
-                }
-                $frow[$i] = $s;
-                $widths[$i] = max($widths[$i], strlen($s));
-            }
-            $formatted[] = $frow;
-        }
-        foreach ($colPositions as $i => $pos) {
-            if ($pos === '...') {
-                $widths[$i] = max($widths[$i], 3);
-            }
-        }
-
-        // Build lines from pre-formatted rows
-        $buildRow = function (array $frow) use ($widths) {
-            $cells = [];
-            foreach ($frow as $i => $s) {
-                $cells[] = str_pad($s, $widths[$i], ' ', STR_PAD_LEFT);
-            }
-            // Add extra space to align columns like earlier tweak
-            return ' [' . implode(', ', $cells) . ']';
-        };
-
-        $lines = [];
-        $headCount = ($rows <= $headRows + $tailRows) ? count($rowIdxs) : $headRows;
-        for ($i = 0; $i < $headCount; $i++) {
-            $lines[] = $buildRow($formatted[$i]);
-        }
-        if ($rows > $headRows + $tailRows) {
-            $lines[] = ' ...';
-        }
-        if ($rows > $headRows + $tailRows) {
-            $total = count($formatted);
-            for ($i = $headCount; $i < $total; $i++) {
-                $lines[] = $buildRow($formatted[$i]);
-            }
-        }
-
-        if (count($lines) === 1) {
-            return '[' . $lines[0] . ']';
-        }
-        return '[' . trim(implode(",\n ", $lines)) . ']';
-    }
-
-    /**
-     * Generic array-aware formatter producing Python-like representations.
-     *
-     * @param mixed $value Scalar or array value to format.
-     * @return string
-     */
-    private function formatForArray($value): string
-    {
-        if (is_array($value)) {
-            if (Validator::is2D($value)) {
-                return Formatter::format2DAligned($value, $this->precision);
-            }
-            $formattedItems = array_map(fn ($v) => $this->formatForArray($v), $value);
-            return '[' . implode(', ', $formattedItems) . ']';
-        }
-        if (is_int($value) || is_float($value)) {
-            return Formatter::formatNumber($value, $this->precision);
-        }
-        if (is_bool($value)) {
-            return $value ? 'True' : 'False';
-        }
-        if (is_null($value)) {
-            return 'None';
-        }
-        return "'" . addslashes((string)$value) . "'";
-    }
 
     /**
      * Format a 3D numeric tensor in a PyTorch-like multiline representation.
@@ -441,7 +284,7 @@ class PrettyPrint
 
         $blocks = [];
         $format2d = function ($matrix) use ($headRows, $tailRows, $headCols, $tailCols) {
-            return $this->format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols);
+            return Formatter::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $this->precision);
         };
 
         $limitHead = ($B <= $headB + $tailB) ? count($idxs) : $headB;
@@ -463,37 +306,6 @@ class PrettyPrint
         $joined = implode(",\n\n ", $blocks);
         return $label . "([\n " . $joined . "\n])";
     }
-
-    /**
-     * Format a 2D numeric matrix in a PyTorch-like representation with summarization.
-     *
-     * @param array $matrix 2D array of ints/floats.
-     * @param int $headRows Number of head rows to display.
-     * @param int $tailRows Number of tail rows to display.
-     * @param int $headCols Number of head columns to display.
-     * @param int $tailCols Number of tail columns to display.
-     * @param string $label Prefix label used instead of "tensor".
-     * @return string
-     */
-    private function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor'): string
-    {
-        $s = $this->format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols);
-        // Replace the very first '[' with 'tensor([['
-        if (strlen($s) > 0 && $s[0] === '[') {
-            $s = $label . "([\n  " . substr($s, 1);
-        } else {
-            return $label . '(' . $s . ')';
-        }
-        // Indent subsequent lines by one extra space to align under the double braket
-        $s = str_replace("\n ", "\n  ", $s);
-        // Remove a trailing comma before the closing bracket if present
-        $s = preg_replace('/,\s*\]$/m', ']', $s);
-        // Replace the final ']' with '])'
-        if (str_ends_with($s, ']')) {
-            $s = substr($s, 0, -1) . "\n])";
-        }
-        return $s;
-    }
 }
 
-// 672/605/499/==
+// 672/605/499/312==
