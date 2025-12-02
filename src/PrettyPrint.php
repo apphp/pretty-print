@@ -246,7 +246,8 @@ class PrettyPrint
                 } elseif (is_int($arg) || is_float($arg)) {
                     $parts[] = Formatter::formatNumber($arg, $this->precision);
                 } elseif (is_string($arg)) {
-                    $parts[] = "'" . addslashes($arg) . "'";
+                    // Top-level strings: print as-is (no quotes)
+                    $parts[] = $arg;
                 } elseif (is_array($arg)) {
                     $parts[] = 'Array';
                 } elseif (is_object($arg)) {
