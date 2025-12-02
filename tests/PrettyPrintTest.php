@@ -150,7 +150,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Line without newline', ['end' => '']);
         $out = ob_get_clean();
-        self::assertSame("Line without newline", $out);
+        self::assertSame('Line without newline', $out);
     }
 
     #[Test]
@@ -161,7 +161,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Named', end: '');
         $out = ob_get_clean();
-        self::assertSame("Named", $out);
+        self::assertSame('Named', $out);
     }
 
     #[Test]
@@ -183,7 +183,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('World', start: '>>> ', end: '');
         $out = ob_get_clean();
-        self::assertSame(">>> World", $out);
+        self::assertSame('>>> World', $out);
     }
 
     #[Test]

@@ -242,7 +242,8 @@ class Formatter
      * @param int $precision
      * @return string
      */
-    public static function formatCell(mixed $cell, int $precision): string {
+    public static function formatCell(mixed $cell, int $precision): string
+    {
         $s = 'Unknown';
         if (is_int($cell) || is_float($cell)) {
             $s = self::formatNumber($cell, $precision);

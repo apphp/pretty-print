@@ -306,7 +306,6 @@ class PrettyPrint
         $joined = implode(",\n\n ", $blocks);
         return $label . "([\n " . $joined . "\n])";
     }
-
 }
 
 // 672/605/499/312==
