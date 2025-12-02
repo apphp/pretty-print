@@ -404,7 +404,16 @@ class PrettyPrint
         if (is_null($value)) {
             return 'None';
         }
-        return "'" . addslashes((string)$value) . "'";
+        if (is_string($value)) {
+            return "'" . addslashes($value) . "'";
+        }
+        if (is_object($value)) {
+            return 'Object';
+        }
+        if (is_resource($value)) {
+            return 'Resource';
+        }
+        return 'Unknown';
     }
 
     /**
