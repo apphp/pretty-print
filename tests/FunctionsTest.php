@@ -9,6 +9,8 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\CoversFunction;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
 
 #[Group('prettyprint')]
 #[CoversFunction('pprint')]
@@ -34,5 +36,15 @@ final class FunctionsTest extends TestCase
         pp(1, 2, 3);
         $out = ob_get_clean();
         self::assertSame("1 2 3\n", $out);
+    }
+
+    #[Test]
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
+    #[TestDox('global function ppd prints output (no exit in test env)')]
+    public function ppdPrintsThenExits(): void
+    {
+        $this->expectOutputString("hello\n");
+        ppd('hello');
     }
 }

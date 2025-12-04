@@ -22,6 +22,15 @@ class Env
         return (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
     }
 
+    /**
+     * Check if the application is running in test mode.
+     * @return bool
+     */
+    public static function isTest(): bool
+    {
+        return (PHP_SAPI === 'cli' && getenv('APP_ENV') === 'test');
+    }
+
     public static function setCliOverride(?bool $value): void
     {
         self::$cliOverride = $value;

@@ -33,17 +33,38 @@ final class EnvTest extends TestCase
     #[TestDox('setCliOverride() forces isCli() result and can be reset')]
     public function testSetCliOverrideForcesAndResets(): void
     {
-        // Force non-CLI
         Env::setCliOverride(false);
         self::assertFalse(Env::isCli());
-
-        // Force CLI
         Env::setCliOverride(true);
         self::assertTrue(Env::isCli());
-
-        // Reset to auto-detect
         Env::setCliOverride(null);
         $expected = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
         self::assertSame($expected, Env::isCli());
+    }
+
+    #[Test]
+    #[TestDox('isTest() returns true when APP_ENV=test under CLI')]
+    public function testIsTestTrueWhenAppEnvTest(): void
+    {
+        $prev = getenv('APP_ENV');
+        try {
+            putenv('APP_ENV=test');
+            self::assertSame(PHP_SAPI === 'cli', Env::isTest());
+        } finally {
+            putenv('APP_ENV' . ($prev === false ? '' : '=' . $prev));
+        }
+    }
+
+    #[Test]
+    #[TestDox('isTest() returns false when APP_ENV is not test')]
+    public function testIsTestFalseWhenAppEnvNotTest(): void
+    {
+        $prev = getenv('APP_ENV');
+        try {
+            putenv('APP_ENV=dev');
+            self::assertFalse(Env::isTest());
+        } finally {
+            putenv('APP_ENV' . ($prev === false ? '' : '=' . $prev));
+        }
     }
 }
