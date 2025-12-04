@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+namespace Apphp\PrettyPrint\Tests;
 
 use Apphp\PrettyPrint\Env;
 use PHPUnit\Framework\Attributes\CoversClass;

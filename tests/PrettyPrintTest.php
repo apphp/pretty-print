@@ -364,7 +364,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp(...$args);
         $out = ob_get_clean();
-        $expected = implode(' ', array_map(static fn($n) => (string)$n, range(1, 32))) . "\n";
+        $expected = implode(' ', array_map(static fn ($n) => (string)$n, range(1, 32))) . "\n";
         self::assertSame($expected, $out);
     }
 
