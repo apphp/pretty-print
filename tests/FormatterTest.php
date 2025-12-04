@@ -206,7 +206,6 @@ final class FormatterTest extends TestCase
                 "tensor([\n  [[1, 2],\n   [3, 4]],\n\n  [[5, 6],\n   [7, 8]]\n])",
             ],
             'block ellipsis with inner 2D ellipses' => [
-                // 3D: 3 blocks so headB=1, tailB=1 yields a middle ellipsis
                 [
                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
@@ -226,5 +225,44 @@ final class FormatterTest extends TestCase
     public function testFormat3DTorch(array $tensor3d, int $headB, int $tailB, int $headRows, int $tailRows, int $headCols, int $tailCols, string $label, int $precision, string $expected): void
     {
         self::assertSame($expected, Formatter::format3DTorch($tensor3d, $headB, $tailB, $headRows, $tailRows, $headCols, $tailCols, $label, $precision));
+    }
+
+    public static function formatForArrayProvider(): array
+    {
+        return [
+            'empty array' => [
+                [],
+                2,
+                '[]',
+            ],
+            '1D mixed scalars with precision for floats' => [
+                [1, "a'b", true, null, 1.2],
+                2,
+                "[1, a'b, True, None, 1.20]",
+            ],
+            'nested non-2D arrays recurse' => [
+                [[1, 2], 3, [4, [5.5]]],
+                1,
+                '[[1, 2], 3, [4, [5.50]]]',
+            ],
+            '2D numeric uses aligned formatting' => [
+                [[1, 23], [3, 4]],
+                2,
+                "[[1, 23],\n [3,  4]]",
+            ],
+            '2D with mixed types falls back to recursive array formatting (not 2D)' => [
+                [["a'b", false, (object)[]], [fopen('php://memory', 'r')]],
+                2,
+                "[[a'b, False, Object], [Resource]]",
+            ],
+        ];
+    }
+
+    #[Test]
+    #[TestDox('formatForArray formats arrays recursively; 2D arrays use aligned formatting; scalars via formatCell')]
+    #[DataProvider('formatForArrayProvider')]
+    public function testFormatForArray(mixed $value, int $precision, string $expected): void
+    {
+        self::assertSame($expected, Formatter::formatForArray($value, $precision));
     }
 }
