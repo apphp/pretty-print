@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Apphp\PrettyPrint\Tests;
 
 use Apphp\PrettyPrint\Formatter;
+use Apphp\PrettyPrint\Env;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -264,5 +265,29 @@ final class FormatterTest extends TestCase
     public function testFormatForArray(mixed $value, int $precision, string $expected): void
     {
         self::assertSame($expected, Formatter::formatForArray($value, $precision));
+    }
+
+    #[Test]
+    #[TestDox('formatCell escapes strings with addslashes() when not CLI (web context)')]
+    public function testFormatCellEscapesInWebContext(): void
+    {
+        Env::setCliOverride(false);
+        try {
+            self::assertSame("a\\'b", Formatter::formatCell("a'b", 2));
+        } finally {
+            Env::setCliOverride(null);
+        }
+    }
+
+    #[Test]
+    #[TestDox('formatCell returns raw strings in CLI context')]
+    public function testFormatCellRawInCliContext(): void
+    {
+        Env::setCliOverride(true);
+        try {
+            self::assertSame("a'b", Formatter::formatCell("a'b", 2));
+        } finally {
+            Env::setCliOverride(null);
+        }
     }
 }

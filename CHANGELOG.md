@@ -1,6 +1,8 @@
 0.4.2 / 
  - Refactor `PrettyPrint` to delegate `format3DTorch` logic to `Formatter` for consistency
  - Add and update tests in `FormatterTest`
+ - Refactor `Formatter` and `PrettyPrint` to use `Env::isCli()` for CLI detection
+ - introduce `Env` utility class with tests; update `FormatterTest` to validate new behavior
 
 0.4.1 / 2025-12-02 
  - Enhance `PrettyPrint::formatValue` to handle objects, resources, and unknown types

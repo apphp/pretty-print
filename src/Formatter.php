@@ -248,7 +248,7 @@ class Formatter
         if (is_int($cell) || is_float($cell)) {
             $s = self::formatNumber($cell, $precision);
         } elseif (is_string($cell)) {
-            $isCli = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
+            $isCli = Env::isCli();
             if ($isCli) {
                 $s = $cell;
             } else {

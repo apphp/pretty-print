@@ -135,7 +135,7 @@ class PrettyPrint
         }
 
         // Auto-wrap with <pre> for web (non-CLI) usage
-        $isCli = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
+        $isCli = Env::isCli();
         if (!$isCli) {
             $start = '<pre>' . $start;
             $end = $end . '</pre>';

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Apphp\PrettyPrint\Tests;
 
 use Apphp\PrettyPrint\PrettyPrint;
+use Apphp\PrettyPrint\Env;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
@@ -352,5 +353,62 @@ final class PrettyPrintTest extends TestCase
         $pp('Label', [1, 2], [3, 4]);
         $out = ob_get_clean();
         self::assertSame("Label\n[[1, 2],\n [3, 4]]\n", $out);
+    }
+
+    #[Test]
+    #[TestDox('limits the number of variadic arguments to MAX_ARGS (32)')]
+    public function limitsMaxArgs(): void
+    {
+        $pp = new PrettyPrint();
+        $args = range(1, 40);
+        ob_start();
+        $pp(...$args);
+        $out = ob_get_clean();
+        $expected = implode(' ', array_map(static fn($n) => (string)$n, range(1, 32))) . "\n";
+        self::assertSame($expected, $out);
+    }
+
+    #[Test]
+    #[TestDox('removes unknown named arguments so they do not print as stray scalars')]
+    public function unknownNamedArgsAreRemoved(): void
+    {
+        $pp = new PrettyPrint();
+        ob_start();
+        // foo and baz are unknown named args and should be stripped
+        $pp('Hello', foo: 'bar', baz: 123);
+        $out = ob_get_clean();
+        self::assertSame("Hello\n", $out);
+    }
+
+    #[Test]
+    #[TestDox('auto-wraps output with <pre>...</pre> in non-CLI (web) context')]
+    public function autoWrapsPreInWebContext(): void
+    {
+        $pp = new PrettyPrint();
+        Env::setCliOverride(false);
+        try {
+            ob_start();
+            $pp('Hello', end: '');
+            $out = ob_get_clean();
+            self::assertSame('<pre>Hello</pre>', $out);
+        } finally {
+            Env::setCliOverride(null);
+        }
+    }
+
+    #[Test]
+    #[TestDox('does not wrap with <pre> in CLI context')]
+    public function noPreWrapInCliContext(): void
+    {
+        $pp = new PrettyPrint();
+        Env::setCliOverride(true);
+        try {
+            ob_start();
+            $pp('Hello', end: '');
+            $out = ob_get_clean();
+            self::assertSame('Hello', $out);
+        } finally {
+            Env::setCliOverride(null);
+        }
     }
 }
