@@ -160,7 +160,7 @@ class PrettyPrint
 
         // Label + single 3D tensor
         if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && Validator::is3D($args[1])) {
-            $out = $this->format3DTorch(
+            $out = Formatter::format3DTorch(
                 $args[1],
                 (int)($fmt['headB'] ?? 5),
                 (int)($fmt['tailB'] ?? 5),
@@ -168,7 +168,8 @@ class PrettyPrint
                 (int)($fmt['tailRows'] ?? 5),
                 (int)($fmt['headCols'] ?? 5),
                 (int)($fmt['tailCols'] ?? 5),
-                (string)($fmt['label'] ?? 'tensor')
+                (string)($fmt['label'] ?? 'tensor'),
+                $this->precision
             );
             echo $start . $out . $end;
             $this->precision = $prevPrecision;
@@ -216,7 +217,7 @@ class PrettyPrint
         foreach ($args as $arg) {
             if (is_array($arg)) {
                 if (Validator::is3D($arg)) {
-                    $parts[] = $this->format3DTorch(
+                    $parts[] = Formatter::format3DTorch(
                         $arg,
                         (int)($fmt['headB'] ?? 5),
                         (int)($fmt['tailB'] ?? 5),
@@ -224,7 +225,8 @@ class PrettyPrint
                         (int)($fmt['tailRows'] ?? 5),
                         (int)($fmt['headCols'] ?? 5),
                         (int)($fmt['tailCols'] ?? 5),
-                        (string)($fmt['label'] ?? 'tensor')
+                        (string)($fmt['label'] ?? 'tensor'),
+                        $this->precision
                     );
                 } elseif (Validator::is2D($arg)) {
                     $parts[] = Formatter::format2DTorch(
@@ -247,65 +249,6 @@ class PrettyPrint
         echo $start . implode(' ', $parts) . $end;
         $this->precision = $prevPrecision;
     }
-
-    // ---- Private helpers ----
-
-    /**
-     * Format a 3D numeric tensor in a PyTorch-like multiline representation.
-     *
-     * @param array $tensor3d 3D array of ints/floats.
-     * @param int $headB Number of head 2D slices to display.
-     * @param int $tailB Number of tail 2D slices to display.
-     * @param int $headRows Number of head rows per 2D slice.
-     * @param int $tailRows Number of tail rows per 2D slice.
-     * @param int $headCols Number of head columns per 2D slice.
-     * @param int $tailCols Number of tail columns per 2D slice.
-     * @param string $label Prefix label used instead of "tensor".
-     * @return string
-     */
-    private function format3DTorch(array $tensor3d, int $headB = 5, int $tailB = 5, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor'): string
-    {
-        $B = count($tensor3d);
-        $idxs = [];
-        $useBEllipsis = false;
-        if ($B <= $headB + $tailB) {
-            for ($i = 0; $i < $B; $i++) {
-                $idxs[] = $i;
-            }
-        } else {
-            for ($i = 0; $i < $headB; $i++) {
-                $idxs[] = $i;
-            }
-            $useBEllipsis = true;
-            for ($i = $B - $tailB; $i < $B; $i++) {
-                $idxs[] = $i;
-            }
-        }
-
-        $blocks = [];
-        $format2d = function ($matrix) use ($headRows, $tailRows, $headCols, $tailCols) {
-            return Formatter::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $this->precision);
-        };
-
-        $limitHead = ($B <= $headB + $tailB) ? count($idxs) : $headB;
-        for ($i = 0; $i < $limitHead; $i++) {
-            $formatted2d = $format2d($tensor3d[$idxs[$i]]);
-            // Indent entire block by a single space efficiently
-            $blocks[] = ' ' . str_replace("\n", "\n ", $formatted2d);
-        }
-        if ($useBEllipsis) {
-            $blocks[] = ' ...';
-        }
-        if ($useBEllipsis) {
-            for ($i = $limitHead; $i < count($idxs); $i++) {
-                $formatted2d = $format2d($tensor3d[$idxs[$i]]);
-                $blocks[] = ' ' . str_replace("\n", "\n ", $formatted2d);
-            }
-        }
-
-        $joined = implode(",\n\n ", $blocks);
-        return $label . "([\n " . $joined . "\n])";
-    }
 }
 
-// 672/605/499/312==
+// 672/605/499/312/252==

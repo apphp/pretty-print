@@ -194,4 +194,37 @@ final class FormatterTest extends TestCase
     {
         self::assertSame($expected, Formatter::format2DTorch($matrix, $headRows, $tailRows, $headCols, $tailCols, $label, $precision));
     }
+
+    public static function format3DTorchProvider(): array
+    {
+        return [
+            'two 2x2 blocks, no truncation' => [
+                [[[1, 2], [3, 4]], [[5, 6], [7, 8]]],
+                5, 5, 5, 5, 5, 5,
+                'tensor',
+                2,
+                "tensor([\n  [[1, 2],\n   [3, 4]],\n\n  [[5, 6],\n   [7, 8]]\n])",
+            ],
+            'block ellipsis with inner 2D ellipses' => [
+                // 3D: 3 blocks so headB=1, tailB=1 yields a middle ellipsis
+                [
+                    [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                    [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                    [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                ],
+                1, 1, 1, 1, 1, 1,
+                'tensor',
+                2,
+                "tensor([\n  [[1, ..., 3],\n   ...,\n  [7, ..., 9]],\n\n  ...,\n\n  [[1, ..., 3],\n   ...,\n  [7, ..., 9]]\n])",
+            ],
+        ];
+    }
+
+    #[Test]
+    #[TestDox('format3DTorch wraps multiple 2D blocks with proper spacing, supports block ellipsis and inner 2D summarization')]
+    #[DataProvider('format3DTorchProvider')]
+    public function testFormat3DTorch(array $tensor3d, int $headB, int $tailB, int $headRows, int $tailRows, int $headCols, int $tailCols, string $label, int $precision, string $expected): void
+    {
+        self::assertSame($expected, Formatter::format3DTorch($tensor3d, $headB, $tailB, $headRows, $tailRows, $headCols, $tailCols, $label, $precision));
+    }
 }

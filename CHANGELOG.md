@@ -1,3 +1,7 @@
+0.4.2 / 
+ - Refactor `PrettyPrint` to delegate `format3DTorch` logic to `Formatter` for consistency
+ - Add and update tests in `FormatterTest`
+
 0.4.1 / 2025-12-02 
  - Enhance `PrettyPrint::formatValue` to handle objects, resources, and unknown types
  - Revise `PrettyPrint` to output top-level strings without quotes
