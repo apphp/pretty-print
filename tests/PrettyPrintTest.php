@@ -411,4 +411,15 @@ final class PrettyPrintTest extends TestCase
             Env::setCliOverride(null);
         }
     }
+
+    #[Test]
+    #[TestDox('invokes PrettyPrint via explicit __invoke() method call')]
+    public function invokeMethodDirectly(): void
+    {
+        $pp = new PrettyPrint();
+        ob_start();
+        $pp->__invoke('Direct');
+        $out = ob_get_clean();
+        self::assertSame("Direct\n", $out);
+    }
 }
