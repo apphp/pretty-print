@@ -62,8 +62,8 @@ pprint($matrix, label: 'arr');
 2D tensor-style formatting with summarization
 ```php
 $matrix = [
-    [ 1,  2,  3,  4,  5],
-    [ 6,  7,  8,  9, 10],
+    [1, 2, 3, 4, 5],
+    [6, 7, 8, 9, 10],
     [11, 12, 13, 14, 15],
     [16, 17, 18, 19, 20],
     [21, 22, 23, 24, 25],
@@ -80,9 +80,9 @@ pprint($matrix, headRows: 2, tailRows: 1, headCols: 2, tailCols: 2);
 3D tensor with head/tail blocks (PyTorch-like)
 ```php
 $tensor3d = [
-    [[1,2,3],[4,5,6]],
-    [[7,8,9],[10,11,12]],
-    [[13,14,15],[16,17,18]],
+    [[1, 2, 3],[4, 5, 6]],
+    [[7, 8, 9],[10, 11, 12]],
+    [[13, 14, 15],[16, 17, 18]],
 ];
 pprint($tensor3d, headB: 1, tailB: 1, headRows: 1, tailRows: 1, headCols: 1, tailCols: 1);
 // tensor([
@@ -135,9 +135,9 @@ $pp = new PrettyPrint();
 $pp('Hello', 42);       // same as pprint('Hello', 42)
 
 $tensor3d = [
-    [[1,2,3],[4,5,6]],
-    [[7,8,9],[10,11,12]],
-    [[13,14,15],[16,17,18]],
+    [[1, 2, 3],[4, 5, 6]],
+    [[7, 8, 9],[10, 11, 12]],
+    [[13, 14, 15],[16, 17, 18]],
 ];
 
 // Named options are supported
