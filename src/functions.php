@@ -34,6 +34,11 @@ namespace {
     function ppd(...$args): void
     {
         pprint(...$args);
+
+        if (PHP_SAPI === 'cli' && getenv('APP_ENV') === 'test') {
+            return;
+        }
+
         exit;
     }
 }

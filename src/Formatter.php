@@ -248,7 +248,7 @@ class Formatter
         if (is_int($cell) || is_float($cell)) {
             $s = self::formatNumber($cell, $precision);
         } elseif (is_string($cell)) {
-            $isCli = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
+            $isCli = Env::isCli();
             if ($isCli) {
                 $s = $cell;
             } else {
@@ -266,5 +266,63 @@ class Formatter
             $s = 'Resource';
         }
         return $s;
+    }
+
+    /**
+     * Format a 3D numeric tensor in a PyTorch-like multiline representation.
+     *
+     * @param array $tensor3d 3D array of ints/floats.
+     * @param int $headB Number of head 2D slices to display.
+     * @param int $tailB Number of tail 2D slices to display.
+     * @param int $headRows Number of head rows per 2D slice.
+     * @param int $tailRows Number of tail rows per 2D slice.
+     * @param int $headCols Number of head columns per 2D slice.
+     * @param int $tailCols Number of tail columns per 2D slice.
+     * @param string $label Prefix label used instead of "tensor".
+     * @param int $precision
+     * @return string
+     */
+    public static function format3DTorch(array $tensor3d, int $headB = 5, int $tailB = 5, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor', int $precision = 2): string
+    {
+        $B = count($tensor3d);
+        $idxs = [];
+        $useBEllipsis = false;
+        if ($B <= $headB + $tailB) {
+            for ($i = 0; $i < $B; $i++) {
+                $idxs[] = $i;
+            }
+        } else {
+            for ($i = 0; $i < $headB; $i++) {
+                $idxs[] = $i;
+            }
+            $useBEllipsis = true;
+            for ($i = $B - $tailB; $i < $B; $i++) {
+                $idxs[] = $i;
+            }
+        }
+
+        $blocks = [];
+        $format2d = function ($matrix) use ($headRows, $tailRows, $headCols, $tailCols, $precision) {
+            return self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision);
+        };
+
+        $limitHead = ($B <= $headB + $tailB) ? count($idxs) : $headB;
+        for ($i = 0; $i < $limitHead; $i++) {
+            $formatted2d = $format2d($tensor3d[$idxs[$i]]);
+            // Indent entire block by a single space efficiently
+            $blocks[] = ' ' . str_replace("\n", "\n ", $formatted2d);
+        }
+        if ($useBEllipsis) {
+            $blocks[] = ' ...';
+        }
+        if ($useBEllipsis) {
+            for ($i = $limitHead; $i < count($idxs); $i++) {
+                $formatted2d = $format2d($tensor3d[$idxs[$i]]);
+                $blocks[] = ' ' . str_replace("\n", "\n ", $formatted2d);
+            }
+        }
+
+        $joined = implode(",\n\n ", $blocks);
+        return $label . "([\n " . $joined . "\n])";
     }
 }

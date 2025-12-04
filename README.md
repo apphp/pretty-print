@@ -110,6 +110,15 @@ pprint('Add 2 lines', end: "\n\n");
 pprint('Tabbed', start: "\t");
 // Combine with end to avoid newline
 pprint('Prompted', start: '>>> ', end: '');
+
+// Custom separator between multiple values (default is a single space " ")
+pprint('A', 'B', 'C', sep: ', ', end: '');
+// A, B, C
+
+// Separator can also be provided via trailing options array
+pprint('X', 'Y', ['sep' => "\n", 'end' => '']);
+// X
+// Y
 ```
 
 Print and then exit the script
@@ -159,6 +168,7 @@ Notes:
 
 - **start**: string. Prefix printed before the content. Example: `pprint('Hello', ['start' => "\t"])`.
 - **end**: string. Line terminator, default to new line. Example: `pprint('no newline', ['end' => '']);`
+- **sep**: string. Separator between multiple default-formatted arguments. Default is a single space `' '`. Examples: `pprint('A','B','C', sep: ', ', end: '')` or `pprint('X','Y', ['sep' => "\n", 'end' => ''])`.
 - **label**: string. Prefix label for 2D/3D formatted arrays, default `tensor`. Example: `pprint($m, ['label' => 'arr'])`.
 - **precision**: int. Number of digits after the decimal point for floats. Example: `pprint(3.14159, precision: 2)` prints `3.14`.
 - **headB / tailB**: ints. Number of head/tail 2D blocks shown for 3D tensors.
@@ -171,6 +181,7 @@ All options can be passed as:
 
 #### Defaults
 - **label**: `tensor`
+- **sep**: `' '`
 - **precision**: `4`
 - **headB / tailB**: `5`
 - **headRows / tailRows**: `5`

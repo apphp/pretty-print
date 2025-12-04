@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Apphp\PrettyPrint\Tests;
 
 use Apphp\PrettyPrint\Formatter;
+use Apphp\PrettyPrint\Env;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -193,5 +194,100 @@ final class FormatterTest extends TestCase
     public function testFormat2DTorch(array $matrix, int $headRows, int $tailRows, int $headCols, int $tailCols, string $label, int $precision, string $expected): void
     {
         self::assertSame($expected, Formatter::format2DTorch($matrix, $headRows, $tailRows, $headCols, $tailCols, $label, $precision));
+    }
+
+    public static function format3DTorchProvider(): array
+    {
+        return [
+            'two 2x2 blocks, no truncation' => [
+                [[[1, 2], [3, 4]], [[5, 6], [7, 8]]],
+                5, 5, 5, 5, 5, 5,
+                'tensor',
+                2,
+                "tensor([\n  [[1, 2],\n   [3, 4]],\n\n  [[5, 6],\n   [7, 8]]\n])",
+            ],
+            'block ellipsis with inner 2D ellipses' => [
+                [
+                    [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                    [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                    [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                ],
+                1, 1, 1, 1, 1, 1,
+                'tensor',
+                2,
+                "tensor([\n  [[1, ..., 3],\n   ...,\n  [7, ..., 9]],\n\n  ...,\n\n  [[1, ..., 3],\n   ...,\n  [7, ..., 9]]\n])",
+            ],
+        ];
+    }
+
+    #[Test]
+    #[TestDox('format3DTorch wraps multiple 2D blocks with proper spacing, supports block ellipsis and inner 2D summarization')]
+    #[DataProvider('format3DTorchProvider')]
+    public function testFormat3DTorch(array $tensor3d, int $headB, int $tailB, int $headRows, int $tailRows, int $headCols, int $tailCols, string $label, int $precision, string $expected): void
+    {
+        self::assertSame($expected, Formatter::format3DTorch($tensor3d, $headB, $tailB, $headRows, $tailRows, $headCols, $tailCols, $label, $precision));
+    }
+
+    public static function formatForArrayProvider(): array
+    {
+        return [
+            'empty array' => [
+                [],
+                2,
+                '[]',
+            ],
+            '1D mixed scalars with precision for floats' => [
+                [1, "a'b", true, null, 1.2],
+                2,
+                "[1, a'b, True, None, 1.20]",
+            ],
+            'nested non-2D arrays recurse' => [
+                [[1, 2], 3, [4, [5.5]]],
+                1,
+                '[[1, 2], 3, [4, [5.50]]]',
+            ],
+            '2D numeric uses aligned formatting' => [
+                [[1, 23], [3, 4]],
+                2,
+                "[[1, 23],\n [3,  4]]",
+            ],
+            '2D with mixed types falls back to recursive array formatting (not 2D)' => [
+                [["a'b", false, (object)[]], [fopen('php://memory', 'r')]],
+                2,
+                "[[a'b, False, Object], [Resource]]",
+            ],
+        ];
+    }
+
+    #[Test]
+    #[TestDox('formatForArray formats arrays recursively; 2D arrays use aligned formatting; scalars via formatCell')]
+    #[DataProvider('formatForArrayProvider')]
+    public function testFormatForArray(mixed $value, int $precision, string $expected): void
+    {
+        self::assertSame($expected, Formatter::formatForArray($value, $precision));
+    }
+
+    #[Test]
+    #[TestDox('formatCell escapes strings with addslashes() when not CLI (web context)')]
+    public function testFormatCellEscapesInWebContext(): void
+    {
+        Env::setCliOverride(false);
+        try {
+            self::assertSame("a\\'b", Formatter::formatCell("a'b", 2));
+        } finally {
+            Env::setCliOverride(null);
+        }
+    }
+
+    #[Test]
+    #[TestDox('formatCell returns raw strings in CLI context')]
+    public function testFormatCellRawInCliContext(): void
+    {
+        Env::setCliOverride(true);
+        try {
+            self::assertSame("a'b", Formatter::formatCell("a'b", 2));
+        } finally {
+            Env::setCliOverride(null);
+        }
     }
 }
