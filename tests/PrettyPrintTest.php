@@ -45,6 +45,28 @@ final class PrettyPrintTest extends TestCase
     }
 
     #[Test]
+    #[TestDox('supports custom separator via named argument (sep)')]
+    public function customSeparatorNamed(): void
+    {
+        $pp = new PrettyPrint();
+        ob_start();
+        $pp('A', 'B', 'C', sep: ', ', end: '');
+        $out = ob_get_clean();
+        self::assertSame('A, B, C', $out);
+    }
+
+    #[Test]
+    #[TestDox('supports custom separator via trailing options array (sep)')]
+    public function customSeparatorTrailingArray(): void
+    {
+        $pp = new PrettyPrint();
+        ob_start();
+        $pp('X', 'Y', ['sep' => "\n", 'end' => '']);
+        $out = ob_get_clean();
+        self::assertSame("X\nY", $out);
+    }
+
+    #[Test]
     #[TestDox('accepts named formatting args for 2D (headRows/tailRows/headCols/tailCols)')]
     public function namedFormattingOptions2D(): void
     {

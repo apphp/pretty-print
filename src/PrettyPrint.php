@@ -68,6 +68,7 @@ class PrettyPrint
     {
         $end = PHP_EOL;
         $start = '';
+        $sep = ' ';
 
         // Named args for simple options
         if (isset($args['end'])) {
@@ -77,6 +78,10 @@ class PrettyPrint
         if (isset($args['start'])) {
             $start = (string)$args['start'];
             unset($args['start']);
+        }
+        if (isset($args['sep'])) {
+            $sep = (string)$args['sep'];
+            unset($args['sep']);
         }
 
         // Extract optional tensor formatting options from trailing options array
@@ -94,7 +99,7 @@ class PrettyPrint
             $last = end($args);
             if (is_array($last)) {
                 $hasOptions = false;
-                $optionKeys = array_merge(['end', 'start'], $fmtKeys);
+                $optionKeys = array_merge(['end', 'start', 'sep'], $fmtKeys);
                 foreach ($optionKeys as $k) {
                     if (array_key_exists($k, $last)) {
                         $hasOptions = true;
@@ -107,6 +112,9 @@ class PrettyPrint
                     }
                     if (array_key_exists('start', $last)) {
                         $start = (string)$last['start'];
+                    }
+                    if (array_key_exists('sep', $last)) {
+                        $sep = (string)$last['sep'];
                     }
                     // Merge trailing array options (takes precedence over named if both provided)
                     $fmt = array_merge($fmt, $last);
@@ -246,7 +254,7 @@ class PrettyPrint
             }
         }
 
-        echo $start . implode(' ', $parts) . $end;
+        echo $start . implode($sep, $parts) . $end;
         $this->precision = $prevPrecision;
     }
 }
