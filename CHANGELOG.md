@@ -1,4 +1,4 @@
-0.4.3 / 
+0.4.3 / 2025-12-05
  - Default precision increased from 2 to 4
  - Refactor `PrettyPrint` for modularity: extract formatting logic into dedicated private methods
  - Added string return support in `PrettyPrint` and extend format options for flexibility
