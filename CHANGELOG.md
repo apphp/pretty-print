@@ -1,4 +1,7 @@
-0.4.2 / 
+0.4.3 / 
+ - Default precision increased from 2 to 4
+
+0.4.2 / 2025-12-04
  - Refactor `PrettyPrint` to delegate `format3DTorch` logic to `Formatter` for consistency
  - Add and update tests in `FormatterTest`
  - Refactor `Formatter` and `PrettyPrint` to use `Env::isCli()` for CLI detection
