@@ -40,7 +40,6 @@ class PrettyPrint
     private const MAX_ARGS = 32;
     private int $precision = 4;
 
-    // ---- Callable main entry ----
     /**
      * Invoke the pretty printer.
      *
@@ -66,11 +65,47 @@ class PrettyPrint
      */
     public function __invoke(...$args)
     {
+        [$start, $sep, $end, $args] = $this->parseSimpleOptions($args);
+        [$fmt, $start, $sep, $end, $args] = $this->extractFormattingOptions($args, $start, $sep, $end);
+        $fmt = $this->sanitizeFormattingOptions($fmt);
+
+        $args = $this->normalizeArgs($args);
+
+        $prevPrecision = $this->precision;
+        if (isset($fmt['precision'])) {
+            $this->precision = max(0, (int)$fmt['precision']);
+        }
+
+        if ($this->tryLabel3D($args, $fmt, $start, $end, $prevPrecision)) {
+            return;
+        }
+
+        if ($this->tryLabel2D($args, $start, $end, $prevPrecision)) {
+            return;
+        }
+
+        if ($this->tryMultiple1DRows($args, $start, $end, $prevPrecision)) {
+            return;
+        }
+
+        $parts = $this->formatDefaultParts($args, $fmt);
+        $this->applyAutoPreWrapping(Env::isCli(), $start, $end);
+        echo $start . implode($sep, $parts) . $end;
+        $this->precision = $prevPrecision;
+    }
+
+    /**
+     * Parse simple named options (start, sep, end) from the variadic args.
+     *
+     * @param array $args
+     * @return array [string $start, string $sep, string $end, array $args]
+     */
+    private function parseSimpleOptions(array $args): array
+    {
         $end = PHP_EOL;
         $start = '';
         $sep = ' ';
 
-        // Named args for simple options
         if (isset($args['end'])) {
             $end = (string)$args['end'];
             unset($args['end']);
@@ -84,9 +119,22 @@ class PrettyPrint
             unset($args['sep']);
         }
 
-        // Extract optional tensor formatting options from trailing options array
+        return [$start, $sep, $end, $args];
+    }
+
+    /**
+     * Extract formatting options from named args and optional trailing array.
+     * Trailing array takes precedence over named args.
+     *
+     * @param array $args
+     * @param string $start
+     * @param string $sep
+     * @param string $end
+     * @return array [array $fmt, string $start, string $sep, string $end, array $args]
+     */
+    private function extractFormattingOptions(array $args, string $start, string $sep, string $end): array
+    {
         $fmt = [];
-        // 1) Support PHP named arguments for formatting keys
         $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label', 'precision'];
         foreach ($fmtKeys as $k) {
             if (array_key_exists($k, $args)) {
@@ -94,7 +142,7 @@ class PrettyPrint
                 unset($args[$k]);
             }
         }
-        // 2) Trailing array options: may contain start/end and/or formatting keys
+
         if (!empty($args)) {
             $last = end($args);
             if (is_array($last)) {
@@ -116,7 +164,6 @@ class PrettyPrint
                     if (array_key_exists('sep', $last)) {
                         $sep = (string)$last['sep'];
                     }
-                    // Merge trailing array options (takes precedence over named if both provided)
                     $fmt = array_merge($fmt, $last);
                     array_pop($args);
                     reset($args);
@@ -124,7 +171,17 @@ class PrettyPrint
             }
         }
 
-        // Sanitize formatting options: clamp ranges and label length
+        return [$fmt, $start, $sep, $end, $args];
+    }
+
+    /**
+     * Clamp and sanitize formatting options (precision, head/tail, label length).
+     *
+     * @param array $fmt
+     * @return array
+     */
+    private function sanitizeFormattingOptions(array $fmt): array
+    {
         if (!empty($fmt)) {
             if (isset($fmt['precision'])) {
                 $fmt['precision'] = max(0, min(self::MAX_PRECISION, (int)$fmt['precision']));
@@ -141,15 +198,33 @@ class PrettyPrint
                 }
             }
         }
+        return $fmt;
+    }
 
-        // Auto-wrap with <pre> for web (non-CLI) usage
-        $isCli = Env::isCli();
+    /**
+     * Auto-wrap output in <pre> tags when not running in CLI.
+     *
+     * @param bool $isCli
+     * @param string $start
+     * @param string $end
+     * @return void
+     */
+    private function applyAutoPreWrapping(bool $isCli, string &$start, string &$end): void
+    {
         if (!$isCli) {
             $start = '<pre>' . $start;
             $end = $end . '</pre>';
         }
+    }
 
-        // Remove any unknown named arguments so they don't get printed as stray scalars
+    /**
+     * Remove unknown named args, reindex, and cap the number of args.
+     *
+     * @param array $args
+     * @return array
+     */
+    private function normalizeArgs(array $args): array
+    {
         foreach ($args as $k => $_v) {
             if (!is_int($k)) {
                 unset($args[$k]);
@@ -159,14 +234,22 @@ class PrettyPrint
         if (count($args) > self::MAX_ARGS) {
             $args = array_slice($args, 0, self::MAX_ARGS);
         }
+        return $args;
+    }
 
-        // Apply numeric precision if provided; remember previous to restore later
-        $prevPrecision = $this->precision;
-        if (isset($fmt['precision'])) {
-            $this->precision = max(0, (int)$fmt['precision']);
-        }
-
-        // Label + single 3D tensor
+    /**
+     * Handle the special case: label + single 3D tensor.
+     * Echoes output and restores precision if matched.
+     *
+     * @param array $args
+     * @param array $fmt
+     * @param string $start
+     * @param string $end
+     * @param int $prevPrecision
+     * @return bool True if handled, false otherwise
+     */
+    private function tryLabel3D(array $args, array $fmt, string $start, string $end, int $prevPrecision): bool
+    {
         if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && Validator::is3D($args[1])) {
             $out = Formatter::format3DTorch(
                 $args[1],
@@ -181,19 +264,45 @@ class PrettyPrint
             );
             echo $start . $out . $end;
             $this->precision = $prevPrecision;
-            return;
+            return true;
         }
+        return false;
+    }
 
-        // Label + 2D matrix (supports numeric and string matrices)
+    /**
+     * Handle the special case: label + single 2D matrix.
+     * Echoes output and restores precision if matched.
+     *
+     * @param array $args
+     * @param string $start
+     * @param string $end
+     * @param int $prevPrecision
+     * @return bool True if handled, false otherwise
+     */
+    private function tryLabel2D(array $args, string $start, string $end, int $prevPrecision): bool
+    {
         if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && Validator::is2D($args[1])) {
             $label = is_bool($args[0]) ? ($args[0] ? 'True' : 'False') : (is_null($args[0]) ? 'None' : (string)$args[0]);
             $out = Formatter::format2DAligned($args[1], $this->precision);
             echo $start . ($label . "\n" . $out) . $end;
             $this->precision = $prevPrecision;
-            return;
+            return true;
         }
+        return false;
+    }
 
-        // Multiple 1D rows → align
+    /**
+     * Handle the case of multiple 1D rows (optionally preceded by a label) and align them.
+     * Echoes output and restores precision if matched.
+     *
+     * @param array $args
+     * @param string $start
+     * @param string $end
+     * @param int $prevPrecision
+     * @return bool True if handled, false otherwise
+     */
+    private function tryMultiple1DRows(array $args, string $start, string $end, int $prevPrecision): bool
+    {
         $label = null;
         $rows = [];
         if (count($args) > 1) {
@@ -215,13 +324,23 @@ class PrettyPrint
                 $out = Formatter::format2DAligned($rows, $this->precision);
                 echo $start . ((($label !== null) ? ($label . "\n" . $out) : $out)) . $end;
                 $this->precision = $prevPrecision;
-                return;
+                return true;
             }
         }
+        return false;
+    }
 
-        // Default formatting
+    /**
+     * Default formatting for mixed args: scalars, arrays (1D, 2D, 3D).
+     * Returns an array of pre-formatted string parts.
+     *
+     * @param array $args
+     * @param array $fmt
+     * @return array
+     */
+    private function formatDefaultParts(array $args, array $fmt): array
+    {
         $parts = [];
-
         foreach ($args as $arg) {
             if (is_array($arg)) {
                 if (Validator::is3D($arg)) {
@@ -253,8 +372,6 @@ class PrettyPrint
                 $parts[] = Formatter::formatCell($arg, $this->precision);
             }
         }
-
-        echo $start . implode($sep, $parts) . $end;
-        $this->precision = $prevPrecision;
+        return $parts;
     }
 }
