@@ -17,7 +17,7 @@ class Formatter
      * @param int $precision
      * @return string
      */
-    public static function formatNumber(mixed $v, int $precision = 2): string
+    public static function formatNumber(mixed $v, int $precision = 4): string
     {
         if (is_int($v)) {
             return (string)$v;
@@ -35,7 +35,7 @@ class Formatter
      * @param int $precision Number of decimal places to use for floats.
      * @return string
      */
-    public static function format2DAligned(array $matrix, int $precision = 2): string
+    public static function format2DAligned(array $matrix, int $precision = 4): string
     {
         $cols = 0;
         foreach ($matrix as $row) {
@@ -91,7 +91,7 @@ class Formatter
      * @param int $precision Number of decimal places to use for floats.
      * @return string
      */
-    public static function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, int $precision = 2): string
+    public static function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, int $precision = 4): string
     {
         $rows = count($matrix);
         $cols = 0;
@@ -197,7 +197,7 @@ class Formatter
      * @param int $precision Number of decimal places to use for floats.
      * @return string
      */
-    public static function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor', int $precision = 2): string
+    public static function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor', int $precision = 4): string
     {
         $s = self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision);
         // Replace the very first '[' with 'tensor([['
@@ -222,7 +222,7 @@ class Formatter
      * @param int $precision Number of decimal places to use for floats.
      * @return string
      */
-    public static function formatForArray($value, int $precision = 2): string
+    public static function formatForArray($value, int $precision = 4): string
     {
         if (is_array($value)) {
             if (Validator::is2D($value)) {
@@ -282,7 +282,7 @@ class Formatter
      * @param int $precision
      * @return string
      */
-    public static function format3DTorch(array $tensor3d, int $headB = 5, int $tailB = 5, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor', int $precision = 2): string
+    public static function format3DTorch(array $tensor3d, int $headB = 5, int $tailB = 5, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor', int $precision = 4): string
     {
         $B = count($tensor3d);
         $idxs = [];
