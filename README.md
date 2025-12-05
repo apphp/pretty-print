@@ -9,7 +9,7 @@ composer require apphp/pretty-print
 
 ## Usage
 
-Note: When used in web (non-CLI) environments, output is automatically wrapped in `<pre>` to preserve spacing. In CLI, no wrapping is applied.
+Note: When used in web (non-CLI) environments, output is automatically wrapped in `<pre>` to preserve spacing. In CLI, no wrapping is applied. When you request a string to be returned (see `return` option), no auto-wrapping is applied.
 
 ### Global helper functions
 
@@ -116,9 +116,15 @@ pprint('A', 'B', 'C', sep: ', ', end: '');
 // A, B, C
 
 // Separator can also be provided via trailing options array
-pprint('X', 'Y', ['sep' => "\n", 'end' => '']);
+pprint('X', 'Y', sep: "\n", end: '']);
 // X
 // Y
+```
+
+Return the formatted string instead of printing
+```php
+$s = pprint([1, 2, 3], return: true);
+// $s contains: "[1, 2, 3]\n" (no <pre> wrapping)
 ```
 
 Print and then exit the script
@@ -171,6 +177,7 @@ Notes:
 - **sep**: string. Separator between multiple default-formatted arguments. Default is a single space `' '`. Examples: `pprint('A','B','C', sep: ', ', end: '')` or `pprint('X','Y', ['sep' => "\n", 'end' => ''])`.
 - **label**: string. Prefix label for 2D/3D formatted arrays, default `tensor`. Example: `pprint($m, ['label' => 'arr'])`.
 - **precision**: int. Number of digits after the decimal point for floats. Example: `pprint(3.14159, precision: 2)` prints `3.14`.
+- **return**: bool. When true, do not echo; return the formatted string instead (no `<pre>` wrapping in web context). Example: `$s = pprint($m, return: true);`.
 - **headB / tailB**: ints. Number of head/tail 2D blocks shown for 3D tensors.
 - **headRows / tailRows**: ints. Rows shown per 2D slice with ellipsis between.
 - **headCols / tailCols**: ints. Columns shown per 2D slice with ellipsis between.

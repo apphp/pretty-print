@@ -60,6 +60,7 @@ class PrettyPrint
      * - 'sep' => string                      // separator between multiple default-formatted arguments, default " "
      * - 'label' => string                    // prefix label for 2D/3D formatted arrays, default `tensor`
      * - 'precision' => int                   // number of digits after the decimal point for floats, default 4
+     * - 'return' => bool                     // when true, do not echo; return the formatted string instead
      * - 'headB' => int, 'tailB' => int       // number of head/tail 2D blocks for 3D tensors
      * - 'headRows' => int, 'tailRows' => int // rows per 2D slice to show (with ellipsis if truncated)
      * - 'headCols' => int, 'tailCols' => int // columns per 2D slice to show (with ellipsis if truncated)
