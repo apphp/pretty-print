@@ -444,4 +444,74 @@ final class PrettyPrintTest extends TestCase
         $out = ob_get_clean();
         self::assertSame("Direct\n", $out);
     }
+
+    #[Test]
+    #[TestDox('return option suppresses echo and returns the formatted string (CLI context)')]
+    public function returnOptionSuppressesEchoAndReturnsString(): void
+    {
+        $pp = new PrettyPrint();
+        ob_start();
+        $s = $pp('Hello', return: true);
+        $out = ob_get_clean();
+        self::assertSame('', $out, 'No output should be echoed when return=true');
+        self::assertSame("Hello\n", $s);
+    }
+
+    #[Test]
+    #[TestDox('return option returns string without <pre> wrapping in web context')]
+    public function returnOptionNoPreWrapInWebContext(): void
+    {
+        $pp = new PrettyPrint();
+        Env::setCliOverride(false);
+        try {
+            ob_start();
+            $s = $pp('Hi', return: true, end: '');
+            $out = ob_get_clean();
+            self::assertSame('', $out, 'No output should be echoed when return=true');
+            self::assertSame('Hi', $s, 'Returned string should not be wrapped in <pre>');
+            self::assertStringNotContainsString('<pre>', $s);
+        } finally {
+            Env::setCliOverride(null);
+        }
+    }
+
+    #[Test]
+    #[TestDox('return option parsed from trailing options array suppresses echo and returns string')]
+    public function returnOptionViaTrailingArray(): void
+    {
+        $pp = new PrettyPrint();
+        ob_start();
+        $s = $pp('Trail', ['return' => true, 'end' => '']);
+        $out = ob_get_clean();
+        self::assertSame('', $out, 'No output should be echoed when return=true (trailing array)');
+        self::assertSame('Trail', $s);
+    }
+
+    #[Test]
+    #[TestDox('truncates label to MAX_LABEL_LEN when label exceeds limit')]
+    public function labelIsTruncatedToMaxLength(): void
+    {
+        $pp = new PrettyPrint();
+        $matrix = [[1, 2], [3, 4]];
+        $long = str_repeat('L', 60); // longer than MAX_LABEL_LEN (50)
+        $expectedLabel = substr($long, 0, 50);
+
+        ob_start();
+        $pp($matrix, ['label' => $long]);
+        $out = ob_get_clean();
+
+        // Output should start with the truncated label followed by '([' (PyTorch-like prefix)
+        self::assertTrue(str_starts_with($out, $expectedLabel . '('), 'Label should be truncated at MAX_LABEL_LEN');
+    }
+
+    #[Test]
+    #[TestDox('falls back to generic array formatting for 1D arrays (formatForArray path)')]
+    public function defaultFormatterUsesFormatForArrayFor1D(): void
+    {
+        $pp = new PrettyPrint();
+        ob_start();
+        $pp([1, 2, 3]); // 1D array: not 2D or 3D -> formatForArray()
+        $out = ob_get_clean();
+        self::assertSame("[1, 2, 3]\n", $out);
+    }
 }

@@ -9,34 +9,34 @@ namespace {
     /**
      * Convenience wrapper around PrettyPrint's callable interface.
      * @param ...$args
-     * @return void
+     * @return string
      */
-    function pprint(...$args): void
+    function pprint(...$args): string
     {
-        (new PrettyPrint())(...$args);
+        return (new PrettyPrint())(...$args);
     }
 
     /**
      * Alias for pprint
      * @param ...$args
-     * @return void
+     * @return string
      */
-    function pp(...$args): void
+    function pp(...$args): string
     {
-        pprint(...$args);
+        return pprint(...$args);
     }
 
     /**
      * Alias for pprint with exit after printing
      * @param ...$args
-     * @return void
+     * @return string
      */
-    function ppd(...$args): void
+    function ppd(...$args): string
     {
-        pprint(...$args);
+        return pprint(...$args);
 
         if (PHP_SAPI === 'cli' && getenv('APP_ENV') === 'test') {
-            return;
+            return '';
         }
 
         exit;

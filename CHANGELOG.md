@@ -1,7 +1,8 @@
 0.4.3 / 
  - Default precision increased from 2 to 4
  - Refactor `PrettyPrint` for modularity: extract formatting logic into dedicated private methods
- - Added string return support in `PrettyPrint` and extend format options for flexibility.
+ - Added string return support in `PrettyPrint` and extend format options for flexibility
+ - Added new parmeter `return` in `PrettyPrint`
 
 0.4.2 / 2025-12-04
  - Refactor `PrettyPrint` to delegate `format3DTorch` logic to `Formatter` for consistency
