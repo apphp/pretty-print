@@ -43,6 +43,9 @@ class PrettyPrint
     /**
      * Invoke the pretty printer.
      *
+     * @param mixed ...$args
+     * @return string
+     *
      * Supported arguments patterns:
      * - Scalars/strings: will be printed space-separated.
      * - Multiple 1D arrays: treated as rows and aligned in columns.
@@ -52,7 +55,11 @@ class PrettyPrint
      * - Single 3D array: prints tensor([...]) with head/tail summarization.
      *
      * Options (pass as trailing array):
-     * - 'end' => string            // line terminator, default "\n"
+     * - 'start' => string                    // prefix printed before the content, default ""
+     * - 'end' => string                      // line terminator, default "\n"
+     * - 'sep' => string                      // separator between multiple default-formatted arguments, default " "
+     * - 'label' => string                    // prefix label for 2D/3D formatted arrays, default `tensor`
+     * - 'precision' => int                   // number of digits after the decimal point for floats, default 4
      * - 'headB' => int, 'tailB' => int       // number of head/tail 2D blocks for 3D tensors
      * - 'headRows' => int, 'tailRows' => int // rows per 2D slice to show (with ellipsis if truncated)
      * - 'headCols' => int, 'tailCols' => int // columns per 2D slice to show (with ellipsis if truncated)
@@ -63,35 +70,37 @@ class PrettyPrint
      *   (new PrettyPrint())($matrix2d, ['headRows' => 4, 'tailRows' => 0]);
      *   (new PrettyPrint())($tensor3d, ['headB' => 4, 'tailB' => 2]);
      */
-    public function __invoke(...$args)
+    public function __invoke(...$args): string
     {
         [$start, $sep, $end, $args] = $this->parseSimpleOptions($args);
-        [$fmt, $start, $sep, $end, $args] = $this->extractFormattingOptions($args, $start, $sep, $end);
-        $fmt = $this->sanitizeFormattingOptions($fmt);
+        [$fmt, $start, $sep, $end, $args, $returnString] = $this->extractFormattingOptions($args, $start, $sep, $end);
 
+        $fmt  = $this->sanitizeFormattingOptions($fmt);
         $args = $this->normalizeArgs($args);
+
+        if (!$returnString) {
+            $this->applyAutoPreWrapping(Env::isCli(), $start, $end);
+        }
 
         $prevPrecision = $this->precision;
         if (isset($fmt['precision'])) {
-            $this->precision = max(0, (int)$fmt['precision']);
+            $this->precision = max(0, (int) $fmt['precision']);
         }
 
-        if ($this->tryLabel3D($args, $fmt, $start, $end, $prevPrecision)) {
-            return;
-        }
+        $out =
+            $this->tryLabel3D($args, $fmt, $start, $end)
+            ?? $this->tryLabel2D($args, $start, $end)
+            ?? $this->tryMultiple1DRows($args, $start, $end)
+            ?? $start . implode($sep, $this->formatDefaultParts($args, $fmt)) . $end;
 
-        if ($this->tryLabel2D($args, $start, $end, $prevPrecision)) {
-            return;
-        }
-
-        if ($this->tryMultiple1DRows($args, $start, $end, $prevPrecision)) {
-            return;
-        }
-
-        $parts = $this->formatDefaultParts($args, $fmt);
-        $this->applyAutoPreWrapping(Env::isCli(), $start, $end);
-        echo $start . implode($sep, $parts) . $end;
+        // Restore default precision
         $this->precision = $prevPrecision;
+
+        if (!$returnString) {
+            echo $out;
+        }
+
+        return $out;
     }
 
     /**
@@ -135,6 +144,7 @@ class PrettyPrint
     private function extractFormattingOptions(array $args, string $start, string $sep, string $end): array
     {
         $fmt = [];
+        $returnString = false;
         $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label', 'precision'];
         foreach ($fmtKeys as $k) {
             if (array_key_exists($k, $args)) {
@@ -142,12 +152,16 @@ class PrettyPrint
                 unset($args[$k]);
             }
         }
+        if (array_key_exists('return', $args)) {
+            $returnString = (bool)$args['return'];
+            unset($args['return']);
+        }
 
         if (!empty($args)) {
             $last = end($args);
             if (is_array($last)) {
                 $hasOptions = false;
-                $optionKeys = array_merge(['end', 'start', 'sep'], $fmtKeys);
+                $optionKeys = array_merge(['end', 'start', 'sep', 'return'], $fmtKeys);
                 foreach ($optionKeys as $k) {
                     if (array_key_exists($k, $last)) {
                         $hasOptions = true;
@@ -164,6 +178,9 @@ class PrettyPrint
                     if (array_key_exists('sep', $last)) {
                         $sep = (string)$last['sep'];
                     }
+                    if (array_key_exists('return', $last)) {
+                        $returnString = (bool)$last['return'];
+                    }
                     $fmt = array_merge($fmt, $last);
                     array_pop($args);
                     reset($args);
@@ -171,7 +188,7 @@ class PrettyPrint
             }
         }
 
-        return [$fmt, $start, $sep, $end, $args];
+        return [$fmt, $start, $sep, $end, $args, $returnString];
     }
 
     /**
@@ -248,7 +265,7 @@ class PrettyPrint
      * @param int $prevPrecision
      * @return bool True if handled, false otherwise
      */
-    private function tryLabel3D(array $args, array $fmt, string $start, string $end, int $prevPrecision): bool
+    private function tryLabel3D(array $args, array $fmt, string $start, string $end): ?string
     {
         if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && Validator::is3D($args[1])) {
             $out = Formatter::format3DTorch(
@@ -262,11 +279,9 @@ class PrettyPrint
                 (string)($fmt['label'] ?? 'tensor'),
                 $this->precision
             );
-            echo $start . $out . $end;
-            $this->precision = $prevPrecision;
-            return true;
+            return $start . $out . $end;
         }
-        return false;
+        return null;
     }
 
     /**
@@ -279,16 +294,14 @@ class PrettyPrint
      * @param int $prevPrecision
      * @return bool True if handled, false otherwise
      */
-    private function tryLabel2D(array $args, string $start, string $end, int $prevPrecision): bool
+    private function tryLabel2D(array $args, string $start, string $end): ?string
     {
         if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && Validator::is2D($args[1])) {
             $label = is_bool($args[0]) ? ($args[0] ? 'True' : 'False') : (is_null($args[0]) ? 'None' : (string)$args[0]);
             $out = Formatter::format2DAligned($args[1], $this->precision);
-            echo $start . ($label . "\n" . $out) . $end;
-            $this->precision = $prevPrecision;
-            return true;
+            return $start . ($label . "\n" . $out) . $end;
         }
-        return false;
+        return null;
     }
 
     /**
@@ -298,10 +311,9 @@ class PrettyPrint
      * @param array $args
      * @param string $start
      * @param string $end
-     * @param int $prevPrecision
-     * @return bool True if handled, false otherwise
+     * @return string|null True if handled, false otherwise
      */
-    private function tryMultiple1DRows(array $args, string $start, string $end, int $prevPrecision): bool
+    private function tryMultiple1DRows(array $args, string $start, string $end): ?string
     {
         $label = null;
         $rows = [];
@@ -322,12 +334,10 @@ class PrettyPrint
             }
             if ($allRows && count($rows) > 1) {
                 $out = Formatter::format2DAligned($rows, $this->precision);
-                echo $start . ((($label !== null) ? ($label . "\n" . $out) : $out)) . $end;
-                $this->precision = $prevPrecision;
-                return true;
+                return $start . ((($label !== null) ? ($label . "\n" . $out) : $out)) . $end;
             }
         }
-        return false;
+        return null;
     }
 
     /**
