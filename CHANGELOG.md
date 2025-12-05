@@ -1,8 +1,14 @@
-0.4.2 / 
+0.4.3 / 2025-12-05
+ - Default precision increased from 2 to 4
+ - Refactor `PrettyPrint` for modularity: extract formatting logic into dedicated private methods
+ - Added string return support in `PrettyPrint` and extend format options for flexibility
+ - Added new parmeter `return` in `PrettyPrint`
+
+0.4.2 / 2025-12-04
  - Refactor `PrettyPrint` to delegate `format3DTorch` logic to `Formatter` for consistency
- - Add and update tests in `FormatterTest`
+ - Added and update tests in `FormatterTest`
  - Refactor `Formatter` and `PrettyPrint` to use `Env::isCli()` for CLI detection
- - introduce `Env` utility class with tests; update `FormatterTest` to validate new behavior
+ - Introduced `Env` utility class with tests; update `FormatterTest` to validate new behavior
  - Add support for custom separators in `PrettyPrint`; update tests to cover new functionality
 
 0.4.1 / 2025-12-02 

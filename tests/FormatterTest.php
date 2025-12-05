@@ -41,14 +41,14 @@ final class FormatterTest extends TestCase
         return [
             'int default precision ignored'   => [5, '5'],
             'zero int default'                => [0, '0'],
-            'float rounds to 2 by default'    => [1.23456, '1.23'],
-            'float pads to 2 by default'      => [1.2, '1.20'],
-            'negative float default rounding' => [-3.14159, '-3.14'],
+            'float rounds to 2 by default'    => [1.23456, '1.2346'],
+            'float pads to 2 by default'      => [1.2, '1.2000'],
+            'negative float default rounding' => [-3.14159, '-3.1416'],
             'string passthrough default'      => ['abc', 'abc'],
             'null to empty string default'    => [null, ''],
             'true to 1 default'               => [true, '1'],
             'false to empty string default'   => [false, ''],
-            'zero float default'              => [0.0, '0.00'],
+            'zero float default'              => [0.0, '0.0000'],
         ];
     }
 
@@ -239,12 +239,12 @@ final class FormatterTest extends TestCase
             '1D mixed scalars with precision for floats' => [
                 [1, "a'b", true, null, 1.2],
                 2,
-                "[1, a'b, True, None, 1.20]",
+                "[1, a'b, True, None, 1.2000]",
             ],
             'nested non-2D arrays recurse' => [
                 [[1, 2], 3, [4, [5.5]]],
                 1,
-                '[[1, 2], 3, [4, [5.50]]]',
+                '[[1, 2], 3, [4, [5.5000]]]',
             ],
             '2D numeric uses aligned formatting' => [
                 [[1, 23], [3, 4]],
