@@ -1,5 +1,6 @@
 0.5.0 / 
  - Refactored `ppd` function for improved CLI test handling with conditional exit strategy    
+ - Added support for automatic object-to-array conversion in `PrettyPrint` (`asArray()`/`toArray()`)
 
 0.4.3 / 2025-12-05
  - Default precision increased from 2 to 4

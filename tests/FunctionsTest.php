@@ -47,4 +47,40 @@ final class FunctionsTest extends TestCase
         $this->expectOutputString("hello\n");
         ppd('hello');
     }
+
+    #[Test]
+    #[TestDox('pprint uses asArray() when object provides it')]
+    public function pprintUsesAsArrayOnObject(): void
+    {
+        $obj = new class {
+            public function asArray(): array
+            {
+                return [1, 2, 3];
+            }
+        };
+
+        ob_start();
+        pprint($obj);
+        $out = ob_get_clean();
+
+        self::assertSame("[1, 2, 3]\n", $out);
+    }
+
+    #[Test]
+    #[TestDox('pprint falls back to toArray() when object has no asArray()')]
+    public function pprintUsesToArrayOnObject(): void
+    {
+        $obj = new class {
+            public function toArray(): array
+            {
+                return ['a' => 1, 'b' => 2];
+            }
+        };
+
+        ob_start();
+        pprint($obj);
+        $out = ob_get_clean();
+
+        self::assertSame("[1, 2]\n", $out);
+    }
 }

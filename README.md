@@ -153,6 +153,31 @@ $pp($tensor3d, headB: 2, tailB: 1, headRows: 1, tailRows: 1, headCols: 1, tailCo
 $pp('Metrics:', [[0.91, 0.02], [0.03, 0.88]]);
 ```
 
+### Objects with `asArray()` / `toArray()`
+
+If you pass an object that exposes an `asArray()` or `toArray()` method, `pprint` / `PrettyPrint` will automatically convert it to an array before formatting:
+
+```php
+class UserCollection
+{
+    public function asArray(): array
+    {
+        return [
+            ['id' => 1, 'name' => 'Alice'],
+            ['id' => 2, 'name' => 'Bob'],
+        ];
+    }
+}
+
+$users = new UserCollection();
+
+pprint($users);
+// [[1, 'Alice'],
+//  [2, 'Bob']]
+```
+
+If `asArray()` is not present but `toArray()` is, `toArray()` will be used instead.
+
 ## Running tests
 
 ```bash

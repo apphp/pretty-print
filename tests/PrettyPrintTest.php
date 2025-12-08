@@ -514,4 +514,44 @@ final class PrettyPrintTest extends TestCase
         $out = ob_get_clean();
         self::assertSame("[1, 2, 3]\n", $out);
     }
+
+    #[Test]
+    #[TestDox('converts objects with asArray() to arrays before formatting')]
+    public function convertsObjectWithAsArrayToArray(): void
+    {
+        $pp = new PrettyPrint();
+
+        $obj = new class {
+            public function asArray(): array
+            {
+                return [10, 20, 30];
+            }
+        };
+
+        ob_start();
+        $pp($obj);
+        $out = ob_get_clean();
+
+        self::assertSame("[10, 20, 30]\n", $out);
+    }
+
+    #[Test]
+    #[TestDox('converts objects with toArray() to arrays when asArray() is not available')]
+    public function convertsObjectWithToArrayToArray(): void
+    {
+        $pp = new PrettyPrint();
+
+        $obj = new class {
+            public function toArray(): array
+            {
+                return ['x' => 5, 'y' => 6];
+            }
+        };
+
+        ob_start();
+        $pp($obj);
+        $out = ob_get_clean();
+
+        self::assertSame("[5, 6]\n", $out);
+    }
 }
