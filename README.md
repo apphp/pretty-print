@@ -11,6 +11,20 @@ composer require apphp/pretty-print
 
 Note: When used in web (non-CLI) environments, output is automatically wrapped in `<pre>` to preserve spacing. In CLI, no wrapping is applied. When you request a string to be returned (see `return` option), no auto-wrapping is applied.
 
+### Import functions
+
+All examples below assume you have imported the helper functions from the `Apphp\PrettyPrint` namespace, for example:
+
+```php
+use function Apphp\PrettyPrint\pprint;
+use function Apphp\PrettyPrint\pp;
+use function Apphp\PrettyPrint\ppd;
+```
+or simply
+```php
+use function Apphp\PrettyPrint\{pprint, pp, ppd};
+```
+
 ### Global helper functions
 
 Print scalars/strings
@@ -152,6 +166,31 @@ $pp($tensor3d, headB: 2, tailB: 1, headRows: 1, tailRows: 1, headCols: 1, tailCo
 // Label + 2D
 $pp('Metrics:', [[0.91, 0.02], [0.03, 0.88]]);
 ```
+
+### Objects with `asArray()` / `toArray()`
+
+If you pass an object that exposes an `asArray()` or `toArray()` method, `pprint` / `PrettyPrint` will automatically convert it to an array before formatting:
+
+```php
+class UserCollection
+{
+    public function asArray(): array
+    {
+        return [
+            ['id' => 1, 'name' => 'Alice'],
+            ['id' => 2, 'name' => 'Bob'],
+        ];
+    }
+}
+
+$users = new UserCollection();
+
+pprint($users);
+// [[1, 'Alice'],
+//  [2, 'Bob']]
+```
+
+If `asArray()` is not present but `toArray()` is, `toArray()` will be used instead.
 
 ## Running tests
 

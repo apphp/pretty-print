@@ -249,6 +249,18 @@ class PrettyPrint
             }
         }
         $args = array_values($args);
+
+        // Convert objects to arrays if possible
+        foreach ($args as $i => $value) {
+            if (is_object($value)) {
+                if (is_callable([$value, 'asArray'])) {
+                    $args[$i] = $value->asArray();
+                } elseif (is_callable([$value, 'toArray'])) {
+                    $args[$i] = $value->toArray();
+                }
+            }
+        }
+
         if (count($args) > self::MAX_ARGS) {
             $args = array_slice($args, 0, self::MAX_ARGS);
         }
@@ -263,8 +275,7 @@ class PrettyPrint
      * @param array $fmt
      * @param string $start
      * @param string $end
-     * @param int $prevPrecision
-     * @return bool True if handled, false otherwise
+     * @return string|null True if handled, false otherwise
      */
     private function tryLabel3D(array $args, array $fmt, string $start, string $end): ?string
     {
@@ -292,8 +303,7 @@ class PrettyPrint
      * @param array $args
      * @param string $start
      * @param string $end
-     * @param int $prevPrecision
-     * @return bool True if handled, false otherwise
+     * @return string|null True if handled, false otherwise
      */
     private function tryLabel2D(array $args, string $start, string $end): ?string
     {

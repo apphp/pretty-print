@@ -11,11 +11,12 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use function Apphp\PrettyPrint\{pprint, pp, ppd};
 
-#[Group('prettyprint')]
-#[CoversFunction('pprint')]
-#[CoversFunction('pp')]
-#[CoversFunction('ppd')]
+#[Group('PrettyPrint')]
+#[CoversFunction('Apphp\\PrettyPrint\\pprint')]
+#[CoversFunction('Apphp\\PrettyPrint\\pp')]
+#[CoversFunction('Apphp\\PrettyPrint\\ppd')]
 final class FunctionsTest extends TestCase
 {
     #[Test]
@@ -46,5 +47,41 @@ final class FunctionsTest extends TestCase
     {
         $this->expectOutputString("hello\n");
         ppd('hello');
+    }
+
+    #[Test]
+    #[TestDox('pprint uses asArray() when object provides it')]
+    public function pprintUsesAsArrayOnObject(): void
+    {
+        $obj = new class {
+            public function asArray(): array
+            {
+                return [1, 2, 3];
+            }
+        };
+
+        ob_start();
+        pprint($obj);
+        $out = ob_get_clean();
+
+        self::assertSame("[1, 2, 3]\n", $out);
+    }
+
+    #[Test]
+    #[TestDox('pprint falls back to toArray() when object has no asArray()')]
+    public function pprintUsesToArrayOnObject(): void
+    {
+        $obj = new class {
+            public function toArray(): array
+            {
+                return ['a' => 1, 'b' => 2];
+            }
+        };
+
+        ob_start();
+        pprint($obj);
+        $out = ob_get_clean();
+
+        self::assertSame("[1, 2]\n", $out);
     }
 }

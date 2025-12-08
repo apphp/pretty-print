@@ -1,3 +1,8 @@
+0.5.0 / 2025-12-08
+ - Refactored `ppd` function for improved CLI test handling with conditional exit strategy    
+ - Added support for automatic object-to-array conversion in `PrettyPrint` (`asArray()`/`toArray()`)
+ - Added namespace declaration to global helper functions
+
 0.4.3 / 2025-12-05
  - Default precision increased from 2 to 4
  - Refactor `PrettyPrint` for modularity: extract formatting logic into dedicated private methods
