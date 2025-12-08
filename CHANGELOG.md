@@ -1,3 +1,6 @@
+0.5.0 / 
+ - Refactored `ppd` function for improved CLI test handling with conditional exit strategy    
+
 0.4.3 / 2025-12-05
  - Default precision increased from 2 to 4
  - Refactor `PrettyPrint` for modularity: extract formatting logic into dedicated private methods

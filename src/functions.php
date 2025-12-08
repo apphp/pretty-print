@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace {
 
+    use Apphp\PrettyPrint\Env;
     use Apphp\PrettyPrint\PrettyPrint;
 
     /**
@@ -29,16 +30,19 @@ namespace {
     /**
      * Alias for pprint with exit after printing
      * @param ...$args
-     * @return string
      */
-    function ppd(...$args): string
+    function ppd(...$args)
     {
-        return pprint(...$args);
+        $exiter = null;
 
-        if (PHP_SAPI === 'cli' && getenv('APP_ENV') === 'test') {
-            return '';
+        if (Env::isCli() && getenv('APP_ENV') === 'test') {
+            $exiter = fn() => null;
         }
 
-        exit;
+        $exiter ??= fn() => exit;
+
+        // Execute behavior
+        pprint(...$args);
+        $exiter();
     }
 }
