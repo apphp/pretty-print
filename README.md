@@ -11,6 +11,20 @@ composer require apphp/pretty-print
 
 Note: When used in web (non-CLI) environments, output is automatically wrapped in `<pre>` to preserve spacing. In CLI, no wrapping is applied. When you request a string to be returned (see `return` option), no auto-wrapping is applied.
 
+### Import functions
+
+All examples below assume you have imported the helper functions from the `Apphp\PrettyPrint` namespace, for example:
+
+```php
+use function Apphp\PrettyPrint\pprint;
+use function Apphp\PrettyPrint\pp;
+use function Apphp\PrettyPrint\ppd;
+```
+or simply
+```php
+use function Apphp\PrettyPrint\{pprint, pp, ppd};
+```
+
 ### Global helper functions
 
 Print scalars/strings

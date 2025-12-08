@@ -11,11 +11,12 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use function Apphp\PrettyPrint\{pprint, pp, ppd};
 
-#[Group('prettyprint')]
-#[CoversFunction('pprint')]
-#[CoversFunction('pp')]
-#[CoversFunction('ppd')]
+#[Group('PrettyPrint')]
+#[CoversFunction('Apphp\\PrettyPrint\\pprint')]
+#[CoversFunction('Apphp\\PrettyPrint\\pp')]
+#[CoversFunction('Apphp\\PrettyPrint\\ppd')]
 final class FunctionsTest extends TestCase
 {
     #[Test]
