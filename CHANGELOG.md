@@ -1,3 +1,6 @@
+0.5.1 / 
+ - Improve tensor block formatting in `Formatter` for PyTorch-style visualization
+
 0.5.0 / 2025-12-08
  - Refactored `ppd` function for improved CLI test handling with conditional exit strategy    
  - Added support for automatic object-to-array conversion in `PrettyPrint` (`asArray()`/`toArray()`)
