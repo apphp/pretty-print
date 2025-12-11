@@ -50,7 +50,7 @@ function ppd(...$args)
  * Print a difference matrix between two arrays.
  *
  * For each corresponding element, prints the same value when equal,
- * or 'x' when different or missing.
+ * or '-' when different or missing.
  *
  * @param array $a
  * @param array $b
