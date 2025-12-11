@@ -22,7 +22,7 @@ use function Apphp\PrettyPrint\ppd;
 ```
 or simply
 ```php
-use function Apphp\PrettyPrint\{pprint, pp, ppd};
+use function Apphp\PrettyPrint\{pprint, pp, ppd, pdiff};
 ```
 
 ### Global helper functions
@@ -38,6 +38,23 @@ Print 1D arrays
 pprint([1, 23, 456], [12, 3, 45]);
 // [1, 23, 456]
 // [12, 3, 45]
+```
+
+Compare two arrays with a difference matrix
+```php
+$a = [
+    [1, 2, 3],
+    [4, 5, 6],
+];
+
+$b = [
+    [1, 9, 3],
+    [0, 5, 7],
+];
+
+pdiff($a, $b);
+// [[1, -, 3],
+//  [-, 5, -]]
 ```
 
 Label + 2D matrix
