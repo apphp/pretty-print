@@ -1,4 +1,4 @@
-0.5.1 / 
+0.5.1 / 2025-12-12
  - Improve tensor block formatting in `Formatter` for PyTorch-style visualization
  - Refactor `PrettyPrint` for simplified default formatting, remove redundant label-based handling
  - Added new function pdiff() for array comparison
