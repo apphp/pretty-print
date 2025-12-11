@@ -204,7 +204,7 @@ final class FormatterTest extends TestCase
                 5, 5, 5, 5, 5, 5,
                 'tensor',
                 2,
-                "tensor([\n  [[1, 2],\n   [3, 4]],\n\n  [[5, 6],\n   [7, 8]]\n])",
+                "tensor([\n  [[1, 2],\n   [3, 4]],\n  [[5, 6],\n   [7, 8]]\n])",
             ],
             'block ellipsis with inner 2D ellipses' => [
                 [

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Apphp\PrettyPrint;
 
+use ReflectionException;
+
 /**
  * PrettyPrint
  *
@@ -39,6 +41,7 @@ class PrettyPrint
     private const MAX_LABEL_LEN = 50;
     private const MAX_ARGS = 32;
     private int $precision = 4;
+    private array $labels = [];
 
     /**
      * Invoke the pretty printer.
@@ -88,11 +91,7 @@ class PrettyPrint
             $this->precision = max(0, (int) $fmt['precision']);
         }
 
-        $out =
-            $this->tryLabel3D($args, $fmt, $start, $end)
-            ?? $this->tryLabel2D($args, $start, $end)
-            ?? $this->tryMultiple1DRows($args, $start, $end)
-            ?? $start . implode($sep, $this->formatDefaultParts($args, $fmt)) . $end;
+        $out = $start . implode($sep, $this->formatDefaultParts($args, $fmt)) . $end;
 
         // Restore default precision
         $this->precision = $prevPrecision;
@@ -240,6 +239,7 @@ class PrettyPrint
      *
      * @param array $args
      * @return array
+     * @throws ReflectionException
      */
     private function normalizeArgs(array $args): array
     {
@@ -252,12 +252,21 @@ class PrettyPrint
 
         // Convert objects to arrays if possible
         foreach ($args as $i => $value) {
-            if (is_object($value)) {
-                if (is_callable([$value, 'asArray'])) {
-                    $args[$i] = $value->asArray();
-                } elseif (is_callable([$value, 'toArray'])) {
-                    $args[$i] = $value->toArray();
-                }
+            if (!is_object($value)) {
+                continue;
+            }
+
+            $array = null;
+
+            if (is_callable([$value, 'asArray'])) {
+                $array = $value->asArray();
+            } elseif (is_callable([$value, 'toArray'])) {
+                $array = $value->toArray();
+            }
+
+            if (is_array($array)) {
+                $args[$i] = $array;
+                $this->labels[$i] = (new \ReflectionClass($value))->getShortName();
             }
         }
 
@@ -265,90 +274,6 @@ class PrettyPrint
             $args = array_slice($args, 0, self::MAX_ARGS);
         }
         return $args;
-    }
-
-    /**
-     * Handle the special case: label + single 3D tensor.
-     * Echoes output and restores precision if matched.
-     *
-     * @param array $args
-     * @param array $fmt
-     * @param string $start
-     * @param string $end
-     * @return string|null True if handled, false otherwise
-     */
-    private function tryLabel3D(array $args, array $fmt, string $start, string $end): ?string
-    {
-        if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && Validator::is3D($args[1])) {
-            $out = Formatter::format3DTorch(
-                $args[1],
-                (int)($fmt['headB'] ?? 5),
-                (int)($fmt['tailB'] ?? 5),
-                (int)($fmt['headRows'] ?? 5),
-                (int)($fmt['tailRows'] ?? 5),
-                (int)($fmt['headCols'] ?? 5),
-                (int)($fmt['tailCols'] ?? 5),
-                (string)($fmt['label'] ?? 'tensor'),
-                $this->precision
-            );
-            return $start . $out . $end;
-        }
-        return null;
-    }
-
-    /**
-     * Handle the special case: label + single 2D matrix.
-     * Echoes output and restores precision if matched.
-     *
-     * @param array $args
-     * @param string $start
-     * @param string $end
-     * @return string|null True if handled, false otherwise
-     */
-    private function tryLabel2D(array $args, string $start, string $end): ?string
-    {
-        if (count($args) === 2 && !is_array($args[0]) && is_array($args[1]) && Validator::is2D($args[1])) {
-            $label = is_bool($args[0]) ? ($args[0] ? 'True' : 'False') : (is_null($args[0]) ? 'None' : (string)$args[0]);
-            $out = Formatter::format2DAligned($args[1], $this->precision);
-            return $start . ($label . "\n" . $out) . $end;
-        }
-        return null;
-    }
-
-    /**
-     * Handle the case of multiple 1D rows (optionally preceded by a label) and align them.
-     * Echoes output and restores precision if matched.
-     *
-     * @param array $args
-     * @param string $start
-     * @param string $end
-     * @return string|null True if handled, false otherwise
-     */
-    private function tryMultiple1DRows(array $args, string $start, string $end): ?string
-    {
-        $label = null;
-        $rows = [];
-        if (count($args) > 1) {
-            $startIndex = 0;
-            if (!is_array($args[0])) {
-                $label = is_bool($args[0]) ? ($args[0] ? 'True' : 'False') : (is_null($args[0]) ? 'None' : (string)$args[0]);
-                $startIndex = 1;
-            }
-            $allRows = true;
-            for ($i = $startIndex; $i < count($args); $i++) {
-                if (Validator::is1D($args[$i])) {
-                    $rows[] = $args[$i];
-                } else {
-                    $allRows = false;
-                    break;
-                }
-            }
-            if ($allRows && count($rows) > 1) {
-                $out = Formatter::format2DAligned($rows, $this->precision);
-                return $start . ((($label !== null) ? ($label . "\n" . $out) : $out)) . $end;
-            }
-        }
-        return null;
     }
 
     /**
@@ -362,7 +287,7 @@ class PrettyPrint
     private function formatDefaultParts(array $args, array $fmt): array
     {
         $parts = [];
-        foreach ($args as $arg) {
+        foreach ($args as $i => $arg) {
             if (is_array($arg)) {
                 if (Validator::is3D($arg)) {
                     $parts[] = Formatter::format3DTorch(
@@ -373,7 +298,7 @@ class PrettyPrint
                         (int)($fmt['tailRows'] ?? 5),
                         (int)($fmt['headCols'] ?? 5),
                         (int)($fmt['tailCols'] ?? 5),
-                        (string)($fmt['label'] ?? 'tensor'),
+                        (string)($fmt['label'] ?? ($this->labels[$i] ?? 'tensor')),
                         $this->precision
                     );
                 } elseif (Validator::is2D($arg)) {
@@ -383,7 +308,7 @@ class PrettyPrint
                         (int)($fmt['tailRows'] ?? 5),
                         (int)($fmt['headCols'] ?? 5),
                         (int)($fmt['tailCols'] ?? 5),
-                        (string)($fmt['label'] ?? 'tensor'),
+                        (string)($fmt['label'] ?? ($this->labels[$i] ?? 'tensor')),
                         $this->precision
                     );
                 } else {

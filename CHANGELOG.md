@@ -1,5 +1,6 @@
 0.5.1 / 
  - Improve tensor block formatting in `Formatter` for PyTorch-style visualization
+ - Refactor `PrettyPrint` for simplified default formatting, remove redundant label-based handling
 
 0.5.0 / 2025-12-08
  - Refactored `ppd` function for improved CLI test handling with conditional exit strategy    

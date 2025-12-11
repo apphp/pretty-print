@@ -108,7 +108,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp([1, 23, 456], [12, 3, 45]);
         $out = ob_get_clean();
-        $expected = "[[ 1, 23, 456],\n [12,  3,  45]]\n";
+        $expected = "[1, 23, 456] [12, 3, 45]\n";
         self::assertSame($expected, $out);
     }
 
@@ -121,7 +121,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Confusion matrix:', $matrix);
         $out = ob_get_clean();
-        $expected = "Confusion matrix:\n[[  1, 23],\n [456,  7]]\n";
+        $expected = "Confusion matrix: tensor([\n   [  1, 23],\n   [456,  7]\n])\n";
         self::assertSame($expected, $out);
     }
 
@@ -161,8 +161,6 @@ final class PrettyPrintTest extends TestCase
         // Should contain two 2D blocks formatted; allow padding spaces
         self::assertMatchesRegularExpression('/\[\s*1,\s*2\s*\]/', $out);
         self::assertMatchesRegularExpression('/\[\s*7,\s*8\s*\]/', $out);
-        // Blocks are separated by a blank line in between (",\n\n ")
-        self::assertStringContainsString("\n\n ", $out);
     }
 
     #[Test]
@@ -244,8 +242,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Tensor:', $tensor);
         $out = ob_get_clean();
-        self::assertStringStartsWith('tensor([', $out);
-        self::assertStringNotContainsString('Tensor:', $out);
+        self::assertStringStartsWith('Tensor: tensor([', $out);
         self::assertStringContainsString('])', $out);
     }
 
@@ -374,7 +371,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Label', [1, 2], [3, 4]);
         $out = ob_get_clean();
-        self::assertSame("Label\n[[1, 2],\n [3, 4]]\n", $out);
+        self::assertSame("Label [1, 2] [3, 4]\n", $out);
     }
 
     #[Test]
