@@ -1,7 +1,7 @@
 {
   "name": "apphp/pretty-print",
   "description": "Callable pretty-printer for PHP arrays with Python-like formatting.",
-  "keywords": ["php", "pretty-print", "pprint", "print", "array", "matrix", "tensor", "formatting", "debug", "logging", "matrix-format", "data-formatting", "array-formatting", "tensor-formatting"],
+  "keywords": ["php", "pretty-print", "pprint", "print", "array", "matrix", "tensor", "formatting", "debug", "logging", "matrix-format", "data-formatting", "array-formatting", "tensor-formatting", "pretty print"],
   "homepage": "https://apphp.com",
   "type": "library",
   "license": "MIT",
