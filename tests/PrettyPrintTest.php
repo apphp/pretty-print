@@ -551,4 +551,52 @@ final class PrettyPrintTest extends TestCase
 
         self::assertSame("[5, 6]\n", $out);
     }
+
+    #[Test]
+    #[TestDox('ignores objects whose asArray() does not return an array')]
+    public function ignoresObjectWhenAsArrayDoesNotReturnArray(): void
+    {
+        $pp = new PrettyPrint();
+
+        $obj = new class {
+            public function asArray(): string
+            {
+                return 'not-an-array';
+            }
+        };
+
+        ob_start();
+        $pp($obj);
+        $out = ob_get_clean();
+
+        // Falls back to generic object formatting path
+        self::assertSame("Object\n", $out);
+    }
+
+    #[Test]
+    #[TestDox('normalizes associative rows from asArray() into indexed arrays for 2D formatting')]
+    public function normalizesAssociativeRowsFromAsArray(): void
+    {
+        $pp = new PrettyPrint();
+
+        $obj = new class {
+            public function asArray(): array
+            {
+                return [
+                    ['id' => 1, 'name' => 'Alice'],
+                    ['id' => 2, 'name' => 'Bob'],
+                ];
+            }
+        };
+
+        ob_start();
+        $pp($obj, label: 'Users');
+        $out = ob_get_clean();
+
+        // Ensure values are visible (rows have been normalized with array_values)
+        self::assertStringContainsString('Alice', $out);
+        self::assertStringContainsString('Bob', $out);
+        // And we no longer see completely empty cells like "[, ]"
+        self::assertStringNotContainsString('[, ]', $out);
+    }
 }

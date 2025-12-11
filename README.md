@@ -33,19 +33,20 @@ pprint('Hello', 123, 4.56);
 // Hello 123 4.5600
 ```
 
-Print multiple 1D rows aligned as a 2D table
+Print 1D arrays
 ```php
 pprint([1, 23, 456], [12, 3, 45]);
-// [[ 1, 23, 456],
-//  [12,  3,  45]]
+// [1, 23, 456]
+// [12, 3, 45]
 ```
 
 Label + 2D matrix
 ```php
-pprint('Confusion matrix:', [[1, 23], [456, 7]]);
-// Confusion matrix:
-// [[  1, 23],
-//  [456,  7]]
+pprint([[1, 23], [456, 7]], label: 'Confusion matrix:');
+// Confusion matrix:([
+//   [  1, 23],
+//   [456,  7]
+// ])
 ```
 
 2D tensor-style formatting
@@ -102,9 +103,7 @@ pprint($tensor3d, headB: 1, tailB: 1, headRows: 1, tailRows: 1, headCols: 1, tai
 // tensor([
 //  [[1, ..., 3],
 //   [4, ..., 6]],
-//
 //  ...,
-//
 //  [[13, ..., 15],
 //   [16, ..., 18]]
 // ])
@@ -172,7 +171,7 @@ $pp('Metrics:', [[0.91, 0.02], [0.03, 0.88]]);
 If you pass an object that exposes an `asArray()` or `toArray()` method, `pprint` / `PrettyPrint` will automatically convert it to an array before formatting:
 
 ```php
-class UserCollection
+class Users
 {
     public function asArray(): array
     {
@@ -183,11 +182,13 @@ class UserCollection
     }
 }
 
-$users = new UserCollection();
+$users = new Users();
 
 pprint($users);
-// [[1, 'Alice'],
-//  [2, 'Bob']]
+// Users([
+//   [1, Alice],
+//   [2,   Bob]
+// ])
 ```
 
 If `asArray()` is not present but `toArray()` is, `toArray()` will be used instead.

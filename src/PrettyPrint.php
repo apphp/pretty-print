@@ -264,10 +264,21 @@ class PrettyPrint
                 $array = $value->toArray();
             }
 
-            if (is_array($array)) {
-                $args[$i] = $array;
-                $this->labels[$i] = (new \ReflectionClass($value))->getShortName();
+            if (!is_array($array)) {
+                continue;
             }
+
+            // If this is a 2D structure with associative rows, normalize rows to indexed arrays
+            if (Validator::is2D($array)) {
+                foreach ($array as $rowIndex => $row) {
+                    if (is_array($row) && !array_is_list($row)) {
+                        $array[$rowIndex] = array_values($row);
+                    }
+                }
+            }
+
+            $args[$i] = $array;
+            $this->labels[$i] = (new \ReflectionClass($value))->getShortName();
         }
 
         if (count($args) > self::MAX_ARGS) {

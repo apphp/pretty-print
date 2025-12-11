@@ -325,7 +325,7 @@ class Formatter
         // Use a single newline between blocks for simple tensors without batch
         // summarization, but keep a blank line (double newline) when a batch
         // ellipsis is used to mimic PyTorch's grouped head/ellipsis/tail style.
-        $separator = $useBEllipsis ? ",\n\n " : ",\n ";
+        $separator = ",\n ";
         $joined = implode($separator, $blocks);
         return $label . "([\n " . $joined . "\n])";
     }
