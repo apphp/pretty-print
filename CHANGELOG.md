@@ -1,3 +1,8 @@
+0.5.1 / 2025-12-12
+ - Improve tensor block formatting in `Formatter` for PyTorch-style visualization
+ - Refactor `PrettyPrint` for simplified default formatting, remove redundant label-based handling
+ - Added new function pdiff() for array comparison
+
 0.5.0 / 2025-12-08
  - Refactored `ppd` function for improved CLI test handling with conditional exit strategy    
  - Added support for automatic object-to-array conversion in `PrettyPrint` (`asArray()`/`toArray()`)

@@ -11,12 +11,13 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
-use function Apphp\PrettyPrint\{pprint, pp, ppd};
+use function Apphp\PrettyPrint\{pprint, pp, ppd, pdiff};
 
 #[Group('PrettyPrint')]
 #[CoversFunction('Apphp\\PrettyPrint\\pprint')]
 #[CoversFunction('Apphp\\PrettyPrint\\pp')]
 #[CoversFunction('Apphp\\PrettyPrint\\ppd')]
+#[CoversFunction('Apphp\\PrettyPrint\\pdiff')]
 final class FunctionsTest extends TestCase
 {
     #[Test]
@@ -83,5 +84,28 @@ final class FunctionsTest extends TestCase
         $out = ob_get_clean();
 
         self::assertSame("[1, 2]\n", $out);
+    }
+
+    #[Test]
+    #[TestDox('pdiff prints a matrix with identical values or x on mismatches')]
+    public function pdiffPrintsDifferenceMatrix(): void
+    {
+        $a = [
+            [1, 2, 3],
+            [4, 5, 6],
+        ];
+        $b = [
+            [1, 9, 3],
+            [0, 5, 7],
+        ];
+
+        ob_start();
+        pdiff($a, $b);
+        $out = ob_get_clean();
+
+        // Expect 1st row: [1, x, 3]
+        self::assertMatchesRegularExpression('/\[\s*1,\s*-,\s*3\s*\]/', $out);
+        // Expect 2nd row: [x, 5, x]
+        self::assertMatchesRegularExpression('/\[\s*-,\s*5,\s*-\s*\]/', $out);
     }
 }

@@ -322,7 +322,9 @@ class Formatter
             }
         }
 
-        $joined = implode(",\n\n ", $blocks);
+        // Use a single newline between blocks for simple tensors without batch
+        $separator = ",\n ";
+        $joined = implode($separator, $blocks);
         return $label . "([\n " . $joined . "\n])";
     }
 }
