@@ -1,20 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="860" height="260" viewBox="0 0 860 260">
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="260" viewBox="0 0 860 230">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#f1f2f3"/>
-      <stop offset="100%" stop-color="#f1f2f3"/>
+      <stop offset="0%" stop-color="#f6f8fa"/>
+      <stop offset="100%" stop-color="#f6f8fa"/>
     </linearGradient>
     <style><![CDATA[
-      .frame { fill: url(#bg); stroke: #f1f2f3; stroke-width: 2; }
-      .title { fill: #444; font: 250 16px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-      .mono  { fill: #444; font: 14px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-      .dim   { fill: #444; font: 14px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+      .frame { fill: url(#bg); stroke: #f6f8fa; stroke-width: 2; }
+      .title { fill: #59636e; font: 250 16px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+      .mono  { fill: #59636e; font: 14px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+      .dim   { fill: #59636e; font: 14px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
       .g { fill: #22c599; }
       .r { fill: #ef4444; }
     ]]></style>
   </defs>
 
-  <rect x="12" y="12" rx="14" ry="14" width="836" height="236" class="frame"/>
+  <rect x="12" y="12" rx="4" ry="4" width="836" height="206" class="frame"/>
 
   <text x="32" y="44" class="title">pcompare($a, $b) output (green = same, red = different)</text>
 
