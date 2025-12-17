@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="260" viewBox="0 0 860 260">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f1f2f3"/>
+      <stop offset="100%" stop-color="#f1f2f3"/>
+    </linearGradient>
+    <style><![CDATA[
+      .frame { fill: url(#bg); stroke: #f1f2f3; stroke-width: 2; }
+      .title { fill: #444; font: 250 16px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+      .mono  { fill: #444; font: 14px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+      .dim   { fill: #444; font: 14px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+      .g { fill: #22c599; }
+      .r { fill: #ef4444; }
+    ]]></style>
+  </defs>
+
+  <rect x="12" y="12" rx="14" ry="14" width="836" height="236" class="frame"/>
+
+  <text x="32" y="44" class="title">pcompare($a, $b) output (green = same, red = different)</text>
+
+  <!-- Matrix A -->
+  <text x="32" y="84" class="dim">A:</text>
+  <text x="72" y="84" class="mono">[</text>
+  <text x="92" y="84" class="mono g">1</text>
+  <text x="104" y="84" class="mono">,</text>
+  <text x="120" y="84" class="mono r">2</text>
+  <text x="132" y="84" class="mono">,</text>
+  <text x="148" y="84" class="mono g">3</text>
+  <text x="160" y="84" class="mono">]</text>
+
+  <text x="72" y="110" class="mono">[</text>
+  <text x="92" y="110" class="mono r">4</text>
+  <text x="104" y="110" class="mono">,</text>
+  <text x="120" y="110" class="mono g">5</text>
+  <text x="132" y="110" class="mono">,</text>
+  <text x="148" y="110" class="mono r">6</text>
+  <text x="160" y="110" class="mono">]</text>
+
+  <!-- Spacer line -->
+  <text x="72" y="138" class="mono"> </text>
+
+  <!-- Matrix B -->
+  <text x="32" y="168" class="dim">B:</text>
+  <text x="72" y="168" class="mono">[</text>
+  <text x="92" y="168" class="mono g">1</text>
+  <text x="104" y="168" class="mono">,</text>
+  <text x="120" y="168" class="mono r">9</text>
+  <text x="132" y="168" class="mono">,</text>
+  <text x="148" y="168" class="mono g">3</text>
+  <text x="160" y="168" class="mono">]</text>
+
+  <text x="72" y="194" class="mono">[</text>
+  <text x="92" y="194" class="mono r">0</text>
+  <text x="104" y="194" class="mono">,</text>
+  <text x="120" y="194" class="mono g">5</text>
+  <text x="132" y="194" class="mono">,</text>
+  <text x="148" y="194" class="mono r">7</text>
+  <text x="160" y="194" class="mono">]</text>
+</svg>

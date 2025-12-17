@@ -1,5 +1,6 @@
 0.6.0 / 
  - Changed default values of sep: `PHP_EOL` and end: `PHP_EOL . PHP_EOL`
+ - Added new function pcompare() for side-by-side (stacked) matrix comparison with colored cells
 
 0.5.1 / 2025-12-12
  - Improve tensor block formatting in `Formatter` for PyTorch-style visualization

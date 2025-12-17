@@ -11,14 +11,16 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use Apphp\PrettyPrint\Env;
 
-use function Apphp\PrettyPrint\{pprint, pp, ppd, pdiff};
+use function Apphp\PrettyPrint\{pprint, pp, ppd, pdiff, pcompare};
 
 #[Group('PrettyPrint')]
 #[CoversFunction('Apphp\\PrettyPrint\\pprint')]
 #[CoversFunction('Apphp\\PrettyPrint\\pp')]
 #[CoversFunction('Apphp\\PrettyPrint\\ppd')]
 #[CoversFunction('Apphp\\PrettyPrint\\pdiff')]
+#[CoversFunction('Apphp\\PrettyPrint\\pcompare')]
 final class FunctionsTest extends TestCase
 {
     private string $nl;
@@ -27,6 +29,13 @@ final class FunctionsTest extends TestCase
     {
         parent::setUp();
         $this->nl = PHP_EOL;
+        Env::setCliOverride(true);
+    }
+
+    protected function tearDown(): void
+    {
+        Env::setCliOverride(null);
+        parent::tearDown();
     }
 
     #[Test]
@@ -116,5 +125,48 @@ final class FunctionsTest extends TestCase
         self::assertMatchesRegularExpression('/\[\s*1,\s*-,\s*3\s*\]/', $out);
         // Expect 2nd row: [x, 5, x]
         self::assertMatchesRegularExpression('/\[\s*-,\s*5,\s*-\s*\]/', $out);
+    }
+
+    #[Test]
+    #[TestDox('pcompare prints two matrices and colors same elements green and different elements red in CLI')]
+    public function pcompareCliColorsCorrectly(): void
+    {
+        Env::setCliOverride(true);
+
+        $a = [
+            [1, 2],
+            [3, 4],
+        ];
+        $b = [
+            [1, 9],
+            [0, 4],
+        ];
+
+        $out = pcompare($a, $b, ['return' => true, 'end' => ""]);
+
+        // Green for equal (1 and 4), red for different (2,3) and (9,0)
+        self::assertStringContainsString("\033[32m", $out);
+        self::assertStringContainsString("\033[31m", $out);
+
+        // Ensure it prints two matrices (separated by a blank line)
+        self::assertMatchesRegularExpression('/\]\R\R\[/', $out);
+    }
+
+    #[Test]
+    #[TestDox('pcompare uses HTML <pre> and <span> coloring when not in CLI')]
+    public function pcompareHtmlColorsCorrectly(): void
+    {
+        Env::setCliOverride(false);
+
+        $a = [[1]];
+        $b = [[2]];
+
+        $out = pcompare($a, $b, ['return' => true, 'end' => '']);
+
+        self::assertStringContainsString('<pre>', $out);
+        self::assertStringContainsString('</pre>', $out);
+        self::assertStringContainsString('<span style="color: red">', $out);
+
+        Env::setCliOverride(true);
     }
 }
