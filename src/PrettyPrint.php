@@ -59,8 +59,8 @@ class PrettyPrint
      *
      * Options (pass as trailing array):
      * - 'start' => string                    // prefix printed before the content, default ""
-     * - 'end' => string                      // line terminator, default "\n"
-     * - 'sep' => string                      // separator between multiple default-formatted arguments, default " "
+     * - 'end' => string                      // line terminator, default "\n\n"
+     * - 'sep' => string                      // separator between multiple default-formatted arguments, default "\n"
      * - 'label' => string                    // prefix label for 2D/3D formatted arrays, default `tensor`
      * - 'precision' => int                   // number of digits after the decimal point for floats, default 4
      * - 'return' => bool                     // when true, do not echo; return the formatted string instead
