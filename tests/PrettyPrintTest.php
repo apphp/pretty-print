@@ -17,11 +17,13 @@ use PHPUnit\Framework\Attributes\CoversClass;
 final class PrettyPrintTest extends TestCase
 {
     private int $obLevel = 0;
+    private string $nl;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->obLevel = ob_get_level();
+        $this->nl = PHP_EOL;
     }
 
     protected function tearDown(): void
@@ -41,7 +43,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Hello', 123, 4.56);
         $out = ob_get_clean();
-        self::assertSame("Hello 123 4.5600\n", $out);
+        self::assertSame("Hello{$this->nl}123{$this->nl}4.5600{$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
@@ -108,7 +110,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp([1, 23, 456], [12, 3, 45]);
         $out = ob_get_clean();
-        $expected = "[1, 23, 456] [12, 3, 45]\n";
+        $expected = "[1, 23, 456]{$this->nl}[12, 3, 45]{$this->nl}{$this->nl}";
         self::assertSame($expected, $out);
     }
 
@@ -121,7 +123,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Confusion matrix:', $matrix);
         $out = ob_get_clean();
-        $expected = "Confusion matrix: tensor([\n   [  1, 23],\n   [456,  7]\n])\n";
+        $expected = "Confusion matrix:{$this->nl}tensor([{$this->nl}   [  1, 23],{$this->nl}   [456,  7]{$this->nl}]){$this->nl}{$this->nl}";
         self::assertSame($expected, $out);
     }
 
@@ -137,7 +139,7 @@ final class PrettyPrintTest extends TestCase
 
         // Relaxed check: structure and values present, accounting for padding/indentation
         self::assertTrue(str_starts_with($out, 'tensor(['));
-        self::assertTrue(str_ends_with($out, "])\n"));
+        self::assertTrue(str_ends_with($out, "]){$this->nl}{$this->nl}"));
         self::assertMatchesRegularExpression('/tensor\(\[.*\[\s*1,\s*2\s*\],\s*\n\s*\[\s*3,\s*4\s*\].*\]\)/s', rtrim($out));
     }
 
@@ -156,7 +158,7 @@ final class PrettyPrintTest extends TestCase
 
         // Basic structure checks
         self::assertTrue(str_starts_with($out, 'tensor(['));
-        self::assertTrue(str_ends_with($out, "])\n"));
+        self::assertTrue(str_ends_with($out, "]){$this->nl}{$this->nl}"));
 
         // Should contain two 2D blocks formatted; allow padding spaces
         self::assertMatchesRegularExpression('/\[\s*1,\s*2\s*\]/', $out);
@@ -217,7 +219,7 @@ final class PrettyPrintTest extends TestCase
         $pp($m, label: 'arr');
         $out = ob_get_clean();
         self::assertTrue(str_starts_with($out, 'arr(['));
-        self::assertTrue(str_ends_with($out, "])\n"));
+        self::assertTrue(str_ends_with($out, "]){$this->nl}{$this->nl}"));
     }
 
     #[Test]
@@ -230,7 +232,7 @@ final class PrettyPrintTest extends TestCase
         $pp($t, ['label' => 'ndarray']);
         $out = ob_get_clean();
         self::assertTrue(str_starts_with($out, 'ndarray(['));
-        self::assertTrue(str_ends_with($out, "])\n"));
+        self::assertTrue(str_ends_with($out, "]){$this->nl}{$this->nl}"));
     }
 
     #[Test]
@@ -242,7 +244,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Tensor:', $tensor);
         $out = ob_get_clean();
-        self::assertStringStartsWith('Tensor: tensor([', $out);
+        self::assertStringStartsWith("Tensor:\ntensor([", $out);
         self::assertStringContainsString('])', $out);
     }
 
@@ -295,7 +297,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp($arr);
         $out = ob_get_clean();
-        self::assertSame("tensor([\n   [a, 2],\n   [3, 4]\n])\n", $out);
+        self::assertSame("tensor([{$this->nl}   [a, 2],{$this->nl}   [3, 4]{$this->nl}]){$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
@@ -306,7 +308,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp(true, false, null);
         $out = ob_get_clean();
-        self::assertSame("True False None\n", $out);
+        self::assertSame("True{$this->nl}False{$this->nl}None{$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
@@ -317,7 +319,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp(3.14159, precision: 2);
         $out = ob_get_clean();
-        self::assertSame("3.14\n", $out);
+        self::assertSame("3.14{$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
@@ -328,7 +330,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp(3.14159, ['precision' => 6]);
         $out = ob_get_clean();
-        self::assertSame("3.141590\n", $out);
+        self::assertSame("3.141590{$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
@@ -342,8 +344,8 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp(1.2345);
         $second = ob_get_clean();
-        self::assertSame("1.23\n", $first);
-        self::assertSame("1.2345\n", $second);
+        self::assertSame("1.23{$this->nl}{$this->nl}", $first);
+        self::assertSame("1.2345{$this->nl}{$this->nl}", $second);
     }
 
     #[Test]
@@ -356,7 +358,7 @@ final class PrettyPrintTest extends TestCase
         $pp($m, precision: 2);
         $out = ob_get_clean();
         self::assertTrue(str_starts_with($out, 'tensor(['));
-        self::assertTrue(str_ends_with($out, "])\n"));
+        self::assertTrue(str_ends_with($out, "]){$this->nl}{$this->nl}"));
         self::assertMatchesRegularExpression('/\b1\.20\b/', $out);
         self::assertMatchesRegularExpression('/\b3\.46\b/', $out);
         self::assertMatchesRegularExpression('/\b9\.00\b/', $out);
@@ -371,7 +373,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Label', [1, 2], [3, 4]);
         $out = ob_get_clean();
-        self::assertSame("Label [1, 2] [3, 4]\n", $out);
+        self::assertSame("Label{$this->nl}[1, 2]{$this->nl}[3, 4]{$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
@@ -383,7 +385,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp(...$args);
         $out = ob_get_clean();
-        $expected = implode(' ', array_map(static fn ($n) => (string)$n, range(1, 32))) . "\n";
+        $expected = implode($this->nl, array_map(static fn ($n) => (string)$n, range(1, 32))) . $this->nl . $this->nl;
         self::assertSame($expected, $out);
     }
 
@@ -396,7 +398,7 @@ final class PrettyPrintTest extends TestCase
         // foo and baz are unknown named args and should be stripped
         $pp('Hello', foo: 'bar', baz: 123);
         $out = ob_get_clean();
-        self::assertSame("Hello\n", $out);
+        self::assertSame("Hello{$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
@@ -439,7 +441,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp->__invoke('Direct');
         $out = ob_get_clean();
-        self::assertSame("Direct\n", $out);
+        self::assertSame("Direct{$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
@@ -451,7 +453,7 @@ final class PrettyPrintTest extends TestCase
         $s = $pp('Hello', return: true);
         $out = ob_get_clean();
         self::assertSame('', $out, 'No output should be echoed when return=true');
-        self::assertSame("Hello\n", $s);
+        self::assertSame("Hello{$this->nl}{$this->nl}", $s);
     }
 
     #[Test]
@@ -509,7 +511,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp([1, 2, 3]); // 1D array: not 2D or 3D -> formatForArray()
         $out = ob_get_clean();
-        self::assertSame("[1, 2, 3]\n", $out);
+        self::assertSame("[1, 2, 3]{$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
@@ -518,7 +520,7 @@ final class PrettyPrintTest extends TestCase
     {
         $pp = new PrettyPrint();
 
-        $obj = new class {
+        $obj = new class () {
             public function asArray(): array
             {
                 return [10, 20, 30];
@@ -529,7 +531,7 @@ final class PrettyPrintTest extends TestCase
         $pp($obj);
         $out = ob_get_clean();
 
-        self::assertSame("[10, 20, 30]\n", $out);
+        self::assertSame("[10, 20, 30]{$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
@@ -538,7 +540,7 @@ final class PrettyPrintTest extends TestCase
     {
         $pp = new PrettyPrint();
 
-        $obj = new class {
+        $obj = new class () {
             public function toArray(): array
             {
                 return ['x' => 5, 'y' => 6];
@@ -549,7 +551,7 @@ final class PrettyPrintTest extends TestCase
         $pp($obj);
         $out = ob_get_clean();
 
-        self::assertSame("[5, 6]\n", $out);
+        self::assertSame("[5, 6]{$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
@@ -558,7 +560,7 @@ final class PrettyPrintTest extends TestCase
     {
         $pp = new PrettyPrint();
 
-        $obj = new class {
+        $obj = new class () {
             public function asArray(): string
             {
                 return 'not-an-array';
@@ -570,7 +572,7 @@ final class PrettyPrintTest extends TestCase
         $out = ob_get_clean();
 
         // Falls back to generic object formatting path
-        self::assertSame("Object\n", $out);
+        self::assertSame("Object{$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
@@ -579,7 +581,7 @@ final class PrettyPrintTest extends TestCase
     {
         $pp = new PrettyPrint();
 
-        $obj = new class {
+        $obj = new class () {
             public function asArray(): array
             {
                 return [

@@ -59,8 +59,8 @@ class PrettyPrint
      *
      * Options (pass as trailing array):
      * - 'start' => string                    // prefix printed before the content, default ""
-     * - 'end' => string                      // line terminator, default "\n"
-     * - 'sep' => string                      // separator between multiple default-formatted arguments, default " "
+     * - 'end' => string                      // line terminator, default "\n\n"
+     * - 'sep' => string                      // separator between multiple default-formatted arguments, default "\n"
      * - 'label' => string                    // prefix label for 2D/3D formatted arrays, default `tensor`
      * - 'precision' => int                   // number of digits after the decimal point for floats, default 4
      * - 'return' => bool                     // when true, do not echo; return the formatted string instead
@@ -79,7 +79,7 @@ class PrettyPrint
         [$start, $sep, $end, $args] = $this->parseSimpleOptions($args);
         [$fmt, $start, $sep, $end, $args, $returnString] = $this->extractFormattingOptions($args, $start, $sep, $end);
 
-        $fmt  = $this->sanitizeFormattingOptions($fmt);
+        $fmt = $this->sanitizeFormattingOptions($fmt);
         $args = $this->normalizeArgs($args);
 
         if (!$returnString) {
@@ -111,9 +111,10 @@ class PrettyPrint
      */
     private function parseSimpleOptions(array $args): array
     {
-        $end = PHP_EOL;
+        $nl = PHP_EOL;
+        $end = $nl . $nl;
         $start = '';
-        $sep = ' ';
+        $sep = $nl;
 
         if (isset($args['end'])) {
             $end = (string)$args['end'];
