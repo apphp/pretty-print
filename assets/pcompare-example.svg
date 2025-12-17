@@ -14,7 +14,7 @@
     ]]></style>
   </defs>
 
-  <rect x="12" y="12" rx="4" ry="4" width="836" height="206" class="frame"/>
+  <rect x="12" y="12" rx="2" ry="2" width="846" height="206" class="frame"/>
 
   <text x="32" y="44" class="title">pcompare($a, $b) output (green = same, red = different)</text>
 
