@@ -232,8 +232,8 @@ Notes:
 ### Options reference
 
 - **start**: string. Prefix printed before the content. Example: `pprint('Hello', ['start' => "\t"])`.
-- **end**: string. Line terminator, default to new line. Example: `pprint('no newline', ['end' => '']);`
-- **sep**: string. Separator between multiple default-formatted arguments. Default is a single space `' '`. Examples: `pprint('A','B','C', sep: ', ', end: '')` or `pprint('X','Y', ['sep' => "\n", 'end' => ''])`.
+- **end**: string. Line terminator, default is double lines. Example: `pprint('no newline', ['end' => '']);`
+- **sep**: string. Separator between multiple default-formatted arguments. Default is a new line. Examples: `pprint('A','B','C', sep: ', ', end: '')` or `pprint('X','Y', ['sep' => "\n", 'end' => ''])`.
 - **label**: string. Prefix label for 2D/3D formatted arrays, default `tensor`. Example: `pprint($m, ['label' => 'arr'])`.
 - **precision**: int. Number of digits after the decimal point for floats. Example: `pprint(3.14159, precision: 2)` prints `3.14`.
 - **return**: bool. When true, do not echo; return the formatted string instead (no `<pre>` wrapping in web context). Example: `$s = pprint($m, return: true);`.
