@@ -11,6 +11,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
+
 use function Apphp\PrettyPrint\{pprint, pp, ppd, pdiff};
 
 #[Group('PrettyPrint')]
@@ -20,6 +21,14 @@ use function Apphp\PrettyPrint\{pprint, pp, ppd, pdiff};
 #[CoversFunction('Apphp\\PrettyPrint\\pdiff')]
 final class FunctionsTest extends TestCase
 {
+    private string $nl;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->nl = PHP_EOL;
+    }
+
     #[Test]
     #[TestDox('global function pprint prints arguments using PrettyPrint')]
     public function pprintPrintsOutput(): void
@@ -27,7 +36,7 @@ final class FunctionsTest extends TestCase
         ob_start();
         pprint('Hello');
         $out = ob_get_clean();
-        self::assertSame("Hello\n", $out);
+        self::assertSame("Hello{$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
@@ -37,7 +46,7 @@ final class FunctionsTest extends TestCase
         ob_start();
         pp(1, 2, 3);
         $out = ob_get_clean();
-        self::assertSame("1 2 3\n", $out);
+        self::assertSame("1{$this->nl}2{$this->nl}3{$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
@@ -46,7 +55,7 @@ final class FunctionsTest extends TestCase
     #[TestDox('global function ppd prints output (no exit in test env)')]
     public function ppdPrintsThenExits(): void
     {
-        $this->expectOutputString("hello\n");
+        $this->expectOutputString("hello{$this->nl}{$this->nl}");
         ppd('hello');
     }
 
@@ -54,7 +63,7 @@ final class FunctionsTest extends TestCase
     #[TestDox('pprint uses asArray() when object provides it')]
     public function pprintUsesAsArrayOnObject(): void
     {
-        $obj = new class {
+        $obj = new class () {
             public function asArray(): array
             {
                 return [1, 2, 3];
@@ -65,14 +74,14 @@ final class FunctionsTest extends TestCase
         pprint($obj);
         $out = ob_get_clean();
 
-        self::assertSame("[1, 2, 3]\n", $out);
+        self::assertSame("[1, 2, 3]{$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
     #[TestDox('pprint falls back to toArray() when object has no asArray()')]
     public function pprintUsesToArrayOnObject(): void
     {
-        $obj = new class {
+        $obj = new class () {
             public function toArray(): array
             {
                 return ['a' => 1, 'b' => 2];
@@ -83,7 +92,7 @@ final class FunctionsTest extends TestCase
         pprint($obj);
         $out = ob_get_clean();
 
-        self::assertSame("[1, 2]\n", $out);
+        self::assertSame("[1, 2]{$this->nl}{$this->nl}", $out);
     }
 
     #[Test]

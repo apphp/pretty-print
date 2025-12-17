@@ -79,7 +79,7 @@ class PrettyPrint
         [$start, $sep, $end, $args] = $this->parseSimpleOptions($args);
         [$fmt, $start, $sep, $end, $args, $returnString] = $this->extractFormattingOptions($args, $start, $sep, $end);
 
-        $fmt  = $this->sanitizeFormattingOptions($fmt);
+        $fmt = $this->sanitizeFormattingOptions($fmt);
         $args = $this->normalizeArgs($args);
 
         if (!$returnString) {
@@ -111,9 +111,10 @@ class PrettyPrint
      */
     private function parseSimpleOptions(array $args): array
     {
-        $end = PHP_EOL;
+        $nl = PHP_EOL;
+        $end = $nl . $nl;
         $start = '';
-        $sep = ' ';
+        $sep = $nl;
 
         if (isset($args['end'])) {
             $end = (string)$args['end'];

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Apphp\PrettyPrint;
 
-use Apphp\PrettyPrint\Env;
-use Apphp\PrettyPrint\PrettyPrint;
-
 /**
  * Convenience wrapper around PrettyPrint's callable interface.
  * @param ...$args
@@ -36,10 +33,10 @@ function ppd(...$args)
     $exiter = null;
 
     if (Env::isCli() && getenv('APP_ENV') === 'test') {
-        $exiter = fn() => null;
+        $exiter = fn () => null;
     }
 
-    $exiter ??= fn() => exit;
+    $exiter ??= fn () => exit;
 
     // Execute behavior
     pprint(...$args);
@@ -87,4 +84,3 @@ function pdiff(array $a, array $b): string
 
     return pprint($diff);
 }
-
