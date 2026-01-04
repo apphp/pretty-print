@@ -2,6 +2,7 @@
  - Changed default values of sep: `PHP_EOL` and end: `PHP_EOL . PHP_EOL`
  - Added new function pcompare() for side-by-side (stacked) matrix comparison with colored cells
  - Added badges to README
+ - Added `rowsOnly` / `colsOnly` options to `pprint` / `PrettyPrint` for selecting specific rows/columns in 2D/3D outputs
 
 0.5.1 / 2025-12-12
  - Improve tensor block formatting in `Formatter` for PyTorch-style visualization
