@@ -441,9 +441,6 @@ class PrettyPrint
         if ($rowsRange !== null) {
             $selectedRows = [];
             foreach ($rowsRange as $idx) {
-                if (!is_int($idx)) {
-                    continue;
-                }
                 if ($idx < 1 || $idx > $rows) {
                     continue;
                 }
@@ -455,20 +452,10 @@ class PrettyPrint
 
         if ($colsRange !== null && !empty($matrix)) {
             foreach ($matrix as $ri => $row) {
-                if (!is_array($row)) {
-                    continue;
-                }
                 $values = array_values($row);
                 $cols = count($values);
-                if ($cols === 0) {
-                    $matrix[$ri] = [];
-                    continue;
-                }
                 $selected = [];
                 foreach ($colsRange as $cIdx) {
-                    if (!is_int($cIdx)) {
-                        continue;
-                    }
                     if ($cIdx < 1 || $cIdx > $cols) {
                         continue;
                     }

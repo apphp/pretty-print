@@ -601,4 +601,265 @@ final class PrettyPrintTest extends TestCase
         // And we no longer see completely empty cells like "[, ]"
         self::assertStringNotContainsString('[, ]', $out);
     }
+
+    #[Test]
+    #[TestDox('applies rowsOnly and colsOnly to 2D matrices, including sparse selectors')]
+    public function rowsOnlyAndColsOnlyOn2D(): void
+    {
+        $pp = new PrettyPrint();
+        $nl = PHP_EOL;
+
+        $matrix = [
+            [1, 2, 3, 4, 5, 6],
+            [10, 20, 30, 40, 50, 60],
+            [100, 200, 300, 400, 500, 600],
+        ];
+
+        ob_start();
+        $pp($matrix, rowsOnly: '2-3', colsOnly: '1-2,5');
+        $out = ob_get_clean();
+
+        // Basic structure: tensor header/footer
+        self::assertTrue(str_starts_with($out, 'tensor(['));
+        self::assertTrue(str_ends_with($out, "]){$nl}{$nl}"));
+
+        // Rows 2 and 3 only: row 1 should not appear
+        self::assertStringContainsString('10', $out);
+        self::assertStringContainsString('100', $out);
+        self::assertStringNotContainsString(' 1,  2,  3,  4,  5,  6', $out);
+
+        // Columns 1,2,5 only (for those rows): 50 and 500 are present, 60/600 are not
+        self::assertStringContainsString('50', $out);
+        self::assertStringContainsString('500', $out);
+        self::assertStringNotContainsString('60', $out);
+        self::assertStringNotContainsString('600', $out);
+    }
+
+    #[Test]
+    #[TestDox('applies rowsOnly and colsOnly to 3D tensors for each 2D slice')]
+    public function rowsOnlyAndColsOnlyOn3D(): void
+    {
+        $pp = new PrettyPrint();
+        $nl = PHP_EOL;
+
+        $tensor = [
+            [
+                [1, 2, 3, 4],
+                [5, 6, 7, 8],
+            ],
+            [
+                [10, 20, 30, 40],
+                [50, 60, 70, 80],
+            ],
+        ];
+
+        ob_start();
+        $pp($tensor, rowsOnly: '2', colsOnly: '1,3-4');
+        $out = ob_get_clean();
+
+        // 3D tensor header/footer
+        self::assertTrue(str_starts_with($out, 'tensor(['));
+        self::assertTrue(str_ends_with($out, "]){$nl}{$nl}"));
+
+        // Only second row from each 2D slice should be visible (5,... and 50,...)
+        self::assertStringContainsString('[[5, 7, 8]]', $out);
+        self::assertStringContainsString('[[50, 70, 80]]', $out);
+        self::assertStringNotContainsString('[1, 2, 3, 4]', $out);
+        self::assertStringNotContainsString('[10, 20, 30, 40]', $out);
+
+        // Columns 1,3,4 only: 7,8 and 70,80 present; 6,60 absent
+        self::assertStringContainsString(' 7', $out);
+        self::assertStringContainsString(' 8', $out);
+        self::assertStringContainsString('70', $out);
+        self::assertStringContainsString('80', $out);
+        self::assertStringNotContainsString(' 6,', $out);
+        self::assertStringNotContainsString('60,', $out);
+    }
+
+    #[Test]
+    #[TestDox('ignores rowsOnly and colsOnly when indices are less than 1')]
+    public function ignoresNonPositiveRowAndColIndices(): void
+    {
+        $pp = new PrettyPrint();
+        $nl = PHP_EOL;
+
+        $matrix = [
+            [1, 2],
+            [3, 4],
+        ];
+
+        // Baseline: no filtering
+        ob_start();
+        $pp($matrix, end: '');
+        $baseline = ob_get_clean();
+
+        // rowsOnly = 0 (int) should be ignored -> same as baseline
+        ob_start();
+        $pp($matrix, rowsOnly: 0, end: '');
+        $rowsZero = ob_get_clean();
+
+        // colsOnly = '0' (string) should be ignored -> same as baseline
+        ob_start();
+        $pp($matrix, colsOnly: '0', end: '');
+        $colsZero = ob_get_clean();
+
+        self::assertSame($baseline, $rowsZero);
+        self::assertSame($baseline, $colsZero);
+    }
+
+    #[Test]
+    #[TestDox('uses integer rowsOnly and colsOnly indices (positive) to filter 2D matrix')]
+    public function usesPositiveIntegerRowAndColIndices(): void
+    {
+        $pp = new PrettyPrint();
+        $nl = PHP_EOL;
+
+        $matrix = [
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9],
+        ];
+
+        ob_start();
+        // rowsOnly as int 2, colsOnly as int 1 should select only value 4
+        $pp($matrix, rowsOnly: 2, colsOnly: 1, end: '');
+        $out = ob_get_clean();
+
+        // Basic structure is still a tensor
+        self::assertStringContainsString('tensor([', $out);
+        self::assertStringContainsString('])', $out);
+
+        // Only the element at row 2, col 1 (value 4) should be present
+        self::assertStringContainsString('4', $out);
+        self::assertStringNotContainsString('1', $out);
+        self::assertStringNotContainsString('2', $out);
+        self::assertStringNotContainsString('3', $out);
+        self::assertStringNotContainsString('5', $out);
+        self::assertStringNotContainsString('6', $out);
+        self::assertStringNotContainsString('7', $out);
+        self::assertStringNotContainsString('8', $out);
+        self::assertStringNotContainsString('9', $out);
+    }
+
+    #[Test]
+    #[TestDox('ignores empty and whitespace-only rowsOnly/colsOnly strings')]
+    public function ignoresEmptyAndWhitespaceSelectors(): void
+    {
+        $pp = new PrettyPrint();
+        $nl = PHP_EOL;
+
+        $matrix = [
+            [1, 2],
+            [3, 4],
+        ];
+
+        // Baseline with no filtering
+        ob_start();
+        $pp($matrix, end: '');
+        $baseline = ob_get_clean();
+
+        // rowsOnly as empty string -> should be ignored
+        ob_start();
+        $pp($matrix, rowsOnly: '', end: '');
+        $rowsEmpty = ob_get_clean();
+
+        // colsOnly as whitespace-only string -> should be ignored
+        ob_start();
+        $pp($matrix, colsOnly: "   \t", end: '');
+        $colsWhitespace = ob_get_clean();
+
+        self::assertSame($baseline, $rowsEmpty);
+        self::assertSame($baseline, $colsWhitespace);
+    }
+
+    #[Test]
+    #[TestDox('ignores invalid selector segments so no filtering is applied')]
+    public function ignoresCompletelyInvalidSelectors(): void
+    {
+        $pp = new PrettyPrint();
+        $nl = PHP_EOL;
+
+        $matrix = [
+            [1, 2],
+            [3, 4],
+        ];
+
+        // Baseline
+        ob_start();
+        $pp($matrix, end: '');
+        $baseline = ob_get_clean();
+
+        // rowsOnly with only invalid segments:
+        // - empty segment between commas
+        // - non-numeric text
+        // - malformed range
+        ob_start();
+        $pp($matrix, rowsOnly: ',foo,1-bar,', end: '');
+        $rowsInvalid = ob_get_clean();
+
+        self::assertSame($baseline, $rowsInvalid);
+    }
+
+    #[Test]
+    #[TestDox('rowsOnly silently ignores out-of-bounds row indices')]
+    public function rowsOnlyIgnoresOutOfBoundsRows(): void
+    {
+        $pp = new PrettyPrint();
+        $nl = PHP_EOL;
+
+        $matrix = [
+            [1, 2],
+            [3, 4],
+        ];
+
+        // Baseline with no filtering
+        ob_start();
+        $pp($matrix, end: '');
+        $baseline = ob_get_clean();
+
+        // rowsOnly=5 on a 2-row matrix -> no valid rows selected, treated as empty
+        ob_start();
+        $pp($matrix, rowsOnly: '5', end: '');
+        $out = ob_get_clean();
+
+        // Should not blow up; will be an empty tensor. At minimum, must differ from baseline.
+        self::assertNotSame($baseline, $out);
+        // But should not contain any of the original values
+        self::assertStringNotContainsString('1', $out);
+        self::assertStringNotContainsString('2', $out);
+        self::assertStringNotContainsString('3', $out);
+        self::assertStringNotContainsString('4', $out);
+    }
+
+    #[Test]
+    #[TestDox('colsOnly silently ignores out-of-bounds column indices')]
+    public function colsOnlyIgnoresOutOfBoundsColumns(): void
+    {
+        $pp = new PrettyPrint();
+        $nl = PHP_EOL;
+
+        $matrix = [
+            [1, 2, 3],
+        ];
+
+        // Baseline with no filtering
+        ob_start();
+        $pp($matrix, end: '');
+        $baseline = ob_get_clean();
+
+        // colsOnly=5 on a 3-column matrix: all requested indices are out-of-bounds
+        ob_start();
+        $pp($matrix, colsOnly: '5', end: '');
+        $out = ob_get_clean();
+
+        // Still should be a tensor wrapper, but with no original values
+        self::assertStringContainsString('tensor([', $out);
+        self::assertStringContainsString('])', $out);
+        self::assertStringNotContainsString('1', $out);
+        self::assertStringNotContainsString('2', $out);
+        self::assertStringNotContainsString('3', $out);
+
+        // And it should differ from the baseline (which contains 1,2,3)
+        self::assertNotSame($baseline, $out);
+    }
 }
