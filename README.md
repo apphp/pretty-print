@@ -4,6 +4,7 @@
 ![Last commit](https://img.shields.io/github/last-commit/apphp/pretty-print)
 ![License](https://img.shields.io/github/license/apphp/pretty-print)
 ![Link Check](https://github.com/apphp/pretty-print/actions/workflows/php.yml/badge.svg)
+![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 
 Callable pretty-printer for PHP arrays with Python-like formatting.
 PrettyPrint is a small, zero-dependency PHP utility that formats arrays in a clean, readable, PyTorch-inspired style. 
