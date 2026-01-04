@@ -1,4 +1,10 @@
 # Pretty Pprint
+
+![GitHub stars](https://img.shields.io/github/stars/apphp/pretty-print?style=social)
+![Last commit](https://img.shields.io/github/last-commit/apphp/pretty-print)
+![License](https://img.shields.io/github/license/apphp/pretty-print)
+![Link Check](https://github.com/apphp/pretty-print/actions/workflows/php.yml/badge.svg)
+
 Callable pretty-printer for PHP arrays with Python-like formatting.
 PrettyPrint is a small, zero-dependency PHP utility that formats arrays in a clean, readable, PyTorch-inspired style. 
 It supports aligned 2D tables, 3D tensors, summarized tensor views, and flexible output options – making it ideal for ML experiments, 
