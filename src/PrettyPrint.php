@@ -146,7 +146,7 @@ class PrettyPrint
     {
         $fmt = [];
         $returnString = false;
-        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label', 'precision'];
+        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label', 'precision', 'rowsOnly', 'colsOnly'];
         foreach ($fmtKeys as $k) {
             if (array_key_exists($k, $args)) {
                 $fmt[$k] = $args[$k];
@@ -302,6 +302,11 @@ class PrettyPrint
         foreach ($args as $i => $arg) {
             if (is_array($arg)) {
                 if (Validator::is3D($arg)) {
+                    $rowsRange = $this->parseRangeOption($fmt['rowsOnly'] ?? null);
+                    $colsRange = $this->parseRangeOption($fmt['colsOnly'] ?? null);
+                    if ($rowsRange !== null || $colsRange !== null) {
+                        $arg = $this->applyRowColFilters3D($arg, $rowsRange, $colsRange);
+                    }
                     $parts[] = Formatter::format3DTorch(
                         $arg,
                         (int)($fmt['headB'] ?? 5),
@@ -314,6 +319,11 @@ class PrettyPrint
                         $this->precision
                     );
                 } elseif (Validator::is2D($arg)) {
+                    $rowsRange = $this->parseRangeOption($fmt['rowsOnly'] ?? null);
+                    $colsRange = $this->parseRangeOption($fmt['colsOnly'] ?? null);
+                    if ($rowsRange !== null || $colsRange !== null) {
+                        $arg = $this->applyRowColFilters2D($arg, $rowsRange, $colsRange);
+                    }
                     $parts[] = Formatter::format2DTorch(
                         $arg,
                         (int)($fmt['headRows'] ?? 5),
@@ -331,5 +341,148 @@ class PrettyPrint
             }
         }
         return $parts;
+    }
+
+    /**
+     * Parse a row/column selector option.
+     *
+     * Accepts:
+     * - single int (1-based)
+     * - numeric string, e.g. "3"
+     * - range string "A-B"
+     * - comma-separated mix of indices and ranges, e.g. "1-2,5,9-11".
+     *
+     * Returns a sorted list of unique 1-based indices, or null when invalid/empty.
+     *
+     * @param mixed $value
+     * @return array<int>|null
+     */
+    private function parseRangeOption(mixed $value): ?array
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_int($value)) {
+            if ($value < 1) {
+                return null;
+            }
+            return [$value];
+        }
+
+        if (is_string($value)) {
+            $value = trim($value);
+            if ($value === '') {
+                return null;
+            }
+
+            if (ctype_digit($value)) {
+                $idx = (int)$value;
+                if ($idx < 1) {
+                    return null;
+                }
+                return [$idx];
+            }
+
+            $indices = [];
+
+            $segments = explode(',', $value);
+            foreach ($segments as $segment) {
+                $segment = trim($segment);
+                if ($segment === '') {
+                    continue;
+                }
+
+                if (ctype_digit($segment)) {
+                    $n = (int)$segment;
+                    if ($n >= 1) {
+                        $indices[] = $n;
+                    }
+                    continue;
+                }
+
+                $parts = explode('-', $segment, 2);
+                if (count($parts) === 2) {
+                    $start = trim($parts[0]);
+                    $end = trim($parts[1]);
+                    if ($start !== '' && $end !== '' && ctype_digit($start) && ctype_digit($end)) {
+                        $s = (int)$start;
+                        $e = (int)$end;
+                        if ($s >= 1 && $e >= $s) {
+                            for ($k = $s; $k <= $e; $k++) {
+                                $indices[] = $k;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!empty($indices)) {
+                $indices = array_values(array_unique($indices));
+                sort($indices);
+                return $indices;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Apply sparse row/column filters to a 2D matrix.
+     *
+     * @param array $matrix 2D array to slice.
+     * @param array<int>|null $rowsRange List of 1-based row indices to keep, or null for all.
+     * @param array<int>|null $colsRange List of 1-based column indices to keep, or null for all.
+     * @return array Filtered 2D matrix.
+     */
+    private function applyRowColFilters2D(array $matrix, ?array $rowsRange, ?array $colsRange): array
+    {
+        $rows = count($matrix);
+        if ($rowsRange !== null) {
+            $selectedRows = [];
+            foreach ($rowsRange as $idx) {
+                if ($idx < 1 || $idx > $rows) {
+                    continue;
+                }
+                $selectedRows[] = $matrix[$idx - 1];
+            }
+            $matrix = $selectedRows;
+            $rows = count($matrix);
+        }
+
+        if ($colsRange !== null && !empty($matrix)) {
+            foreach ($matrix as $ri => $row) {
+                $values = array_values($row);
+                $cols = count($values);
+                $selected = [];
+                foreach ($colsRange as $cIdx) {
+                    if ($cIdx < 1 || $cIdx > $cols) {
+                        continue;
+                    }
+                    $selected[] = $values[$cIdx - 1];
+                }
+                $matrix[$ri] = $selected;
+            }
+        }
+
+        return $matrix;
+    }
+
+    /**
+     * Apply sparse row/column filters to each 2D slice of a 3D tensor.
+     *
+     * @param array $tensor3d 3D tensor (array of 2D matrices).
+     * @param array<int>|null $rowsRange List of 1-based row indices to keep, or null for all.
+     * @param array<int>|null $colsRange List of 1-based column indices to keep, or null for all.
+     * @return array Filtered 3D tensor.
+     */
+    private function applyRowColFilters3D(array $tensor3d, ?array $rowsRange, ?array $colsRange): array
+    {
+        foreach ($tensor3d as $bi => $matrix) {
+            if (is_array($matrix)) {
+                $tensor3d[$bi] = $this->applyRowColFilters2D($matrix, $rowsRange, $colsRange);
+            }
+        }
+        return $tensor3d;
     }
 }

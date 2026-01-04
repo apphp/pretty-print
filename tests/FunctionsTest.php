@@ -128,6 +128,23 @@ final class FunctionsTest extends TestCase
     }
 
     #[Test]
+    #[TestDox('pdiff handles scalar-vs-scalar rows via the scalar branch')]
+    public function pdiffHandlesScalarRows(): void
+    {
+        $a = [1, 2];
+        $b = [1, 9];
+
+        ob_start();
+        pdiff($a, $b);
+        $out = ob_get_clean();
+
+        // First row: both scalars equal -> [1]
+        self::assertMatchesRegularExpression('/\[\s*1\s*\]/', $out);
+        // Second row: scalars differ -> [-]
+        self::assertMatchesRegularExpression('/\[\s*-\s*\]/', $out);
+    }
+
+    #[Test]
     #[TestDox('pcompare prints two matrices and colors same elements green and different elements red in CLI')]
     public function pcompareCliColorsCorrectly(): void
     {
@@ -168,5 +185,103 @@ final class FunctionsTest extends TestCase
         self::assertStringContainsString('<span style="color: red">', $out);
 
         Env::setCliOverride(true);
+    }
+
+    #[Test]
+    #[TestDox('pcompare returns empty matrices placeholder when both inputs are empty (HTML mode)')]
+    public function pcompareHandlesEmptyMatricesInHtmlMode(): void
+    {
+        Env::setCliOverride(false);
+
+        try {
+            $out = pcompare([], [], ['return' => true, 'end' => '']);
+
+            // Expect HTML <pre> wrapper with two empty matrix lines
+            self::assertSame('<pre>[]' . $this->nl . $this->nl . '[]</pre>', $out);
+        } finally {
+            Env::setCliOverride(true);
+        }
+    }
+
+    #[Test]
+    #[TestDox('pcompare respects precision option when formatting cell values')]
+    public function pcompareRespectsPrecisionOption(): void
+    {
+        // Force CLI mode so pcompare uses ANSI formatting, not HTML
+        Env::setCliOverride(true);
+
+        $a = [[1.2345]];
+        $b = [[1.2345]];
+
+        $out = pcompare($a, $b, [
+            'precision' => 1,
+            'return'    => true,
+            'end'       => '',
+        ]);
+
+        // With precision=1 we expect values like 1.2 (not 1.23 or 1.2345)
+        self::assertStringContainsString('1.2', $out);
+        self::assertStringNotContainsString('1.23', $out);
+        self::assertStringNotContainsString('1.2345', $out);
+    }
+
+    #[Test]
+    #[TestDox('pcompare respects start option when building output prefix')]
+    public function pcompareRespectsStartOption(): void
+    {
+        // Use CLI mode so we avoid <pre> wrapping and keep assertions simple
+        Env::setCliOverride(true);
+
+        $a = [
+            [1, 2],
+        ];
+        $b = [
+            [1, 2],
+        ];
+
+        $out = pcompare($a, $b, [
+            'start'  => '>> ',
+            'return' => true,
+            'end'    => '',
+        ]);
+
+        // Output should start with the custom prefix
+        self::assertStringStartsWith('>> ', $out);
+    }
+
+    #[Test]
+    #[TestDox('pcompare echoes output when return option is not set')]
+    public function pcompareEchoesWhenReturnIsFalse(): void
+    {
+        Env::setCliOverride(true);
+
+        $a = [[1, 2]];
+        $b = [[1, 3]];
+
+        ob_start();
+        // No 'return' => true, so pcompare should echo
+        pcompare($a, $b, ['end' => '']);
+        $out = ob_get_clean();
+
+        self::assertNotSame('', $out);
+        self::assertStringContainsString('1', $out);
+        self::assertStringContainsString('2', $out);
+        self::assertStringContainsString('3', $out);
+    }
+
+    #[Test]
+    #[TestDox('pcompare echoes empty matrices placeholder in CLI mode when return is false')]
+    public function pcompareEchoesEmptyMatricesInCliMode(): void
+    {
+        // Force CLI mode so no <pre> wrapping is used
+        Env::setCliOverride(true);
+
+        ob_start();
+        // No 'return' => true, so pcompare should echo from the cols===0 branch
+        pcompare([], [], ['end' => '']);
+        $out = ob_get_clean();
+
+        // Expect two empty matrix lines in CLI (no <pre> wrapping)
+        self::assertSame('[]' . $this->nl . $this->nl . '[]', $out);
     }
 }

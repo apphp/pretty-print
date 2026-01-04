@@ -4,6 +4,7 @@
 ![Last commit](https://img.shields.io/github/last-commit/apphp/pretty-print)
 ![License](https://img.shields.io/github/license/apphp/pretty-print)
 ![Link Check](https://github.com/apphp/pretty-print/actions/workflows/php.yml/badge.svg)
+![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 
 Callable pretty-printer for PHP arrays with Python-like formatting.
 PrettyPrint is a small, zero-dependency PHP utility that formats arrays in a clean, readable, PyTorch-inspired style. 
@@ -154,6 +155,24 @@ pprint($tensor3d, headB: 1, tailB: 1, headRows: 1, tailRows: 1, headCols: 1, tai
 // ])
 ```
 
+Select specific rows/columns
+```php
+$matrix = [
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
+    [23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33],
+];
+
+// Single row (1-based)
+pprint($matrix, rowsOnly: 2);
+
+// Sparse rows and columns: rows 1,2,3,5,6 and cols 1,2,6,9,10
+pprint($matrix, rowsOnly: '1-2,3,5-6', colsOnly: '1-2,6,9-10');
+
+// Works the same for 3D tensors (applied per 2D slice)
+pprint($tensor3d, rowsOnly: '2-3', colsOnly: '1,3-4');
+```
+
 Postfix and prefix control
 ```php
 // No newline at the end (like Python's end="")
@@ -266,6 +285,11 @@ Notes:
 - **headB / tailB**: ints. Number of head/tail 2D blocks shown for 3D tensors.
 - **headRows / tailRows**: ints. Rows shown per 2D slice with ellipsis between.
 - **headCols / tailCols**: ints. Columns shown per 2D slice with ellipsis between.
+- **rowsOnly / colsOnly**: int or string. Limit visible rows/columns.
+  - Single index: `3` or `'3'`.
+  - Range: `'2-4'` (inclusive).
+  - Sparse mix: `'1-2,5,9-11'` → indices `1,2,5,9,10,11`.
+  Applied to 2D arrays and to each 2D slice of 3D tensors.
 
 All options can be passed as:
 - trailing array: `pprint($m, ['headRows' => 1, ...])`
