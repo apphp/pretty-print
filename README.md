@@ -103,7 +103,7 @@ $matrix = [
     [11,12,13,14,15],
 ];
 pprint($matrix);
-// tensor([
+// array([
 //   [ 1,  2,  3,  4,  5],
 //   [ 6,  7,  8,  9, 10],
 //   [11, 12, 13, 14, 15]
@@ -130,7 +130,7 @@ $matrix = [
     [21, 22, 23, 24, 25],
 ];
 pprint($matrix, headRows: 2, tailRows: 1, headCols: 2, tailCols: 2);
-// tensor([
+// array(5x5)([
 //   [ 1,  2, ...,  4,  5],
 //   [ 6,  7, ...,  9, 10],
 //   ...,
@@ -146,7 +146,7 @@ $tensor3d = [
     [[13, 14, 15],[16, 17, 18]],
 ];
 pprint($tensor3d, headB: 1, tailB: 1, headRows: 1, tailRows: 1, headCols: 1, tailCols: 1);
-// tensor([
+// array(3x2x3)([
 //  [[1, ..., 3],
 //   [4, ..., 6]],
 //  ...,
