@@ -3,6 +3,7 @@
 - Added array size information to labels when 2D/3D arrays are summarized
 - Added normalization of associative rows to positional values in 2D/3D formatters to avoid empty cells (for example, rows like `['distance' => 1.2, 'label' => 'engaged']` now print values correctly)
 - Added always quoting string cells in arrays/tensors (for example, `'engaged'`, `'-'`)
+- Added CLI benchmark script `benchmarks/benchmark.php` with presets (`small`, `10k`, `100k`, `1m`) and safety options (`--dry-run`, `--max-cells`)
 
 0.6.0 / 2026-01-04
  - Changed default values of sep: `PHP_EOL` and end: `PHP_EOL . PHP_EOL`

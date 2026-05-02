@@ -279,19 +279,42 @@ pprint($rows);
 ## Running tests
 
 ```bash
-# install dev dependencies
+# Install dev dependencies
 composer install
 
-# run test suite
+# Run test suite
 composer test
 
-# run tests with coverage (requires Xdebug or PCOV)
+# Run tests with coverage (requires Xdebug or PCOV)
 composer test:coverage
 ```
 
 Notes:
 - **Coverage drivers**: You need Xdebug (xdebug.mode=coverage) or PCOV enabled for coverage reports. Without a driver, PHPUnit will warn and exit non‑zero.
 - You can also run PHPUnit directly: `vendor/bin/phpunit`.
+
+## Benchmark
+
+A CLI benchmark script is available at `benchmarks/benchmark.php` for measuring matrix build/format time and peak memory usage.
+
+Examples:
+
+```bash
+# Default preset (small)
+php benchmarks/benchmark.php
+
+# Estimate very large shapes without allocating memory
+php benchmarks/benchmark.php --preset=100k --dry-run
+php benchmarks/benchmark.php --preset=1m --dry-run
+
+# Custom size with safety cap
+php benchmarks/benchmark.php --rows=2000 --cols=2000 --max-cells=5000000
+```
+
+Notes:
+- Presets: `small`, `10k`, `100k`, `1m`.
+- Use `--dry-run` for huge shapes to avoid OOM.
+- The script skips materialization if total cells exceed `--max-cells`.
 
 ### Options reference
 
