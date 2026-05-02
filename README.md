@@ -62,8 +62,8 @@ $b = [
 ];
 
 pdiff($a, $b);
-// [[1, -, 3],
-//  [-, 5, -]]
+// [[1, '-', 3],
+//  ['-', 5, '-']]
 ```
 
 Compare two arrays by printing both matrices (stacked) with colored cells
@@ -250,12 +250,31 @@ $users = new Users();
 
 pprint($users);
 // Users([
-//   [1, Alice],
-//   [2,   Bob]
+//   [1, 'Alice'],
+//   [2,   'Bob']
 // ])
 ```
 
 If `asArray()` is not present but `toArray()` is, `toArray()` will be used instead.
+
+### Associative rows and strings in arrays/tensors
+
+- Associative rows are normalized to positional values in 2D/3D formatting.
+- String cells inside arrays/tensors are always printed with quotes (for example, `'engaged'`).
+- Top-level scalar strings are unchanged and remain unquoted.
+
+```php
+$rows = [
+    ['distance' => 1.0440, 'label' => 'engaged'],
+    ['distance' => 2.2361, 'label' => 'engaged'],
+];
+
+pprint($rows);
+// array([
+//   [1.0440, 'engaged'],
+//   [2.2361, 'engaged']
+// ])
+```
 
 ## Running tests
 

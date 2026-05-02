@@ -298,7 +298,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp($arr);
         $out = ob_get_clean();
-        self::assertSame("array([{$this->nl}   [a, 2],{$this->nl}   [3, 4]{$this->nl}]){$this->nl}{$this->nl}", $out);
+        self::assertSame("array([{$this->nl}   ['a', 2],{$this->nl}   [  3, 4]{$this->nl}]){$this->nl}{$this->nl}", $out);
     }
 
     #[Test]

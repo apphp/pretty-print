@@ -122,9 +122,9 @@ final class FunctionsTest extends TestCase
         $out = ob_get_clean();
 
         // Expect 1st row: [1, x, 3]
-        self::assertMatchesRegularExpression('/\[\s*1,\s*-,\s*3\s*\]/', $out);
+        self::assertMatchesRegularExpression('/\[\s*1,\s*\'\-\',\s*3\s*\]/', $out);
         // Expect 2nd row: [x, 5, x]
-        self::assertMatchesRegularExpression('/\[\s*-,\s*5,\s*-\s*\]/', $out);
+        self::assertMatchesRegularExpression('/\[\s*\'\-\',\s*5,\s*\'\-\'\s*\]/', $out);
     }
 
     #[Test]
@@ -141,7 +141,7 @@ final class FunctionsTest extends TestCase
         // First row: both scalars equal -> [1]
         self::assertMatchesRegularExpression('/\[\s*1\s*\]/', $out);
         // Second row: scalars differ -> [-]
-        self::assertMatchesRegularExpression('/\[\s*-\s*\]/', $out);
+        self::assertMatchesRegularExpression('/\[\s*\'\-\'\s*\]/', $out);
     }
 
     #[Test]

@@ -1,6 +1,8 @@
 0.7.0 /
 - Default label changed from `matrix` to `array`
 - Added array size information to labels when 2D/3D arrays are summarized
+- Added normalization of associative rows to positional values in 2D/3D formatters to avoid empty cells (for example, rows like `['distance' => 1.2, 'label' => 'engaged']` now print values correctly)
+- Added always quoting string cells in arrays/tensors (for example, `'engaged'`, `'-'`)
 
 0.6.0 / 2026-01-04
  - Changed default values of sep: `PHP_EOL` and end: `PHP_EOL . PHP_EOL`
