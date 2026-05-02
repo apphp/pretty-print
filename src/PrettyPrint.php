@@ -315,7 +315,7 @@ class PrettyPrint
                         (int)($fmt['tailRows'] ?? 5),
                         (int)($fmt['headCols'] ?? 5),
                         (int)($fmt['tailCols'] ?? 5),
-                        (string)($fmt['label'] ?? ($this->labels[$i] ?? 'tensor')),
+                        (string)($fmt['label'] ?? ($this->labels[$i] ?? 'array')),
                         $this->precision
                     );
                 } elseif (Validator::is2D($arg)) {
@@ -330,7 +330,7 @@ class PrettyPrint
                         (int)($fmt['tailRows'] ?? 5),
                         (int)($fmt['headCols'] ?? 5),
                         (int)($fmt['tailCols'] ?? 5),
-                        (string)($fmt['label'] ?? ($this->labels[$i] ?? 'tensor')),
+                        (string)($fmt['label'] ?? ($this->labels[$i] ?? 'array')),
                         $this->precision
                     );
                 } else {

@@ -1,4 +1,7 @@
-0.6.0 / 
+0.7.0 /
+- Default label changed from `matrix` to `array`
+
+0.6.0 / 2026-01-04
  - Changed default values of sep: `PHP_EOL` and end: `PHP_EOL . PHP_EOL`
  - Added new function pcompare() for side-by-side (stacked) matrix comparison with colored cells
  - Added badges to README
