@@ -8,6 +8,21 @@ namespace Apphp\PrettyPrint;
 class Formatter
 {
     /**
+     * Normalize a matrix row so non-list arrays are treated as positional values.
+     *
+     * @param mixed $row
+     * @return array
+     */
+    private static function normalizeRow(mixed $row): array
+    {
+        if (!is_array($row)) {
+            return [];
+        }
+
+        return array_is_list($row) ? $row : array_values($row);
+    }
+
+    /**
      * Format a value as a number when possible.
      *
      * Integers are returned verbatim; floats are rendered with 4 decimal places;
@@ -39,9 +54,8 @@ class Formatter
     {
         $cols = 0;
         foreach ($matrix as $row) {
-            if (is_array($row)) {
-                $cols = max($cols, count($row));
-            }
+            $values = self::normalizeRow($row);
+            $cols = max($cols, count($values));
         }
         if ($cols === 0) {
             return '[]';
@@ -51,12 +65,13 @@ class Formatter
         $widths = array_fill(0, $cols, 0);
         $formatted = [];
         foreach ($matrix as $r => $row) {
+            $values = self::normalizeRow($row);
             $frow = [];
             for ($c = 0; $c < $cols; $c++) {
                 $s = '';
-                if (array_key_exists($c, $row)) {
-                    $cell = $row[$c];
-                    $s = self::formatCell($cell, $precision);
+                if (array_key_exists($c, $values)) {
+                    $cell = $values[$c];
+                    $s = self::formatCell($cell, $precision, true);
                 }
                 $frow[$c] = $s;
                 $widths[$c] = max($widths[$c], strlen($s));
@@ -96,9 +111,8 @@ class Formatter
         $rows = count($matrix);
         $cols = 0;
         foreach ($matrix as $row) {
-            if (is_array($row)) {
-                $cols = max($cols, count($row));
-            }
+            $values = self::normalizeRow($row);
+            $cols = max($cols, count($values));
         }
 
         $rowIdxs = [];
@@ -134,14 +148,15 @@ class Formatter
         $widths = array_fill(0, count($colPositions), 0);
         $formatted = [];
         foreach ($rowIdxs as $rIndex) {
+            $values = self::normalizeRow($matrix[$rIndex] ?? []);
             $frow = [];
             foreach ($colPositions as $i => $pos) {
                 $s = '';
                 if ($pos === '...') {
                     $s = '...';
-                } elseif (array_key_exists($pos, $matrix[$rIndex])) {
-                    $cell = $matrix[$rIndex][$pos];
-                    $s = self::formatCell($cell, $precision);
+                } elseif (array_key_exists($pos, $values)) {
+                    $cell = $values[$pos];
+                    $s = self::formatCell($cell, $precision, true);
                 }
                 $frow[$i] = $s;
                 $widths[$i] = max($widths[$i], strlen($s));
@@ -193,11 +208,11 @@ class Formatter
      * @param int $tailRows Number of tail rows to display.
      * @param int $headCols Number of head columns to display.
      * @param int $tailCols Number of tail columns to display.
-     * @param string $label Prefix label used instead of "tensor".
+     * @param string $label Prefix label used instead of "matrix".
      * @param int $precision Number of decimal places to use for floats.
      * @return string
      */
-    public static function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor', int $precision = 4): string
+    public static function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'matrix', int $precision = 4): string
     {
         $s = self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision);
         // Replace the very first '[' with 'tensor([['
@@ -232,7 +247,7 @@ class Formatter
             return '[' . implode(', ', $formattedItems) . ']';
         }
 
-        return self::formatCell($value, $precision);
+        return self::formatCell($value, $precision, true);
     }
 
     /**
@@ -242,18 +257,14 @@ class Formatter
      * @param int $precision
      * @return string
      */
-    public static function formatCell(mixed $cell, int $precision): string
+    public static function formatCell(mixed $cell, int $precision, bool $quoteStrings = false): string
     {
         $s = 'Unknown';
         if (is_int($cell) || is_float($cell)) {
             $s = self::formatNumber($cell, $precision);
         } elseif (is_string($cell)) {
-            $isCli = Env::isCli();
-            if ($isCli) {
-                $s = $cell;
-            } else {
-                $s = addslashes($cell);
-            }
+            $escaped = addslashes($cell);
+            $s = $quoteStrings ? "'{$escaped}'" : (Env::isCli() ? $cell : $escaped);
         } elseif (is_bool($cell)) {
             $s = $cell ? 'True' : 'False';
         } elseif (is_null($cell)) {
@@ -278,11 +289,11 @@ class Formatter
      * @param int $tailRows Number of tail rows per 2D slice.
      * @param int $headCols Number of head columns per 2D slice.
      * @param int $tailCols Number of tail columns per 2D slice.
-     * @param string $label Prefix label used instead of "tensor".
+     * @param string $label Prefix label used instead of "array".
      * @param int $precision
      * @return string
      */
-    public static function format3DTorch(array $tensor3d, int $headB = 5, int $tailB = 5, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'tensor', int $precision = 4): string
+    public static function format3DTorch(array $tensor3d, int $headB = 5, int $tailB = 5, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'array', int $precision = 4): string
     {
         $B = count($tensor3d);
         $idxs = [];

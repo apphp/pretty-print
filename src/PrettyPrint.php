@@ -307,6 +307,8 @@ class PrettyPrint
                     if ($rowsRange !== null || $colsRange !== null) {
                         $arg = $this->applyRowColFilters3D($arg, $rowsRange, $colsRange);
                     }
+                    $baseLabel = (string)($fmt['label'] ?? ($this->labels[$i] ?? 'array'));
+                    $label = $this->labelWith3DShapeWhenSummarized($baseLabel, $arg, $fmt);
                     $parts[] = Formatter::format3DTorch(
                         $arg,
                         (int)($fmt['headB'] ?? 5),
@@ -315,7 +317,7 @@ class PrettyPrint
                         (int)($fmt['tailRows'] ?? 5),
                         (int)($fmt['headCols'] ?? 5),
                         (int)($fmt['tailCols'] ?? 5),
-                        (string)($fmt['label'] ?? ($this->labels[$i] ?? 'tensor')),
+                        $label,
                         $this->precision
                     );
                 } elseif (Validator::is2D($arg)) {
@@ -324,13 +326,15 @@ class PrettyPrint
                     if ($rowsRange !== null || $colsRange !== null) {
                         $arg = $this->applyRowColFilters2D($arg, $rowsRange, $colsRange);
                     }
+                    $baseLabel = (string)($fmt['label'] ?? ($this->labels[$i] ?? 'array'));
+                    $label = $this->labelWith2DShapeWhenSummarized($baseLabel, $arg, $fmt);
                     $parts[] = Formatter::format2DTorch(
                         $arg,
                         (int)($fmt['headRows'] ?? 5),
                         (int)($fmt['tailRows'] ?? 5),
                         (int)($fmt['headCols'] ?? 5),
                         (int)($fmt['tailCols'] ?? 5),
-                        (string)($fmt['label'] ?? ($this->labels[$i] ?? 'tensor')),
+                        $label,
                         $this->precision
                     );
                 } else {
@@ -341,6 +345,79 @@ class PrettyPrint
             }
         }
         return $parts;
+    }
+
+    /**
+     * Add shape information to label when 2D array is summarized.
+     *
+     * @param string $label
+     * @param array $matrix
+     * @param array $fmt
+     * @return string
+     */
+    private function labelWith2DShapeWhenSummarized(string $label, array $matrix, array $fmt): string
+    {
+        $rows = count($matrix);
+        $cols = 0;
+        foreach ($matrix as $row) {
+            if (is_array($row)) {
+                $cols = max($cols, count($row));
+            }
+        }
+
+        $headRows = (int)($fmt['headRows'] ?? 5);
+        $tailRows = (int)($fmt['tailRows'] ?? 5);
+        $headCols = (int)($fmt['headCols'] ?? 5);
+        $tailCols = (int)($fmt['tailCols'] ?? 5);
+        $isSummarized = $rows > ($headRows + $tailRows) || $cols > ($headCols + $tailCols);
+
+        if (!$isSummarized) {
+            return $label;
+        }
+
+        return $label . "({$rows}x{$cols})";
+    }
+
+    /**
+     * Add shape information to label when 3D array is summarized.
+     *
+     * @param string $label
+     * @param array $tensor3d
+     * @param array $fmt
+     * @return string
+     */
+    private function labelWith3DShapeWhenSummarized(string $label, array $tensor3d, array $fmt): string
+    {
+        $batches = count($tensor3d);
+        $rows = 0;
+        $cols = 0;
+        foreach ($tensor3d as $matrix) {
+            if (!is_array($matrix)) {
+                continue;
+            }
+            $rows = max($rows, count($matrix));
+            foreach ($matrix as $row) {
+                if (is_array($row)) {
+                    $cols = max($cols, count($row));
+                }
+            }
+        }
+
+        $headB = (int)($fmt['headB'] ?? 5);
+        $tailB = (int)($fmt['tailB'] ?? 5);
+        $headRows = (int)($fmt['headRows'] ?? 5);
+        $tailRows = (int)($fmt['tailRows'] ?? 5);
+        $headCols = (int)($fmt['headCols'] ?? 5);
+        $tailCols = (int)($fmt['tailCols'] ?? 5);
+        $isSummarized = $batches > ($headB + $tailB)
+            || $rows > ($headRows + $tailRows)
+            || $cols > ($headCols + $tailCols);
+
+        if (!$isSummarized) {
+            return $label;
+        }
+
+        return $label . "({$batches}x{$rows}x{$cols})";
     }
 
     /**

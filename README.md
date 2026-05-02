@@ -62,8 +62,8 @@ $b = [
 ];
 
 pdiff($a, $b);
-// [[1, -, 3],
-//  [-, 5, -]]
+// [[1, '-', 3],
+//  ['-', 5, '-']]
 ```
 
 Compare two arrays by printing both matrices (stacked) with colored cells
@@ -103,7 +103,7 @@ $matrix = [
     [11,12,13,14,15],
 ];
 pprint($matrix);
-// tensor([
+// array([
 //   [ 1,  2,  3,  4,  5],
 //   [ 6,  7,  8,  9, 10],
 //   [11, 12, 13, 14, 15]
@@ -130,7 +130,7 @@ $matrix = [
     [21, 22, 23, 24, 25],
 ];
 pprint($matrix, headRows: 2, tailRows: 1, headCols: 2, tailCols: 2);
-// tensor([
+// array(5x5)([
 //   [ 1,  2, ...,  4,  5],
 //   [ 6,  7, ...,  9, 10],
 //   ...,
@@ -146,7 +146,7 @@ $tensor3d = [
     [[13, 14, 15],[16, 17, 18]],
 ];
 pprint($tensor3d, headB: 1, tailB: 1, headRows: 1, tailRows: 1, headCols: 1, tailCols: 1);
-// tensor([
+// array(3x2x3)([
 //  [[1, ..., 3],
 //   [4, ..., 6]],
 //  ...,
@@ -250,23 +250,42 @@ $users = new Users();
 
 pprint($users);
 // Users([
-//   [1, Alice],
-//   [2,   Bob]
+//   [1, 'Alice'],
+//   [2,   'Bob']
 // ])
 ```
 
 If `asArray()` is not present but `toArray()` is, `toArray()` will be used instead.
 
+### Associative rows and strings in arrays/tensors
+
+- Associative rows are normalized to positional values in 2D/3D formatting.
+- String cells inside arrays/tensors are always printed with quotes (for example, `'engaged'`).
+- Top-level scalar strings are unchanged and remain unquoted.
+
+```php
+$rows = [
+    ['distance' => 1.0440, 'label' => 'engaged'],
+    ['distance' => 2.2361, 'label' => 'engaged'],
+];
+
+pprint($rows);
+// array([
+//   [1.0440, 'engaged'],
+//   [2.2361, 'engaged']
+// ])
+```
+
 ## Running tests
 
 ```bash
-# install dev dependencies
+# Install dev dependencies
 composer install
 
-# run test suite
+# Run test suite
 composer test
 
-# run tests with coverage (requires Xdebug or PCOV)
+# Run tests with coverage (requires Xdebug or PCOV)
 composer test:coverage
 ```
 
@@ -274,12 +293,35 @@ Notes:
 - **Coverage drivers**: You need Xdebug (xdebug.mode=coverage) or PCOV enabled for coverage reports. Without a driver, PHPUnit will warn and exit non‑zero.
 - You can also run PHPUnit directly: `vendor/bin/phpunit`.
 
+## Benchmark
+
+A CLI benchmark script is available at `benchmarks/benchmark.php` for measuring matrix build/format time and peak memory usage.
+
+Examples:
+
+```bash
+# Default preset (small)
+php benchmarks/benchmark.php
+
+# Estimate very large shapes without allocating memory
+php benchmarks/benchmark.php --preset=100k --dry-run
+php benchmarks/benchmark.php --preset=1m --dry-run
+
+# Custom size with safety cap
+php benchmarks/benchmark.php --rows=2000 --cols=2000 --max-cells=5000000
+```
+
+Notes:
+- Presets: `small`, `10k`, `100k`, `1m`.
+- Use `--dry-run` for huge shapes to avoid OOM.
+- The script skips materialization if total cells exceed `--max-cells`.
+
 ### Options reference
 
 - **start**: string. Prefix printed before the content. Example: `pprint('Hello', ['start' => "\t"])`.
 - **end**: string. Line terminator, default is double lines. Example: `pprint('no newline', ['end' => '']);`
 - **sep**: string. Separator between multiple default-formatted arguments. Default is a new line. Examples: `pprint('A','B','C', sep: ', ', end: '')` or `pprint('X','Y', ['sep' => "\n", 'end' => ''])`.
-- **label**: string. Prefix label for 2D/3D formatted arrays, default `tensor`. Example: `pprint($m, ['label' => 'arr'])`.
+- **label**: string. Prefix label for 2D/3D formatted arrays, default `array`. Example: `pprint($m, ['label' => 'arr'])`.
 - **precision**: int. Number of digits after the decimal point for floats. Example: `pprint(3.14159, precision: 2)` prints `3.14`.
 - **return**: bool. When true, do not echo; return the formatted string instead (no `<pre>` wrapping in web context). Example: `$s = pprint($m, return: true);`.
 - **headB / tailB**: ints. Number of head/tail 2D blocks shown for 3D tensors.

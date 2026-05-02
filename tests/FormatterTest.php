@@ -81,10 +81,34 @@ final class FormatterTest extends TestCase
                 2,
                 "[[ 1, 23,   ],\n [12,  3, 45]]",
             ],
+            'associative rows are treated as positional values' => [
+                [
+                    ['distance' => 1.0440306508911, 'label' => 'engaged'],
+                    ['distance' => 2.2360679774998, 'label' => 'engaged'],
+                ],
+                4,
+                "[[1.0440, 'engaged'],\n [2.2361, 'engaged']]",
+            ],
+            'mixed numeric and associative rows align to same columns' => [
+                [
+                    [1.2345, 'foo', true],
+                    ['distance' => 2.5, 'label' => 'bar', 'active' => false],
+                ],
+                2,
+                "[[1.23, 'foo',  True],\n [2.50, 'bar', False]]",
+            ],
+            'mixed associative and ragged numeric rows pad missing cells' => [
+                [
+                    ['id' => 10, 'name' => 'alpha'],
+                    [20],
+                ],
+                2,
+                "[[10, 'alpha'],\n [20,        ]]",
+            ],
             'strings quoted and escaped' => [
                 [["a'b", 'c']],
                 2,
-                "[[a'b, c]]",
+                "[['a\\'b', 'c']]",
             ],
             'booleans and null rendered' => [
                 [[true, false, null]],
@@ -151,11 +175,41 @@ final class FormatterTest extends TestCase
                 2,
                 "[[1, ...,    3],\n  ...,\n [7, ..., 9.00]]",
             ],
+            'associative rows summarize without empty cells' => [
+                [
+                    ['distance' => 1.0440306508911, 'label' => 'engaged'],
+                    ['distance' => 2.2360679774998, 'label' => 'engaged'],
+                    ['distance' => 4.2720018726588, 'label' => 'engaged'],
+                ],
+                1, 1, 1, 1,
+                4,
+                "[[1.0440, 'engaged'],\n  ...,\n [4.2720, 'engaged']]",
+            ],
+            'mixed numeric and associative rows summarize with row ellipsis only' => [
+                [
+                    [1.1111, 'x'],
+                    ['distance' => 2.2222, 'label' => 'y'],
+                    [3.3333, 'z'],
+                ],
+                1, 1, 1, 1,
+                3,
+                "[[1.111, 'x'],\n  ...,\n [3.333, 'z']]",
+            ],
+            'mixed rows summarize with column ellipsis when wider than limits' => [
+                [
+                    [1, 2, 3, 4],
+                    ['a' => 5, 'b' => 6, 'c' => 7, 'd' => 8],
+                    [9, 10, 11, 12],
+                ],
+                1, 1, 1, 1,
+                2,
+                "[[1, ...,  4],\n  ...,\n [9, ..., 12]]",
+            ],
             'single row with strings/booleans/null' => [
                 [["a'b", true, null, false]],
                 5, 5, 5, 5,
                 2,
-                "[[a'b, True, None, False]]",
+                "[['a\\'b', True, None, False]]",
             ],
         ];
     }
@@ -239,7 +293,7 @@ final class FormatterTest extends TestCase
             '1D mixed scalars with precision for floats' => [
                 [1, "a'b", true, null, 1.2],
                 2,
-                "[1, a'b, True, None, 1.2000]",
+                "[1, 'a\\'b', True, None, 1.2000]",
             ],
             'nested non-2D arrays recurse' => [
                 [[1, 2], 3, [4, [5.5]]],
@@ -254,7 +308,7 @@ final class FormatterTest extends TestCase
             '2D with mixed types falls back to recursive array formatting (not 2D)' => [
                 [["a'b", false, (object)[]], [fopen('php://memory', 'r')]],
                 2,
-                "[[a'b, False, Object], [Resource]]",
+                "[['a\\'b', False, Object], [Resource]]",
             ],
         ];
     }
