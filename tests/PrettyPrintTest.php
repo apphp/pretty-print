@@ -81,7 +81,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp($m, headRows: 1, tailRows: 1, headCols: 1, tailCols: 1);
         $out = ob_get_clean();
-        self::assertStringContainsString('tensor([', $out);
+        self::assertStringContainsString('array(3x4)([', $out);
         self::assertStringContainsString('...', $out);
     }
 
@@ -123,12 +123,12 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Confusion matrix:', $matrix);
         $out = ob_get_clean();
-        $expected = "Confusion matrix:{$this->nl}tensor([{$this->nl}   [  1, 23],{$this->nl}   [456,  7]{$this->nl}]){$this->nl}{$this->nl}";
+        $expected = "Confusion matrix:{$this->nl}array([{$this->nl}   [  1, 23],{$this->nl}   [456,  7]{$this->nl}]){$this->nl}{$this->nl}";
         self::assertSame($expected, $out);
     }
 
     #[Test]
-    #[TestDox('formats a small 2D array as tensor([[..], ..])')]
+    #[TestDox('formats a small 2D array as array([[..], ..])')]
     public function tensor2DFormattingSmall(): void
     {
         $pp = new PrettyPrint();
@@ -138,9 +138,9 @@ final class PrettyPrintTest extends TestCase
         $out = ob_get_clean();
 
         // Relaxed check: structure and values present, accounting for padding/indentation
-        self::assertTrue(str_starts_with($out, 'tensor(['));
+        self::assertTrue(str_starts_with($out, 'array(['));
         self::assertTrue(str_ends_with($out, "]){$this->nl}{$this->nl}"));
-        self::assertMatchesRegularExpression('/tensor\(\[.*\[\s*1,\s*2\s*\],\s*\n\s*\[\s*3,\s*4\s*\].*\]\)/s', rtrim($out));
+        self::assertMatchesRegularExpression('/array\(\[.*\[\s*1,\s*2\s*\],\s*\n\s*\[\s*3,\s*4\s*\].*\]\)/s', rtrim($out));
     }
 
     #[Test]
@@ -157,7 +157,7 @@ final class PrettyPrintTest extends TestCase
         $out = ob_get_clean();
 
         // Basic structure checks
-        self::assertTrue(str_starts_with($out, 'tensor(['));
+        self::assertTrue(str_starts_with($out, 'array(['));
         self::assertTrue(str_ends_with($out, "]){$this->nl}{$this->nl}"));
 
         // Should contain two 2D blocks formatted; allow padding spaces
@@ -244,7 +244,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp('Tensor:', $tensor);
         $out = ob_get_clean();
-        self::assertStringStartsWith("Tensor:\ntensor([", $out);
+        self::assertStringStartsWith("Tensor:\narray([", $out);
         self::assertStringContainsString('])', $out);
     }
 
@@ -263,7 +263,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp($m, ['headRows' => 1, 'tailRows' => 1, 'headCols' => 1, 'tailCols' => 1]);
         $out = ob_get_clean();
-        self::assertStringContainsString('tensor([', $out);
+        self::assertStringContainsString('array(4x4)([', $out);
         self::assertStringContainsString('...', $out);
         // two visible rows (head and tail) and an ellipsis between
         self::assertMatchesRegularExpression('/\[\s*1,\s*\.\.\.,\s*4\s*\]/', $out);
@@ -282,6 +282,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp($t, ['headB' => 2, 'tailB' => 2, 'headRows' => 1, 'tailRows' => 1, 'headCols' => 1, 'tailCols' => 1]);
         $out = ob_get_clean();
+        self::assertStringContainsString('array(5x2x3)([', $out);
         // block ellipsis is a line with spaces then three dots, optional trailing comma
         self::assertMatchesRegularExpression("/\n\s+\.\.\.,?\n/", $out);
         // also expect inner 2D ellipses
@@ -297,7 +298,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp($arr);
         $out = ob_get_clean();
-        self::assertSame("tensor([{$this->nl}   [a, 2],{$this->nl}   [3, 4]{$this->nl}]){$this->nl}{$this->nl}", $out);
+        self::assertSame("array([{$this->nl}   [a, 2],{$this->nl}   [3, 4]{$this->nl}]){$this->nl}{$this->nl}", $out);
     }
 
     #[Test]
@@ -357,7 +358,7 @@ final class PrettyPrintTest extends TestCase
         ob_start();
         $pp($m, precision: 2);
         $out = ob_get_clean();
-        self::assertTrue(str_starts_with($out, 'tensor(['));
+        self::assertTrue(str_starts_with($out, 'array(['));
         self::assertTrue(str_ends_with($out, "]){$this->nl}{$this->nl}"));
         self::assertMatchesRegularExpression('/\b1\.20\b/', $out);
         self::assertMatchesRegularExpression('/\b3\.46\b/', $out);
@@ -620,7 +621,7 @@ final class PrettyPrintTest extends TestCase
         $out = ob_get_clean();
 
         // Basic structure: tensor header/footer
-        self::assertTrue(str_starts_with($out, 'tensor(['));
+        self::assertTrue(str_starts_with($out, 'array(['));
         self::assertTrue(str_ends_with($out, "]){$nl}{$nl}"));
 
         // Rows 2 and 3 only: row 1 should not appear
@@ -658,7 +659,7 @@ final class PrettyPrintTest extends TestCase
         $out = ob_get_clean();
 
         // 3D tensor header/footer
-        self::assertTrue(str_starts_with($out, 'tensor(['));
+        self::assertTrue(str_starts_with($out, 'array(['));
         self::assertTrue(str_ends_with($out, "]){$nl}{$nl}"));
 
         // Only second row from each 2D slice should be visible (5,... and 50,...)
@@ -726,7 +727,7 @@ final class PrettyPrintTest extends TestCase
         $out = ob_get_clean();
 
         // Basic structure is still a tensor
-        self::assertStringContainsString('tensor([', $out);
+        self::assertStringContainsString('array([', $out);
         self::assertStringContainsString('])', $out);
 
         // Only the element at row 2, col 1 (value 4) should be present
@@ -853,7 +854,7 @@ final class PrettyPrintTest extends TestCase
         $out = ob_get_clean();
 
         // Still should be a tensor wrapper, but with no original values
-        self::assertStringContainsString('tensor([', $out);
+        self::assertStringContainsString('array([', $out);
         self::assertStringContainsString('])', $out);
         self::assertStringNotContainsString('1', $out);
         self::assertStringNotContainsString('2', $out);
