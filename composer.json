@@ -36,6 +36,6 @@
     "cs:check": "phpcs",
     "cs:fix": "php-cs-fixer fix --config=.php-cs-fixer.php --ansi --verbose --using-cache=no",
     "check": "composer lint && composer cs:check && composer test",
-    "test:html": "echo 'Server started at http://localhost:8003/scripts/test-html.php' && php -S localhost:8003 -t ."
+    "test:html": "echo 'Server started at http://localhost:8004/scripts/test-html.php' && php -S localhost:8004 -t ."
   }
 }

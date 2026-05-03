@@ -77,10 +77,14 @@ function pdiff(array $a, array $b): string
         for ($j = 0; $j < $cols; $j++) {
             $vA = $rowA[$j] ?? null;
             $vB = $rowB[$j] ?? null;
-            $rowDiff[] = ($vA === $vB) ? $vA : '-';
+            $rowDiff[] = ($vA === $vB) ? $vA : '';
         }
         $diff[] = $rowDiff;
     }
+
+    // Replace empty strings with '-' and return as string
+    $diff = pprint($diff, ['return' => true]);
+    $diff = str_replace("''", " -", $diff);
 
     return pprint($diff);
 }
@@ -189,7 +193,15 @@ function pcompare(array $a, array $b, array $options = []): string
         }
 
         $safe = htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-        $color = $same ? 'green' : 'red';
+
+        if ($same) {
+            $color = 'green';
+        } elseif (trim($safe) !== '-') {
+            $color = 'red';
+        } else {
+            $color = 'gray';
+        }
+
         return '<span style="color: ' . $color . '">' . $safe . '</span>';
     };
 

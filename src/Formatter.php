@@ -208,11 +208,11 @@ class Formatter
      * @param int $tailRows Number of tail rows to display.
      * @param int $headCols Number of head columns to display.
      * @param int $tailCols Number of tail columns to display.
-     * @param string $label Prefix label used instead of "matrix".
+     * @param string $label Prefix label used instead of "array".
      * @param int $precision Number of decimal places to use for floats.
      * @return string
      */
-    public static function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'matrix', int $precision = 4): string
+    public static function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'array', int $precision = 4): string
     {
         $s = self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision);
         // Replace the very first '[' with 'tensor([['
