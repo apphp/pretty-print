@@ -1,4 +1,5 @@
-0.7.0 /
+0.7.0 / 2026-05-03
+- Added test:html command
 - Default label changed from `matrix` to `array`
 - Added array size information to labels when 2D/3D arrays are summarized
 - Added normalization of associative rows to positional values in 2D/3D formatters to avoid empty cells (for example, rows like `['distance' => 1.2, 'label' => 'engaged']` now print values correctly)
