@@ -863,4 +863,34 @@ final class PrettyPrintTest extends TestCase
         // And it should differ from the baseline (which contains 1,2,3)
         self::assertNotSame($baseline, $out);
     }
+
+    #[Test]
+    #[TestDox('labelWith3DShapeWhenSummarized skips non-array blocks (private helper)')]
+    public function labelWith3DShapeWhenSummarizedSkipsNonArrayBlock(): void
+    {
+        $pp = new PrettyPrint();
+
+        $tensor = [
+            [[1, 2, 3], [4, 5, 6]],
+            'skip-me',
+            [[7, 8, 9], [10, 11, 12]],
+        ];
+
+        $fmt = [
+            'headB' => 1,
+            'tailB' => 1,
+            'headRows' => 1,
+            'tailRows' => 1,
+            'headCols' => 1,
+            'tailCols' => 1,
+        ];
+
+        $ref = new \ReflectionClass($pp);
+        $method = $ref->getMethod('labelWith3DShapeWhenSummarized');
+        $method->setAccessible(true);
+
+        $actual = $method->invoke($pp, 'array', $tensor, $fmt);
+
+        self::assertSame('array(3x2x3)', $actual);
+    }
 }

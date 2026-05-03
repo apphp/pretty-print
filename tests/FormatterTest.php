@@ -160,6 +160,18 @@ final class FormatterTest extends TestCase
         self::assertSame($expected, Formatter::format2DAligned($matrix, $precision));
     }
 
+    #[Test]
+    #[TestDox('format2DAligned treats non-array rows as empty rows')]
+    public function testFormat2DAlignedWithNonArrayRow(): void
+    {
+        $matrix = [
+            [1],
+            'not-a-row',
+        ];
+
+        self::assertSame("[[1],\n [ ]]", Formatter::format2DAligned($matrix, 2));
+    }
+
     public static function format2DSummarizedProvider(): array
     {
         return [
@@ -340,6 +352,18 @@ final class FormatterTest extends TestCase
         Env::setCliOverride(true);
         try {
             self::assertSame("a'b", Formatter::formatCell("a'b", 2));
+        } finally {
+            Env::setCliOverride(null);
+        }
+    }
+
+    #[Test]
+    #[TestDox('formatCell wraps strings in quotes when quoteStrings is enabled')]
+    public function testFormatCellQuotesWhenRequested(): void
+    {
+        Env::setCliOverride(true);
+        try {
+            self::assertSame("'a\\'b'", Formatter::formatCell("a'b", 2, true));
         } finally {
             Env::setCliOverride(null);
         }
