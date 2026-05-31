@@ -1,4 +1,4 @@
-0.8.0 / 2026-05-03
+0.8.0 / 2026-05-31
 - Added `colsTotals` option to `pprint` / `PrettyPrint` for adding a final per-column summary row for displayed columns in 2D/3D output; only `int`/`float` values are summed
 
 0.7.0 / 2026-05-03
