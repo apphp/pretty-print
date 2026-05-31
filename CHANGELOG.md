@@ -1,3 +1,6 @@
+0.8.0 / 2026-05-03
+- Added `colsTotals` option to `pprint` / `PrettyPrint` for adding a final per-column summary row for displayed columns in 2D/3D output; only `int`/`float` values are summed
+
 0.7.0 / 2026-05-03
 - Added test:html command
 - Default label changed from `matrix` to `array`
