@@ -106,7 +106,7 @@ class Formatter
      * @param int $precision Number of decimal places to use for floats.
      * @return string
      */
-    public static function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, int $precision = 4): string
+    public static function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, int $precision = 4, bool $colsTotals = false): string
     {
         $rows = count($matrix);
         $cols = 0;
@@ -169,6 +169,38 @@ class Formatter
             }
         }
 
+        $summaryRow = null;
+        if ($colsTotals) {
+            $summaryRow = [];
+            foreach ($colPositions as $i => $pos) {
+                if ($pos === '...') {
+                    $s = '...';
+                    $summaryRow[$i] = $s;
+                    $widths[$i] = max($widths[$i], 3);
+                    continue;
+                }
+
+                $sum = 0;
+                $hasNumeric = false;
+                foreach ($matrix as $row) {
+                    $values = self::normalizeRow($row);
+                    if (!array_key_exists($pos, $values)) {
+                        continue;
+                    }
+
+                    $cell = $values[$pos];
+                    if (is_int($cell) || is_float($cell)) {
+                        $sum += $cell;
+                        $hasNumeric = true;
+                    }
+                }
+
+                $s = $hasNumeric ? self::formatNumber($sum, $precision) : '';
+                $summaryRow[$i] = $s;
+                $widths[$i] = max($widths[$i], strlen($s));
+            }
+        }
+
         // Build lines from pre-formatted rows
         $buildRow = function (array $frow, int $headCount) use ($widths) {
             $cells = [];
@@ -193,6 +225,10 @@ class Formatter
                 $lines[] = $buildRow($formatted[$i], $headCount);
             }
         }
+        if ($summaryRow !== null) {
+            $lines[] = ' ---totals---';
+            $lines[] = $buildRow($summaryRow, $headCount);
+        }
 
         if (count($lines) === 1) {
             return '[' . $lines[0] . ']';
@@ -210,11 +246,12 @@ class Formatter
      * @param int $tailCols Number of tail columns to display.
      * @param string $label Prefix label used instead of "array".
      * @param int $precision Number of decimal places to use for floats.
+     * @param bool $colsTotals Whether to show summary of columns.
      * @return string
      */
-    public static function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'array', int $precision = 4): string
+    public static function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'array', int $precision = 4, bool $colsTotals = false): string
     {
-        $s = self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision);
+        $s = self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals);
         // Replace the very first '[' with 'tensor([['
         if (strlen($s) > 0 && $s[0] === '[') {
             $s = $label . "([\n  " . substr($s, 1);
@@ -293,7 +330,7 @@ class Formatter
      * @param int $precision
      * @return string
      */
-    public static function format3DTorch(array $tensor3d, int $headB = 5, int $tailB = 5, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'array', int $precision = 4): string
+    public static function format3DTorch(array $tensor3d, int $headB = 5, int $tailB = 5, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'array', int $precision = 4, bool $colsTotals = false): string
     {
         $B = count($tensor3d);
         $idxs = [];
@@ -313,8 +350,8 @@ class Formatter
         }
 
         $blocks = [];
-        $format2d = function ($matrix) use ($headRows, $tailRows, $headCols, $tailCols, $precision) {
-            return self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision);
+        $format2d = function ($matrix) use ($headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals) {
+            return self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals);
         };
 
         $limitHead = ($B <= $headB + $tailB) ? count($idxs) : $headB;

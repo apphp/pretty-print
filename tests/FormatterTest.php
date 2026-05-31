@@ -17,6 +17,19 @@ use PHPUnit\Framework\Attributes\DataProvider;
 #[Group('PrettyPrint')]
 final class FormatterTest extends TestCase
 {
+    #[Test]
+    #[TestDox('normalizeRow returns empty for non-array and positional values for associative arrays')]
+    public function testNormalizeRowPrivateHelper(): void
+    {
+        $ref = new \ReflectionClass(Formatter::class);
+        $method = $ref->getMethod('normalizeRow');
+        $method->setAccessible(true);
+
+        self::assertSame([], $method->invoke(null, 'not-a-row'));
+        self::assertSame([1, 'x'], $method->invoke(null, ['a' => 1, 'b' => 'x']));
+        self::assertSame([1, 2], $method->invoke(null, [1, 2]));
+    }
+
     public static function formatNumberProvider(): array
     {
         return [
@@ -234,6 +247,61 @@ final class FormatterTest extends TestCase
         self::assertSame($expected, Formatter::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision));
     }
 
+    #[Test]
+    #[TestDox('format2DSummarized can append visual numeric-only column summary row')]
+    public function testFormat2DSummarizedWithcolsTotals(): void
+    {
+        $matrix = [
+            [1, 'x', 2.5, '4'],
+            [3, 'y', 4.5, 6],
+            ['n/a', 'z', 1.0, null],
+        ];
+
+        $out = Formatter::format2DSummarized($matrix, 5, 5, 5, 5, 4, true);
+
+        // Visual distinction for summary row
+        self::assertStringContainsString('---totals---', $out);
+        // Numeric-only sums: col1=4, col2=blank, col3=8.0000, col4=6 (string '4' ignored)
+        self::assertMatchesRegularExpression('/\[\s*4,\s*,\s*8\.0000,\s*6\s*\]/', $out);
+    }
+
+    #[Test]
+    #[TestDox('format2DSummarized colsTotals supports column ellipsis in summary row')]
+    public function testFormat2DSummarizedWithcolsTotalsAndColumnEllipsis(): void
+    {
+        $matrix = [
+            [1, 2, 3, 4, 5],
+            [10, 20, 30, 40, 50],
+            [100, 200, 300, 400, 500],
+        ];
+
+        $out = Formatter::format2DSummarized($matrix, 1, 1, 1, 1, 0, true);
+
+        // Visual separator + summary row rendered
+        self::assertStringContainsString('---totals---', $out);
+        // Summary row should include head/tail sums with ellipsis placeholder between
+        self::assertMatchesRegularExpression('/\[\s*111,\s*\.\.\.,\s*555\s*\]/', $out);
+    }
+
+    #[Test]
+    #[TestDox('format2DSummarized colsTotals skips rows missing a selected column')]
+    public function testFormat2DSummarizedWithcolsTotalsSkipsMissingColumns(): void
+    {
+        $matrix = [
+            [1, 2, 3],
+            [4],
+            [5, 6, 7],
+        ];
+
+        // Show all columns so summary loop checks positions 0..2.
+        // Middle row has only column 0; columns 1 and 2 should hit the
+        // !array_key_exists($pos, $values) -> continue branch.
+        $out = Formatter::format2DSummarized($matrix, 5, 5, 5, 5, 0, true);
+
+        // Sums: col1=10, col2=8, col3=10
+        self::assertMatchesRegularExpression('/\[\s*10,\s*8,\s*10\s*\]/', $out);
+    }
+
     public static function format2DTorchProvider(): array
     {
         return [
@@ -260,6 +328,23 @@ final class FormatterTest extends TestCase
     public function testFormat2DTorch(array $matrix, int $headRows, int $tailRows, int $headCols, int $tailCols, string $label, int $precision, string $expected): void
     {
         self::assertSame($expected, Formatter::format2DTorch($matrix, $headRows, $tailRows, $headCols, $tailCols, $label, $precision));
+    }
+
+    #[Test]
+    #[TestDox('format2DTorch direct smoke test for method coverage')]
+    public function testFormat2DTorchDirectSmoke(): void
+    {
+        $matrix = [
+            [1, 2],
+            [3, 4],
+        ];
+
+        $out = Formatter::format2DTorch($matrix, 5, 5, 5, 5, 'array', 2, false);
+
+        self::assertStringStartsWith("array([\n", $out);
+        self::assertStringContainsString('[1, 2]', $out);
+        self::assertStringContainsString('[3, 4]', $out);
+        self::assertStringEndsWith("\n])", $out);
     }
 
     public static function format3DTorchProvider(): array
@@ -292,6 +377,23 @@ final class FormatterTest extends TestCase
     public function testFormat3DTorch(array $tensor3d, int $headB, int $tailB, int $headRows, int $tailRows, int $headCols, int $tailCols, string $label, int $precision, string $expected): void
     {
         self::assertSame($expected, Formatter::format3DTorch($tensor3d, $headB, $tailB, $headRows, $tailRows, $headCols, $tailCols, $label, $precision));
+    }
+
+    #[Test]
+    #[TestDox('format3DTorch propagates colsTotals to inner 2D blocks')]
+    public function testFormat3DTorchWithcolsTotals(): void
+    {
+        $tensor3d = [
+            [
+                [1, 'x', 2.0],
+                [3, 'y', 4.0],
+            ],
+        ];
+
+        $out = Formatter::format3DTorch($tensor3d, 5, 5, 5, 5, 5, 5, 'tensor', 2, true);
+
+        self::assertStringContainsString('---totals---', $out);
+        self::assertStringContainsString('[4,    , 6.00]', $out);
     }
 
     public static function formatForArrayProvider(): array

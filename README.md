@@ -173,6 +173,26 @@ pprint($matrix, rowsOnly: '1-2,3,5-6', colsOnly: '1-2,6,9-10');
 pprint($tensor3d, rowsOnly: '2-3', colsOnly: '1,3-4');
 ```
 
+Print numeric-only column summaries
+```php
+$matrix = [
+    [1, 'x', 2.5, '4'],
+    [3, 'y', 4.5, 6],
+    ['n/a', 'z', 1.0, null],
+];
+
+pprint($matrix, colsTotals: true);
+// Adds a final summary row with sums per visible column.
+// Only int/float values are included in sums; non-numeric values are ignored.
+// array([
+//   [    1, 'x', 2.5000,  '4'],
+//   [    3, 'y', 4.5000,    6],
+//   ['n/a', 'z', 1.0000, None],
+//   ---totals---,
+//   [    4,    , 8.0000,    6]
+// ])
+```
+
 Postfix and prefix control
 ```php
 // No newline at the end (like Python's end="")
@@ -327,6 +347,7 @@ Notes:
 - **headB / tailB**: ints. Number of head/tail 2D blocks shown for 3D tensors.
 - **headRows / tailRows**: ints. Rows shown per 2D slice with ellipsis between.
 - **headCols / tailCols**: ints. Columns shown per 2D slice with ellipsis between.
+- **colsTotals**: bool. Adds a final per-column summary row for displayed columns in 2D/3D output; only `int`/`float` values are summed.
 - **rowsOnly / colsOnly**: int or string. Limit visible rows/columns.
   - Single index: `3` or `'3'`.
   - Range: `'2-4'` (inclusive).

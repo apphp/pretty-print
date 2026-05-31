@@ -893,4 +893,27 @@ final class PrettyPrintTest extends TestCase
 
         self::assertSame('array(3x2x3)', $actual);
     }
+
+    #[Test]
+    #[TestDox('colsTotals adds numeric-only column sums and ignores non-numeric values')]
+    public function colsTotalsSumsOnlyNumericValues(): void
+    {
+        $pp = new PrettyPrint();
+
+        $matrix = [
+            [1, 'x', 2.5, '4'],
+            [3, 'y', 4.5, 6],
+            ['n/a', 'z', 1.0, null],
+        ];
+
+        ob_start();
+        $pp($matrix, colsTotals: true);
+        $out = ob_get_clean();
+
+        // Summary row should include numeric sums only:
+        // col1 => 4, col2 => non-numeric => blank, col3 => 8.0000, col4 => 6 (string '4' ignored)
+        self::assertStringContainsString('---', $out);
+        self::assertMatchesRegularExpression('/\[\s*4,\s*,\s*8\.0000,\s*6\s*\]/', $out);
+        self::assertStringNotContainsString('10', $out);
+    }
 }
