@@ -28,17 +28,25 @@ class Formatter
      * Integers are returned verbatim; floats are rendered with 4 decimal places;
      * non-numeric values are cast to string.
      *
-     * @param mixed $v
-     * @param int $precision
+     * @param mixed $v The value to format.
+     * @param int $precision Number of decimal places to use for floats.
+     * @param bool $short Whether to trim trailing zeros in float output.
      * @return string
      */
-    public static function formatNumber(mixed $v, int $precision = 4): string
+    public static function formatNumber(mixed $v, int $precision = 4, bool $short = false): string
     {
         if (is_int($v)) {
             return (string)$v;
         }
         if (is_float($v)) {
-            return number_format($v, $precision, '.', '');
+            $formatted = number_format($v, $precision, '.', '');
+            if ($short) {
+                $formatted = rtrim(rtrim($formatted, '0'), '.');
+                if ($formatted === '-0' || $formatted === '0') {
+                    $formatted = '0';
+                }
+            }
+            return $formatted;
         }
         return (string)$v;
     }
@@ -48,9 +56,10 @@ class Formatter
      *
      * @param array $matrix 2D array.
      * @param int $precision Number of decimal places to use for floats.
+     * @param bool $short Whether to trim trailing zeros in float output.
      * @return string
      */
-    public static function format2DAligned(array $matrix, int $precision = 4): string
+    public static function format2DAligned(array $matrix, int $precision = 4, bool $short = false): string
     {
         $cols = 0;
         foreach ($matrix as $row) {
@@ -71,7 +80,7 @@ class Formatter
                 $s = '';
                 if (array_key_exists($c, $values)) {
                     $cell = $values[$c];
-                    $s = self::formatCell($cell, $precision, true);
+                    $s = self::formatCell($cell, $precision, true, $short);
                 }
                 $frow[$c] = $s;
                 $widths[$c] = max($widths[$c], strlen($s));
@@ -106,7 +115,7 @@ class Formatter
      * @param int $precision Number of decimal places to use for floats.
      * @return string
      */
-    public static function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, int $precision = 4, bool $colsTotals = false): string
+    public static function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, int $precision = 4, bool $colsTotals = false, bool $short = false): string
     {
         $rows = count($matrix);
         $cols = 0;
@@ -156,7 +165,7 @@ class Formatter
                     $s = '...';
                 } elseif (array_key_exists($pos, $values)) {
                     $cell = $values[$pos];
-                    $s = self::formatCell($cell, $precision, true);
+                    $s = self::formatCell($cell, $precision, true, $short);
                 }
                 $frow[$i] = $s;
                 $widths[$i] = max($widths[$i], strlen($s));
@@ -195,7 +204,7 @@ class Formatter
                     }
                 }
 
-                $s = $hasNumeric ? self::formatNumber($sum, $precision) : '';
+                $s = $hasNumeric ? self::formatNumber($sum, $precision, $short) : '';
                 $summaryRow[$i] = $s;
                 $widths[$i] = max($widths[$i], strlen($s));
             }
@@ -247,11 +256,12 @@ class Formatter
      * @param string $label Prefix label used instead of "array".
      * @param int $precision Number of decimal places to use for floats.
      * @param bool $colsTotals Whether to show summary of columns.
+     * @param bool $short Whether to trim trailing zeros in float output.
      * @return string
      */
-    public static function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'array', int $precision = 4, bool $colsTotals = false): string
+    public static function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'array', int $precision = 4, bool $colsTotals = false, bool $short = false): string
     {
-        $s = self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals);
+        $s = self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals, $short);
         // Replace the very first '[' with 'tensor([['
         if (strlen($s) > 0 && $s[0] === '[') {
             $s = $label . "([\n  " . substr($s, 1);
@@ -272,33 +282,36 @@ class Formatter
      *
      * @param mixed $value Scalar or array value to format.
      * @param int $precision Number of decimal places to use for floats.
+     * @param bool $short Whether to trim trailing zeros in float output.
      * @return string
      */
-    public static function formatForArray($value, int $precision = 4): string
+    public static function formatForArray($value, int $precision = 4, bool $short = false): string
     {
         if (is_array($value)) {
             if (Validator::is2D($value)) {
-                return self::format2DAligned($value, $precision);
+                return self::format2DAligned($value, $precision, $short);
             }
-            $formattedItems = array_map(fn ($v) => self::formatForArray($v), $value);
+            $formattedItems = array_map(fn ($v) => self::formatForArray($v, 4, $short), $value);
             return '[' . implode(', ', $formattedItems) . ']';
         }
 
-        return self::formatCell($value, $precision, true);
+        return self::formatCell($value, $precision, true, $short);
     }
 
     /**
      * Format a single cell.
      *
      * @param mixed $cell
-     * @param int $precision
+     * @param int $precision Number of decimal places to use for floats.
+     * @param bool $quoteStrings
+     * @param bool $short Whether to trim trailing zeros in float output.
      * @return string
      */
-    public static function formatCell(mixed $cell, int $precision, bool $quoteStrings = false): string
+    public static function formatCell(mixed $cell, int $precision, bool $quoteStrings = false, bool $short = false): string
     {
         $s = 'Unknown';
         if (is_int($cell) || is_float($cell)) {
-            $s = self::formatNumber($cell, $precision);
+            $s = self::formatNumber($cell, $precision, $short);
         } elseif (is_string($cell)) {
             $escaped = addslashes($cell);
             $s = $quoteStrings ? "'{$escaped}'" : (Env::isCli() ? $cell : $escaped);
@@ -327,11 +340,24 @@ class Formatter
      * @param int $headCols Number of head columns per 2D slice.
      * @param int $tailCols Number of tail columns per 2D slice.
      * @param string $label Prefix label used instead of "array".
-     * @param int $precision
+     * @param int $precision Number of decimal places to use for floats.
+     * @param bool $colsTotals Whether to show summary of columns.
+     * @param bool $short Whether to trim trailing zeros in float output.
      * @return string
      */
-    public static function format3DTorch(array $tensor3d, int $headB = 5, int $tailB = 5, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'array', int $precision = 4, bool $colsTotals = false): string
-    {
+    public static function format3DTorch(
+        array $tensor3d,
+        int $headB = 5,
+        int $tailB = 5,
+        int $headRows = 5,
+        int $tailRows = 5,
+        int $headCols = 5,
+        int $tailCols = 5,
+        string $label = 'array',
+        int $precision = 4,
+        bool $colsTotals = false,
+        bool $short = false
+    ): string {
         $B = count($tensor3d);
         $idxs = [];
         $useBEllipsis = false;
@@ -350,8 +376,8 @@ class Formatter
         }
 
         $blocks = [];
-        $format2d = function ($matrix) use ($headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals) {
-            return self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals);
+        $format2d = function ($matrix) use ($headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals, $short) {
+            return self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals, $short);
         };
 
         $limitHead = ($B <= $headB + $tailB) ? count($idxs) : $headB;

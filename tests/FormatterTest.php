@@ -81,6 +81,21 @@ final class FormatterTest extends TestCase
         self::assertSame($expected, Formatter::formatNumber($value));
     }
 
+    #[Test]
+    #[TestDox('formatNumber trims trailing zeros when short mode is enabled')]
+    public function testFormatNumberShortTrimsTrailingZeros(): void
+    {
+        self::assertSame('1.23', Formatter::formatNumber(1.2300, 4, true));
+        self::assertSame('1', Formatter::formatNumber(1.0000, 4, true));
+    }
+
+    #[Test]
+    #[TestDox('formatNumber converts negative zero to zero in short mode')]
+    public function testFormatNumberShortNormalizesNegativeZero(): void
+    {
+        self::assertSame('0', Formatter::formatNumber(-0.0001, 3, true));
+    }
+
     public static function format2DAlignedProvider(): array
     {
         return [

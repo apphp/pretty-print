@@ -343,6 +343,7 @@ Notes:
 - **sep**: string. Separator between multiple default-formatted arguments. Default is a new line. Examples: `pprint('A','B','C', sep: ', ', end: '')` or `pprint('X','Y', ['sep' => "\n", 'end' => ''])`.
 - **label**: string. Prefix label for 2D/3D formatted arrays, default `array`. Example: `pprint($m, ['label' => 'arr'])`.
 - **precision**: int. Number of digits after the decimal point for floats. Example: `pprint(3.14159, precision: 2)` prints `3.14`.
+- **short**: bool. When `true`, trims trailing float zeros and final dot (for example `1.0000` -> `1`, `2.5000` -> `2.5`). Default is `false`.
 - **return**: bool. When true, do not echo; return the formatted string instead (no `<pre>` wrapping in web context). Example: `$s = pprint($m, return: true);`.
 - **headB / tailB**: ints. Number of head/tail 2D blocks shown for 3D tensors.
 - **headRows / tailRows**: ints. Rows shown per 2D slice with ellipsis between.
@@ -362,6 +363,7 @@ All options can be passed as:
 - **label**: `tensor`
 - **sep**: `' '`
 - **precision**: `4`
+- **short**: `false`
 - **headB / tailB**: `5`
 - **headRows / tailRows**: `5`
 - **headCols / tailCols**: `5`

@@ -1,5 +1,6 @@
 0.8.0 / 2026-05-31
 - Added `colsTotals` option to `pprint` / `PrettyPrint` for adding a final per-column summary row for displayed columns in 2D/3D output; only `int`/`float` values are summed
+- Added `short` option to `pprint` / `PrettyPrint` to trim trailing zeros in float output (for example `1.0000` -> `1`); default is `false`
 
 0.7.0 / 2026-05-03
 - Added test:html command

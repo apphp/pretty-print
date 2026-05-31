@@ -68,6 +68,7 @@ class PrettyPrint
      * - 'headRows' => int, 'tailRows' => int // rows per 2D slice to show (with ellipsis if truncated)
      * - 'headCols' => int, 'tailCols' => int // columns per 2D slice to show (with ellipsis if truncated)
      * - 'colsTotals' => bool                // append numeric-only per-column sums row for shown columns
+     * - 'short' => bool                      // trim trailing zeros for floats (e.g. 1.0000 -> 1)
      *
      * Call examples:
      *   (new PrettyPrint())('Metrics:', ['end' => "\n\n"]);
@@ -148,7 +149,7 @@ class PrettyPrint
     {
         $fmt = [];
         $returnString = false;
-        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label', 'precision', 'rowsOnly', 'colsOnly', 'colsTotals'];
+        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label', 'precision', 'rowsOnly', 'colsOnly', 'colsTotals', 'short'];
         foreach ($fmtKeys as $k) {
             if (array_key_exists($k, $args)) {
                 $fmt[$k] = $args[$k];
@@ -219,6 +220,9 @@ class PrettyPrint
             }
             if (isset($fmt['colsTotals'])) {
                 $fmt['colsTotals'] = (bool)$fmt['colsTotals'];
+            }
+            if (isset($fmt['short'])) {
+                $fmt['short'] = (bool)$fmt['short'];
             }
         }
         return $fmt;
@@ -324,7 +328,8 @@ class PrettyPrint
                         (int)($fmt['tailCols'] ?? 5),
                         $label,
                         $this->precision,
-                        (bool)($fmt['colsTotals'] ?? false)
+                        (bool)($fmt['colsTotals'] ?? false),
+                        (bool)($fmt['short'] ?? false)
                     );
                 } elseif (Validator::is2D($arg)) {
                     $rowsRange = $this->parseRangeOption($fmt['rowsOnly'] ?? null);
@@ -342,13 +347,14 @@ class PrettyPrint
                         (int)($fmt['tailCols'] ?? 5),
                         $label,
                         $this->precision,
-                        (bool)($fmt['colsTotals'] ?? false)
+                        (bool)($fmt['colsTotals'] ?? false),
+                        (bool)($fmt['short'] ?? false)
                     );
                 } else {
-                    $parts[] = Formatter::formatForArray($arg, $this->precision);
+                    $parts[] = Formatter::formatForArray($arg, $this->precision, (bool)($fmt['short'] ?? false));
                 }
             } else {
-                $parts[] = Formatter::formatCell($arg, $this->precision);
+                $parts[] = Formatter::formatCell($arg, $this->precision, false, (bool)($fmt['short'] ?? false));
             }
         }
         return $parts;
