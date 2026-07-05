@@ -220,6 +220,8 @@ class Formatter
             }
         }
 
+        $rowsSummaryHeaderRow = null;
+
         if ($rowsSummary) {
             $summaryColIndex = count($widths);
             $widths[] = 0;
@@ -240,6 +242,12 @@ class Formatter
                 $widths[$summaryColIndex] = max($widths[$summaryColIndex], strlen($summaryValue));
             }
 
+            if (count($formatted) > 0) {
+                $rowsSummaryHeaderRow = array_fill(0, count($widths), '');
+                $rowsSummaryHeaderRow[$summaryColIndex] = '---totals---';
+                $widths[$summaryColIndex] = max($widths[$summaryColIndex], strlen('---totals---'));
+            }
+
             if ($summaryRow !== null) {
                 $summaryRow[$summaryColIndex] = '';
             }
@@ -257,6 +265,9 @@ class Formatter
 
         $lines = [];
         $headCount = ($rows <= $headRows + $tailRows) ? count($rowIdxs) : $headRows;
+        if ($rowsSummaryHeaderRow !== null) {
+            $lines[] = $buildRow($rowsSummaryHeaderRow, $headCount);
+        }
         for ($i = 0; $i < $headCount; $i++) {
             $lines[] = $buildRow($formatted[$i], $headCount);
         }
