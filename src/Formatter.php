@@ -113,6 +113,11 @@ class Formatter
      * @param int $headCols Number of head columns to display.
      * @param int $tailCols Number of tail columns to display.
      * @param int $precision Number of decimal places to use for floats.
+     * @param bool $short Whether to trim trailing zeros in float output.
+     * @param bool $colsSummary Whether to show summary of columns.
+     * @param string $colsSummaryLabel Label shown above the per-column sums row.
+     * @param bool $rowsSummary Whether to show summary of rows.
+     * @param string $rowsSummaryLabel Label shown in the first row for the row-sums column.
      * @return string
      */
     public static function format2DSummarized(
@@ -122,10 +127,11 @@ class Formatter
         int $headCols = 5,
         int $tailCols = 5,
         int $precision = 4,
-        bool $colsSummary = false,
         bool $short = false,
+        bool $colsSummary = false,
         string $colsSummaryLabel = '---totals---',
-        bool $rowsSummary = false
+        bool $rowsSummary = false,
+        string $rowsSummaryLabel = '---totals---'
     ): string {
         $rows = count($matrix);
         $cols = 0;
@@ -244,8 +250,8 @@ class Formatter
 
             if (count($formatted) > 0) {
                 $rowsSummaryHeaderRow = array_fill(0, count($widths), '');
-                $rowsSummaryHeaderRow[$summaryColIndex] = '---totals---';
-                $widths[$summaryColIndex] = max($widths[$summaryColIndex], strlen('---totals---'));
+                $rowsSummaryHeaderRow[$summaryColIndex] = $rowsSummaryLabel;
+                $widths[$summaryColIndex] = max($widths[$summaryColIndex], strlen($rowsSummaryLabel));
             }
         }
 
@@ -301,6 +307,7 @@ class Formatter
      * @param bool $colsSummary Whether to show summary of columns.
      * @param string $colsSummaryLabel
      * @param bool $rowsSummary Whether to show summary of rows.
+     * @param string $rowsSummaryLabel Label shown in the first row for the row-sums column.
      * @return string
      */
     public static function format2DTorch(
@@ -314,7 +321,8 @@ class Formatter
         bool $short = false,
         bool $colsSummary = false,
         string $colsSummaryLabel = '---totals---',
-        bool $rowsSummary = false
+        bool $rowsSummary = false,
+        string $rowsSummaryLabel = '---totals---'
     ): string {
         $s = self::format2DSummarized(
             $matrix,
@@ -323,10 +331,11 @@ class Formatter
             $headCols,
             $tailCols,
             $precision,
-            $colsSummary,
             $short,
+            $colsSummary,
             $colsSummaryLabel,
-            $rowsSummary
+            $rowsSummary,
+            $rowsSummaryLabel
         );
         // Replace the very first '[' with 'tensor([['
         if (strlen($s) > 0 && $s[0] === '[') {
@@ -411,6 +420,7 @@ class Formatter
      * @param bool $colsSummary Whether to show summary of columns.
      * @param string $colsSummaryLabel Label shown above the per-column sums row (default: ---totals---)
      * @param bool $rowsSummary Whether to show summary of rows.
+     * @param string $rowsSummaryLabel Label shown in the first row for the row-sums column (default: ---totals---)
      * @return string
      */
     public static function format3DTorch(
@@ -426,7 +436,8 @@ class Formatter
         bool $short = false,
         bool $colsSummary = false,
         string $colsSummaryLabel = '---totals---',
-        bool $rowsSummary = false
+        bool $rowsSummary = false,
+        string $rowsSummaryLabel = '---totals---'
     ): string {
         $B = count($tensor3d);
         $idxs = [];
@@ -446,7 +457,7 @@ class Formatter
         }
 
         $blocks = [];
-        $format2d = function ($matrix) use ($headRows, $tailRows, $headCols, $tailCols, $precision, $colsSummary, $short, $colsSummaryLabel, $rowsSummary) {
+        $format2d = function ($matrix) use ($headRows, $tailRows, $headCols, $tailCols, $precision, $short, $colsSummary, $colsSummaryLabel, $rowsSummary, $rowsSummaryLabel) {
             return self::format2DSummarized(
                 $matrix,
                 $headRows,
@@ -454,10 +465,11 @@ class Formatter
                 $headCols,
                 $tailCols,
                 $precision,
-                $colsSummary,
                 $short,
+                $colsSummary,
                 $colsSummaryLabel,
-                $rowsSummary
+                $rowsSummary,
+                $rowsSummaryLabel
             );
         };
 

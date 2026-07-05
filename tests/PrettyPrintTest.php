@@ -1055,4 +1055,44 @@ final class PrettyPrintTest extends TestCase
         self::assertMatchesRegularExpression('/\[\s*5,\s*6,\s*11\s*\]/', $out);
         self::assertStringContainsString('...', $out);
     }
+
+    #[Test]
+    #[TestDox('rowsSummaryLabel customizes first-row summary marker via named option')]
+    public function rowsSummaryLabelNamedOption(): void
+    {
+        $pp = new PrettyPrint();
+
+        $matrix = [
+            [1, 'x', 2.5],
+            [3, 'y', 4.5],
+        ];
+
+        ob_start();
+        $pp($matrix, rowsSummary: true, rowsSummaryLabel: '===rows===');
+        $out = ob_get_clean();
+
+        self::assertMatchesRegularExpression('/^array\(\[\n\s*\[\s*,\s*,\s*,\s*===rows===\]/', $out);
+        self::assertStringContainsString('3.5000', $out);
+        self::assertStringContainsString('7.5000', $out);
+    }
+
+    #[Test]
+    #[TestDox('rowsSummaryLabel customizes first-row summary marker via trailing options array')]
+    public function rowsSummaryLabelTrailingOptionsArray(): void
+    {
+        $pp = new PrettyPrint();
+
+        $matrix = [
+            [1, 'x', 2.5],
+            [3, 'y', 4.5],
+        ];
+
+        ob_start();
+        $pp($matrix, ['rowsSummary' => true, 'rowsSummaryLabel' => '===rows===']);
+        $out = ob_get_clean();
+
+        self::assertMatchesRegularExpression('/^array\(\[\n\s*\[\s*,\s*,\s*,\s*===rows===\]/', $out);
+        self::assertStringContainsString('3.5000', $out);
+        self::assertStringContainsString('7.5000', $out);
+    }
 }
