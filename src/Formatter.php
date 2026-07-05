@@ -247,10 +247,6 @@ class Formatter
                 $rowsSummaryHeaderRow[$summaryColIndex] = '---totals---';
                 $widths[$summaryColIndex] = max($widths[$summaryColIndex], strlen('---totals---'));
             }
-
-            if ($summaryRow !== null) {
-                $summaryRow[$summaryColIndex] = '';
-            }
         }
 
         // Build lines from pre-formatted rows
