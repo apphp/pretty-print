@@ -1,6 +1,8 @@
 0.8.0 / ...
 - Added `colsSummary` option to `pprint` / `PrettyPrint` for adding a final per-column summary row for displayed columns in 2D/3D output; only `int`/`float` values are summed
 - Added `colsSummaryLabel` option to `pprint` / `PrettyPrint` for customizing the summary separator label (default: `---totals---`)
+- Added `rowsSummary` option to `pprint` / `PrettyPrint` for adding an extra trailing per-row summary column in 2D/3D output; only `int`/`float` values are summed
+- Added `rowsSummaryLabel` option to `pprint` / `PrettyPrint` for customizing the summary separator label (default: `---totals---`)
 - Added `short` option to `pprint` / `PrettyPrint` to trim trailing zeros in float output (for example `1.0000` -> `1`); default is `false`
 
 0.7.0 / 2026-05-03
