@@ -367,6 +367,43 @@ final class PrettyPrintTest extends TestCase
     }
 
     #[Test]
+    #[TestDox('short defaults to false and keeps trailing float zeros')]
+    public function shortDefaultIsFalse(): void
+    {
+        $pp = new PrettyPrint();
+        ob_start();
+        $pp(1.0);
+        $out = ob_get_clean();
+
+        self::assertSame("1.0000{$this->nl}{$this->nl}", $out);
+    }
+
+    #[Test]
+    #[TestDox('short trims trailing float zeros when enabled')]
+    public function shortTrimsTrailingZeros(): void
+    {
+        $pp = new PrettyPrint();
+
+        ob_start();
+        $pp(1.0, short: true);
+        $scalar = ob_get_clean();
+        self::assertSame("1{$this->nl}{$this->nl}", $scalar);
+
+        $matrix = [[1.0, 2.50], [3.3300, 4.0]];
+        ob_start();
+        $pp($matrix, precision: 4, short: true);
+        $out = ob_get_clean();
+
+        self::assertStringContainsString('1', $out);
+        self::assertStringContainsString('2.5', $out);
+        self::assertStringContainsString('3.33', $out);
+        self::assertStringContainsString('4', $out);
+        self::assertStringNotContainsString('1.0000', $out);
+        self::assertStringNotContainsString('2.5000', $out);
+        self::assertStringNotContainsString('4.0000', $out);
+    }
+
+    #[Test]
     #[TestDox('aligns multiple 1D rows with an optional label')]
     public function multipleRowsWithLabel(): void
     {
@@ -892,5 +929,66 @@ final class PrettyPrintTest extends TestCase
         $actual = $method->invoke($pp, 'array', $tensor, $fmt);
 
         self::assertSame('array(3x2x3)', $actual);
+    }
+
+    #[Test]
+    #[TestDox('colsSummary adds numeric-only column sums and ignores non-numeric values')]
+    public function colsSummarySumsOnlyNumericValues(): void
+    {
+        $pp = new PrettyPrint();
+
+        $matrix = [
+            [1, 'x', 2.5, '4'],
+            [3, 'y', 4.5, 6],
+            ['n/a', 'z', 1.0, null],
+        ];
+
+        ob_start();
+        $pp($matrix, colsSummary: true);
+        $out = ob_get_clean();
+
+        // Summary row should include numeric sums only:
+        // col1 => 4, col2 => non-numeric => blank, col3 => 8.0000, col4 => 6 (string '4' ignored)
+        self::assertStringContainsString('---', $out);
+        self::assertMatchesRegularExpression('/\[\s*4,\s*,\s*8\.0000,\s*6\s*\]/', $out);
+        self::assertStringNotContainsString('10', $out);
+    }
+
+    #[Test]
+    #[TestDox('colsSummaryLabel customizes summary label via named option')]
+    public function colsSummaryLabelNamedOption(): void
+    {
+        $pp = new PrettyPrint();
+
+        $matrix = [
+            [1, 'x', 2.5],
+            [3, 'y', 4.5],
+        ];
+
+        ob_start();
+        $pp($matrix, colsSummary: true, colsSummaryLabel: '===sum===');
+        $out = ob_get_clean();
+
+        self::assertStringContainsString('===sum===', $out);
+        self::assertMatchesRegularExpression('/\[\s*4,\s*,\s*7\.0000\s*\]/', $out);
+    }
+
+    #[Test]
+    #[TestDox('colsSummaryLabel customizes summary label via trailing options array')]
+    public function colsSummaryLabelTrailingOptionsArray(): void
+    {
+        $pp = new PrettyPrint();
+
+        $matrix = [
+            [1, 'x', 2.5],
+            [3, 'y', 4.5],
+        ];
+
+        ob_start();
+        $pp($matrix, ['colsSummary' => true, 'colsSummaryLabel' => '===sum===']);
+        $out = ob_get_clean();
+
+        self::assertStringContainsString('===sum===', $out);
+        self::assertMatchesRegularExpression('/\[\s*4,\s*,\s*7\.0000\s*\]/', $out);
     }
 }

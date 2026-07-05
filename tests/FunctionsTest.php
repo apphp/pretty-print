@@ -32,6 +32,49 @@ final class FunctionsTest extends TestCase
         Env::setCliOverride(true);
     }
 
+    #[Test]
+    #[TestDox('pcompare uses red for differing values and gray for missing placeholders in HTML mode')]
+    public function pcompareHtmlCoversRedAndGrayBranches(): void
+    {
+        Env::setCliOverride(false);
+
+        try {
+            $a = [
+                [1],
+                [2],
+            ];
+            $b = [
+                [9, 8],
+                [],
+            ];
+
+            $out = pcompare($a, $b, ['return' => true, 'end' => '']);
+
+            self::assertStringContainsString('<span style="color: red">', $out);
+            self::assertStringContainsString('<span style="color: gray">', $out);
+        } finally {
+            Env::setCliOverride(true);
+        }
+    }
+
+    #[Test]
+    #[TestDox('pcompare uses green for equal values in HTML mode')]
+    public function pcompareHtmlCoversGreenBranch(): void
+    {
+        Env::setCliOverride(false);
+
+        try {
+            $a = [[1, 2]];
+            $b = [[1, 2]];
+
+            $out = pcompare($a, $b, ['return' => true, 'end' => '']);
+
+            self::assertStringContainsString('<span style="color: green">', $out);
+        } finally {
+            Env::setCliOverride(true);
+        }
+    }
+
     protected function tearDown(): void
     {
         Env::setCliOverride(null);

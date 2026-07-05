@@ -67,12 +67,16 @@ class PrettyPrint
      * - 'headB' => int, 'tailB' => int       // number of head/tail 2D blocks for 3D tensors
      * - 'headRows' => int, 'tailRows' => int // rows per 2D slice to show (with ellipsis if truncated)
      * - 'headCols' => int, 'tailCols' => int // columns per 2D slice to show (with ellipsis if truncated)
+     * - 'colsSummary' => bool                // append numeric-only per-column sums row for shown columns
+     * - 'colsSummaryLabel' => string         // visual label shown above the per-column sums row (default: ---totals---)
+     * - 'short' => bool                      // trim trailing zeros for floats (e.g. 1.0000 -> 1)
      *
      * Call examples:
      *   (new PrettyPrint())('Metrics:', ['end' => "\n\n"]);
      *   (new PrettyPrint())([1,2,3], [4,5,6]);
      *   (new PrettyPrint())($matrix2d, ['headRows' => 4, 'tailRows' => 0]);
      *   (new PrettyPrint())($tensor3d, ['headB' => 4, 'tailB' => 2]);
+     * @throws ReflectionException
      */
     public function __invoke(...$args): string
     {
@@ -146,7 +150,7 @@ class PrettyPrint
     {
         $fmt = [];
         $returnString = false;
-        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label', 'precision', 'rowsOnly', 'colsOnly'];
+        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label', 'precision', 'rowsOnly', 'colsOnly', 'colsSummary', 'colsSummaryLabel', 'short'];
         foreach ($fmtKeys as $k) {
             if (array_key_exists($k, $args)) {
                 $fmt[$k] = $args[$k];
@@ -214,6 +218,15 @@ class PrettyPrint
                 if (strlen($fmt['label']) > self::MAX_LABEL_LEN) {
                     $fmt['label'] = substr($fmt['label'], 0, self::MAX_LABEL_LEN);
                 }
+            }
+            if (isset($fmt['colsSummary'])) {
+                $fmt['colsSummary'] = (bool)$fmt['colsSummary'];
+            }
+            if (isset($fmt['colsSummaryLabel'])) {
+                $fmt['colsSummaryLabel'] = (string)$fmt['colsSummaryLabel'];
+            }
+            if (isset($fmt['short'])) {
+                $fmt['short'] = (bool)$fmt['short'];
             }
         }
         return $fmt;
@@ -318,7 +331,10 @@ class PrettyPrint
                         (int)($fmt['headCols'] ?? 5),
                         (int)($fmt['tailCols'] ?? 5),
                         $label,
-                        $this->precision
+                        $this->precision,
+                        (bool)($fmt['colsSummary'] ?? false),
+                        (string)($fmt['colsSummaryLabel'] ?? '---totals---'),
+                        (bool)($fmt['short'] ?? false)
                     );
                 } elseif (Validator::is2D($arg)) {
                     $rowsRange = $this->parseRangeOption($fmt['rowsOnly'] ?? null);
@@ -335,13 +351,16 @@ class PrettyPrint
                         (int)($fmt['headCols'] ?? 5),
                         (int)($fmt['tailCols'] ?? 5),
                         $label,
-                        $this->precision
+                        $this->precision,
+                        (bool)($fmt['colsSummary'] ?? false),
+                        (string)($fmt['colsSummaryLabel'] ?? '---totals---'),
+                        (bool)($fmt['short'] ?? false)
                     );
                 } else {
-                    $parts[] = Formatter::formatForArray($arg, $this->precision);
+                    $parts[] = Formatter::formatForArray($arg, $this->precision, (bool)($fmt['short'] ?? false));
                 }
             } else {
-                $parts[] = Formatter::formatCell($arg, $this->precision);
+                $parts[] = Formatter::formatCell($arg, $this->precision, false, (bool)($fmt['short'] ?? false));
             }
         }
         return $parts;
