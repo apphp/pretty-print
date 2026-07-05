@@ -953,4 +953,42 @@ final class PrettyPrintTest extends TestCase
         self::assertMatchesRegularExpression('/\[\s*4,\s*,\s*8\.0000,\s*6\s*\]/', $out);
         self::assertStringNotContainsString('10', $out);
     }
+
+    #[Test]
+    #[TestDox('colsTotalsLabel customizes summary label via named option')]
+    public function colsTotalsLabelNamedOption(): void
+    {
+        $pp = new PrettyPrint();
+
+        $matrix = [
+            [1, 'x', 2.5],
+            [3, 'y', 4.5],
+        ];
+
+        ob_start();
+        $pp($matrix, colsTotals: true, colsTotalsLabel: '===sum===');
+        $out = ob_get_clean();
+
+        self::assertStringContainsString('===sum===', $out);
+        self::assertMatchesRegularExpression('/\[\s*4,\s*,\s*7\.0000\s*\]/', $out);
+    }
+
+    #[Test]
+    #[TestDox('colsTotalsLabel customizes summary label via trailing options array')]
+    public function colsTotalsLabelTrailingOptionsArray(): void
+    {
+        $pp = new PrettyPrint();
+
+        $matrix = [
+            [1, 'x', 2.5],
+            [3, 'y', 4.5],
+        ];
+
+        ob_start();
+        $pp($matrix, ['colsTotals' => true, 'colsTotalsLabel' => '===sum===']);
+        $out = ob_get_clean();
+
+        self::assertStringContainsString('===sum===', $out);
+        self::assertMatchesRegularExpression('/\[\s*4,\s*,\s*7\.0000\s*\]/', $out);
+    }
 }

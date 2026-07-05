@@ -68,6 +68,7 @@ class PrettyPrint
      * - 'headRows' => int, 'tailRows' => int // rows per 2D slice to show (with ellipsis if truncated)
      * - 'headCols' => int, 'tailCols' => int // columns per 2D slice to show (with ellipsis if truncated)
      * - 'colsTotals' => bool                // append numeric-only per-column sums row for shown columns
+     * - 'colsTotalsLabel' => string         // visual label shown above the per-column sums row (default: ---totals---)
      * - 'short' => bool                      // trim trailing zeros for floats (e.g. 1.0000 -> 1)
      *
      * Call examples:
@@ -149,7 +150,7 @@ class PrettyPrint
     {
         $fmt = [];
         $returnString = false;
-        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label', 'precision', 'rowsOnly', 'colsOnly', 'colsTotals', 'short'];
+        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label', 'precision', 'rowsOnly', 'colsOnly', 'colsTotals', 'colsTotalsLabel', 'short'];
         foreach ($fmtKeys as $k) {
             if (array_key_exists($k, $args)) {
                 $fmt[$k] = $args[$k];
@@ -220,6 +221,9 @@ class PrettyPrint
             }
             if (isset($fmt['colsTotals'])) {
                 $fmt['colsTotals'] = (bool)$fmt['colsTotals'];
+            }
+            if (isset($fmt['colsTotalsLabel'])) {
+                $fmt['colsTotalsLabel'] = (string)$fmt['colsTotalsLabel'];
             }
             if (isset($fmt['short'])) {
                 $fmt['short'] = (bool)$fmt['short'];
@@ -329,7 +333,8 @@ class PrettyPrint
                         $label,
                         $this->precision,
                         (bool)($fmt['colsTotals'] ?? false),
-                        (bool)($fmt['short'] ?? false)
+                        (bool)($fmt['short'] ?? false),
+                        (string)($fmt['colsTotalsLabel'] ?? '---totals---')
                     );
                 } elseif (Validator::is2D($arg)) {
                     $rowsRange = $this->parseRangeOption($fmt['rowsOnly'] ?? null);
@@ -348,7 +353,8 @@ class PrettyPrint
                         $label,
                         $this->precision,
                         (bool)($fmt['colsTotals'] ?? false),
-                        (bool)($fmt['short'] ?? false)
+                        (bool)($fmt['short'] ?? false),
+                        (string)($fmt['colsTotalsLabel'] ?? '---totals---')
                     );
                 } else {
                     $parts[] = Formatter::formatForArray($arg, $this->precision, (bool)($fmt['short'] ?? false));

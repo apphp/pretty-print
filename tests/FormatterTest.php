@@ -281,6 +281,21 @@ final class FormatterTest extends TestCase
     }
 
     #[Test]
+    #[TestDox('format2DSummarized colsTotals supports custom summary label')]
+    public function testFormat2DSummarizedWithcolsTotalsCustomLabel(): void
+    {
+        $matrix = [
+            [1, 'x', 2.5],
+            [3, 'y', 4.5],
+        ];
+
+        $out = Formatter::format2DSummarized($matrix, 5, 5, 5, 5, 4, true, false, '===sum===');
+
+        self::assertStringContainsString('===sum===', $out);
+        self::assertMatchesRegularExpression('/\[\s*4,\s*,\s*7\.0000\s*\]/', $out);
+    }
+
+    #[Test]
     #[TestDox('format2DSummarized colsTotals supports column ellipsis in summary row')]
     public function testFormat2DSummarizedWithcolsTotalsAndColumnEllipsis(): void
     {
@@ -408,6 +423,23 @@ final class FormatterTest extends TestCase
         $out = Formatter::format3DTorch($tensor3d, 5, 5, 5, 5, 5, 5, 'tensor', 2, true);
 
         self::assertStringContainsString('---totals---', $out);
+        self::assertStringContainsString('[4,    , 6.00]', $out);
+    }
+
+    #[Test]
+    #[TestDox('format3DTorch propagates custom colsTotalsLabel to inner 2D blocks')]
+    public function testFormat3DTorchWithcolsTotalsCustomLabel(): void
+    {
+        $tensor3d = [
+            [
+                [1, 'x', 2.0],
+                [3, 'y', 4.0],
+            ],
+        ];
+
+        $out = Formatter::format3DTorch($tensor3d, 5, 5, 5, 5, 5, 5, 'tensor', 2, true, false, '===sum===');
+
+        self::assertStringContainsString('===sum===', $out);
         self::assertStringContainsString('[4,    , 6.00]', $out);
     }
 

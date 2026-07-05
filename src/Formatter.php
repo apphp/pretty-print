@@ -115,7 +115,7 @@ class Formatter
      * @param int $precision Number of decimal places to use for floats.
      * @return string
      */
-    public static function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, int $precision = 4, bool $colsTotals = false, bool $short = false): string
+    public static function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, int $precision = 4, bool $colsTotals = false, bool $short = false, string $colsTotalsLabel = '---totals---'): string
     {
         $rows = count($matrix);
         $cols = 0;
@@ -235,7 +235,7 @@ class Formatter
             }
         }
         if ($summaryRow !== null) {
-            $lines[] = ' ---totals---';
+            $lines[] = ' ' . $colsTotalsLabel;
             $lines[] = $buildRow($summaryRow, $headCount);
         }
 
@@ -259,9 +259,9 @@ class Formatter
      * @param bool $short Whether to trim trailing zeros in float output.
      * @return string
      */
-    public static function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'array', int $precision = 4, bool $colsTotals = false, bool $short = false): string
+    public static function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'array', int $precision = 4, bool $colsTotals = false, bool $short = false, string $colsTotalsLabel = '---totals---'): string
     {
-        $s = self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals, $short);
+        $s = self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals, $short, $colsTotalsLabel);
         // Replace the very first '[' with 'tensor([['
         if (strlen($s) > 0 && $s[0] === '[') {
             $s = $label . "([\n  " . substr($s, 1);
@@ -356,7 +356,8 @@ class Formatter
         string $label = 'array',
         int $precision = 4,
         bool $colsTotals = false,
-        bool $short = false
+        bool $short = false,
+        string $colsTotalsLabel = '---totals---'
     ): string {
         $B = count($tensor3d);
         $idxs = [];
@@ -376,8 +377,8 @@ class Formatter
         }
 
         $blocks = [];
-        $format2d = function ($matrix) use ($headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals, $short) {
-            return self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals, $short);
+        $format2d = function ($matrix) use ($headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals, $short, $colsTotalsLabel) {
+            return self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals, $short, $colsTotalsLabel);
         };
 
         $limitHead = ($B <= $headB + $tailB) ? count($idxs) : $headB;

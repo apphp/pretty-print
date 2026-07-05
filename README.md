@@ -191,6 +191,9 @@ pprint($matrix, colsTotals: true);
 //   ---totals---,
 //   [    4,    , 8.0000,    6]
 // ])
+
+// Customize the summary label (default is ---totals---)
+pprint($matrix, colsTotals: true, colsTotalsLabel: '===sum===');
 ```
 
 Postfix and prefix control
@@ -349,6 +352,7 @@ Notes:
 - **headRows / tailRows**: ints. Rows shown per 2D slice with ellipsis between.
 - **headCols / tailCols**: ints. Columns shown per 2D slice with ellipsis between.
 - **colsTotals**: bool. Adds a final per-column summary row for displayed columns in 2D/3D output; only `int`/`float` values are summed.
+- **colsTotalsLabel**: string. Visual label printed above the `colsTotals` summary row. Default is `---totals---`.
 - **rowsOnly / colsOnly**: int or string. Limit visible rows/columns.
   - Single index: `3` or `'3'`.
   - Range: `'2-4'` (inclusive).
