@@ -264,7 +264,7 @@ final class FormatterTest extends TestCase
 
     #[Test]
     #[TestDox('format2DSummarized can append visual numeric-only column summary row')]
-    public function testFormat2DSummarizedWithcolsTotals(): void
+    public function testFormat2DSummarizedWithcolsSummary(): void
     {
         $matrix = [
             [1, 'x', 2.5, '4'],
@@ -281,8 +281,8 @@ final class FormatterTest extends TestCase
     }
 
     #[Test]
-    #[TestDox('format2DSummarized colsTotals supports custom summary label')]
-    public function testFormat2DSummarizedWithcolsTotalsCustomLabel(): void
+    #[TestDox('format2DSummarized colsSummary supports custom summary label')]
+    public function testFormat2DSummarizedWithcolsSummaryCustomLabel(): void
     {
         $matrix = [
             [1, 'x', 2.5],
@@ -296,8 +296,8 @@ final class FormatterTest extends TestCase
     }
 
     #[Test]
-    #[TestDox('format2DSummarized colsTotals supports column ellipsis in summary row')]
-    public function testFormat2DSummarizedWithcolsTotalsAndColumnEllipsis(): void
+    #[TestDox('format2DSummarized colsSummary supports column ellipsis in summary row')]
+    public function testFormat2DSummarizedWithcolsSummaryAndColumnEllipsis(): void
     {
         $matrix = [
             [1, 2, 3, 4, 5],
@@ -314,8 +314,8 @@ final class FormatterTest extends TestCase
     }
 
     #[Test]
-    #[TestDox('format2DSummarized colsTotals skips rows missing a selected column')]
-    public function testFormat2DSummarizedWithcolsTotalsSkipsMissingColumns(): void
+    #[TestDox('format2DSummarized colsSummary skips rows missing a selected column')]
+    public function testFormat2DSummarizedWithcolsSummarySkipsMissingColumns(): void
     {
         $matrix = [
             [1, 2, 3],
@@ -369,7 +369,7 @@ final class FormatterTest extends TestCase
             [3, 4],
         ];
 
-        $out = Formatter::format2DTorch($matrix, 5, 5, 5, 5, 'array', 2, false);
+        $out = Formatter::format2DTorch($matrix, 5, 5, 5, 5, 'array', 2);
 
         self::assertStringStartsWith("array([\n", $out);
         self::assertStringContainsString('[1, 2]', $out);
@@ -410,8 +410,8 @@ final class FormatterTest extends TestCase
     }
 
     #[Test]
-    #[TestDox('format3DTorch propagates colsTotals to inner 2D blocks')]
-    public function testFormat3DTorchWithcolsTotals(): void
+    #[TestDox('format3DTorch propagates colsSummary to inner 2D blocks')]
+    public function testFormat3DTorchWithcolsSummary(): void
     {
         $tensor3d = [
             [
@@ -427,8 +427,8 @@ final class FormatterTest extends TestCase
     }
 
     #[Test]
-    #[TestDox('format3DTorch propagates custom colsTotalsLabel to inner 2D blocks')]
-    public function testFormat3DTorchWithcolsTotalsCustomLabel(): void
+    #[TestDox('format3DTorch propagates custom colsSummaryLabel to inner 2D blocks')]
+    public function testFormat3DTorchWithcolsSummaryCustomLabel(): void
     {
         $tensor3d = [
             [
@@ -437,7 +437,7 @@ final class FormatterTest extends TestCase
             ],
         ];
 
-        $out = Formatter::format3DTorch($tensor3d, 5, 5, 5, 5, 5, 5, 'tensor', 2, true, false, '===sum===');
+        $out = Formatter::format3DTorch($tensor3d, 5, 5, 5, 5, 5, 5, 'tensor', 2, true, '===sum===', false);
 
         self::assertStringContainsString('===sum===', $out);
         self::assertStringContainsString('[4,    , 6.00]', $out);

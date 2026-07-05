@@ -181,7 +181,7 @@ $matrix = [
     ['n/a', 'z', 1.0, null],
 ];
 
-pprint($matrix, colsTotals: true);
+pprint($matrix, colsSummary: true);
 // Adds a final summary row with sums per visible column.
 // Only int/float values are included in sums; non-numeric values are ignored.
 // array([
@@ -193,7 +193,7 @@ pprint($matrix, colsTotals: true);
 // ])
 
 // Customize the summary label (default is ---totals---)
-pprint($matrix, colsTotals: true, colsTotalsLabel: '===sum===');
+pprint($matrix, colsSummary: true, colsSummaryLabel: '===sum===');
 ```
 
 Postfix and prefix control
@@ -351,8 +351,8 @@ Notes:
 - **headB / tailB**: ints. Number of head/tail 2D blocks shown for 3D tensors.
 - **headRows / tailRows**: ints. Rows shown per 2D slice with ellipsis between.
 - **headCols / tailCols**: ints. Columns shown per 2D slice with ellipsis between.
-- **colsTotals**: bool. Adds a final per-column summary row for displayed columns in 2D/3D output; only `int`/`float` values are summed.
-- **colsTotalsLabel**: string. Visual label printed above the `colsTotals` summary row. Default is `---totals---`.
+- **colsSummary**: bool. Adds a final per-column summary row for displayed columns in 2D/3D output; only `int`/`float` values are summed.
+- **colsSummaryLabel**: string. Visual label printed above the `colsSummary` summary row. Default is `---totals---`.
 - **rowsOnly / colsOnly**: int or string. Limit visible rows/columns.
   - Single index: `3` or `'3'`.
   - Range: `'2-4'` (inclusive).

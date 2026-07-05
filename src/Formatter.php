@@ -115,8 +115,17 @@ class Formatter
      * @param int $precision Number of decimal places to use for floats.
      * @return string
      */
-    public static function format2DSummarized(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, int $precision = 4, bool $colsTotals = false, bool $short = false, string $colsTotalsLabel = '---totals---'): string
-    {
+    public static function format2DSummarized(
+        array $matrix,
+        int $headRows = 5,
+        int $tailRows = 5,
+        int $headCols = 5,
+        int $tailCols = 5,
+        int $precision = 4,
+        bool $colsSummary = false,
+        bool $short = false,
+        string $colsSummaryLabel = '---totals---'
+    ): string {
         $rows = count($matrix);
         $cols = 0;
         foreach ($matrix as $row) {
@@ -179,7 +188,7 @@ class Formatter
         }
 
         $summaryRow = null;
-        if ($colsTotals) {
+        if ($colsSummary) {
             $summaryRow = [];
             foreach ($colPositions as $i => $pos) {
                 if ($pos === '...') {
@@ -235,7 +244,7 @@ class Formatter
             }
         }
         if ($summaryRow !== null) {
-            $lines[] = ' ' . $colsTotalsLabel;
+            $lines[] = ' ' . $colsSummaryLabel;
             $lines[] = $buildRow($summaryRow, $headCount);
         }
 
@@ -255,13 +264,24 @@ class Formatter
      * @param int $tailCols Number of tail columns to display.
      * @param string $label Prefix label used instead of "array".
      * @param int $precision Number of decimal places to use for floats.
-     * @param bool $colsTotals Whether to show summary of columns.
+     * @param bool $colsSummary Whether to show summary of columns.
      * @param bool $short Whether to trim trailing zeros in float output.
+     * @param string $colsSummaryLabel
      * @return string
      */
-    public static function format2DTorch(array $matrix, int $headRows = 5, int $tailRows = 5, int $headCols = 5, int $tailCols = 5, string $label = 'array', int $precision = 4, bool $colsTotals = false, bool $short = false, string $colsTotalsLabel = '---totals---'): string
-    {
-        $s = self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals, $short, $colsTotalsLabel);
+    public static function format2DTorch(
+        array $matrix,
+        int $headRows = 5,
+        int $tailRows = 5,
+        int $headCols = 5,
+        int $tailCols = 5,
+        string $label = 'array',
+        int $precision = 4,
+        bool $colsSummary = false,
+        string $colsSummaryLabel = '---totals---',
+        bool $short = false
+    ): string {
+        $s = self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision, $colsSummary, $short, $colsSummaryLabel);
         // Replace the very first '[' with 'tensor([['
         if (strlen($s) > 0 && $s[0] === '[') {
             $s = $label . "([\n  " . substr($s, 1);
@@ -341,7 +361,8 @@ class Formatter
      * @param int $tailCols Number of tail columns per 2D slice.
      * @param string $label Prefix label used instead of "array".
      * @param int $precision Number of decimal places to use for floats.
-     * @param bool $colsTotals Whether to show summary of columns.
+     * @param bool $colsSummary Whether to show summary of columns.
+     * @param string $colsSummaryLabel Label shown above the per-column sums row (default: ---totals---)
      * @param bool $short Whether to trim trailing zeros in float output.
      * @return string
      */
@@ -355,9 +376,9 @@ class Formatter
         int $tailCols = 5,
         string $label = 'array',
         int $precision = 4,
-        bool $colsTotals = false,
-        bool $short = false,
-        string $colsTotalsLabel = '---totals---'
+        bool $colsSummary = false,
+        string $colsSummaryLabel = '---totals---',
+        bool $short = false
     ): string {
         $B = count($tensor3d);
         $idxs = [];
@@ -377,8 +398,8 @@ class Formatter
         }
 
         $blocks = [];
-        $format2d = function ($matrix) use ($headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals, $short, $colsTotalsLabel) {
-            return self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision, $colsTotals, $short, $colsTotalsLabel);
+        $format2d = function ($matrix) use ($headRows, $tailRows, $headCols, $tailCols, $precision, $colsSummary, $short, $colsSummaryLabel) {
+            return self::format2DSummarized($matrix, $headRows, $tailRows, $headCols, $tailCols, $precision, $colsSummary, $short, $colsSummaryLabel);
         };
 
         $limitHead = ($B <= $headB + $tailB) ? count($idxs) : $headB;

@@ -67,8 +67,8 @@ class PrettyPrint
      * - 'headB' => int, 'tailB' => int       // number of head/tail 2D blocks for 3D tensors
      * - 'headRows' => int, 'tailRows' => int // rows per 2D slice to show (with ellipsis if truncated)
      * - 'headCols' => int, 'tailCols' => int // columns per 2D slice to show (with ellipsis if truncated)
-     * - 'colsTotals' => bool                // append numeric-only per-column sums row for shown columns
-     * - 'colsTotalsLabel' => string         // visual label shown above the per-column sums row (default: ---totals---)
+     * - 'colsSummary' => bool                // append numeric-only per-column sums row for shown columns
+     * - 'colsSummaryLabel' => string         // visual label shown above the per-column sums row (default: ---totals---)
      * - 'short' => bool                      // trim trailing zeros for floats (e.g. 1.0000 -> 1)
      *
      * Call examples:
@@ -150,7 +150,7 @@ class PrettyPrint
     {
         $fmt = [];
         $returnString = false;
-        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label', 'precision', 'rowsOnly', 'colsOnly', 'colsTotals', 'colsTotalsLabel', 'short'];
+        $fmtKeys = ['headB', 'tailB', 'headRows', 'tailRows', 'headCols', 'tailCols', 'label', 'precision', 'rowsOnly', 'colsOnly', 'colsSummary', 'colsSummaryLabel', 'short'];
         foreach ($fmtKeys as $k) {
             if (array_key_exists($k, $args)) {
                 $fmt[$k] = $args[$k];
@@ -219,11 +219,11 @@ class PrettyPrint
                     $fmt['label'] = substr($fmt['label'], 0, self::MAX_LABEL_LEN);
                 }
             }
-            if (isset($fmt['colsTotals'])) {
-                $fmt['colsTotals'] = (bool)$fmt['colsTotals'];
+            if (isset($fmt['colsSummary'])) {
+                $fmt['colsSummary'] = (bool)$fmt['colsSummary'];
             }
-            if (isset($fmt['colsTotalsLabel'])) {
-                $fmt['colsTotalsLabel'] = (string)$fmt['colsTotalsLabel'];
+            if (isset($fmt['colsSummaryLabel'])) {
+                $fmt['colsSummaryLabel'] = (string)$fmt['colsSummaryLabel'];
             }
             if (isset($fmt['short'])) {
                 $fmt['short'] = (bool)$fmt['short'];
@@ -332,9 +332,9 @@ class PrettyPrint
                         (int)($fmt['tailCols'] ?? 5),
                         $label,
                         $this->precision,
-                        (bool)($fmt['colsTotals'] ?? false),
-                        (bool)($fmt['short'] ?? false),
-                        (string)($fmt['colsTotalsLabel'] ?? '---totals---')
+                        (bool)($fmt['colsSummary'] ?? false),
+                        (string)($fmt['colsSummaryLabel'] ?? '---totals---'),
+                        (bool)($fmt['short'] ?? false)
                     );
                 } elseif (Validator::is2D($arg)) {
                     $rowsRange = $this->parseRangeOption($fmt['rowsOnly'] ?? null);
@@ -352,9 +352,9 @@ class PrettyPrint
                         (int)($fmt['tailCols'] ?? 5),
                         $label,
                         $this->precision,
-                        (bool)($fmt['colsTotals'] ?? false),
-                        (bool)($fmt['short'] ?? false),
-                        (string)($fmt['colsTotalsLabel'] ?? '---totals---')
+                        (bool)($fmt['colsSummary'] ?? false),
+                        (string)($fmt['colsSummaryLabel'] ?? '---totals---'),
+                        (bool)($fmt['short'] ?? false)
                     );
                 } else {
                     $parts[] = Formatter::formatForArray($arg, $this->precision, (bool)($fmt['short'] ?? false));

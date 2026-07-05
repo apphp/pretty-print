@@ -932,8 +932,8 @@ final class PrettyPrintTest extends TestCase
     }
 
     #[Test]
-    #[TestDox('colsTotals adds numeric-only column sums and ignores non-numeric values')]
-    public function colsTotalsSumsOnlyNumericValues(): void
+    #[TestDox('colsSummary adds numeric-only column sums and ignores non-numeric values')]
+    public function colsSummarySumsOnlyNumericValues(): void
     {
         $pp = new PrettyPrint();
 
@@ -944,7 +944,7 @@ final class PrettyPrintTest extends TestCase
         ];
 
         ob_start();
-        $pp($matrix, colsTotals: true);
+        $pp($matrix, colsSummary: true);
         $out = ob_get_clean();
 
         // Summary row should include numeric sums only:
@@ -955,8 +955,8 @@ final class PrettyPrintTest extends TestCase
     }
 
     #[Test]
-    #[TestDox('colsTotalsLabel customizes summary label via named option')]
-    public function colsTotalsLabelNamedOption(): void
+    #[TestDox('colsSummaryLabel customizes summary label via named option')]
+    public function colsSummaryLabelNamedOption(): void
     {
         $pp = new PrettyPrint();
 
@@ -966,7 +966,7 @@ final class PrettyPrintTest extends TestCase
         ];
 
         ob_start();
-        $pp($matrix, colsTotals: true, colsTotalsLabel: '===sum===');
+        $pp($matrix, colsSummary: true, colsSummaryLabel: '===sum===');
         $out = ob_get_clean();
 
         self::assertStringContainsString('===sum===', $out);
@@ -974,8 +974,8 @@ final class PrettyPrintTest extends TestCase
     }
 
     #[Test]
-    #[TestDox('colsTotalsLabel customizes summary label via trailing options array')]
-    public function colsTotalsLabelTrailingOptionsArray(): void
+    #[TestDox('colsSummaryLabel customizes summary label via trailing options array')]
+    public function colsSummaryLabelTrailingOptionsArray(): void
     {
         $pp = new PrettyPrint();
 
@@ -985,7 +985,7 @@ final class PrettyPrintTest extends TestCase
         ];
 
         ob_start();
-        $pp($matrix, ['colsTotals' => true, 'colsTotalsLabel' => '===sum===']);
+        $pp($matrix, ['colsSummary' => true, 'colsSummaryLabel' => '===sum===']);
         $out = ob_get_clean();
 
         self::assertStringContainsString('===sum===', $out);
