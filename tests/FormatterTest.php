@@ -332,6 +332,60 @@ final class FormatterTest extends TestCase
         self::assertMatchesRegularExpression('/\[\s*10,\s*8,\s*10\s*\]/', $out);
     }
 
+    #[Test]
+    #[TestDox('format2DSummarized can append visual numeric-only row summary column')]
+    public function testFormat2DSummarizedWithrowsSummary(): void
+    {
+        $matrix = [
+            [1, 'x', 2.5, '4'],
+            [3, 'y', 4.5, 6],
+            ['n/a', 'z', 1.0, null],
+        ];
+
+        $out = Formatter::format2DSummarized($matrix, 5, 5, 5, 5, 4, false, false, '---totals---', true);
+
+        self::assertStringNotContainsString('---rows---', $out);
+        self::assertStringContainsString('3.5000', $out);
+        self::assertStringContainsString('13.5000', $out);
+        self::assertStringContainsString('1.0000', $out);
+    }
+
+    #[Test]
+    #[TestDox('format2DSummarized rowsSummary supports row ellipsis and row sums as extra column')]
+    public function testFormat2DSummarizedWithrowsSummaryAndEllipsis(): void
+    {
+        $matrix = [
+            [1, 2],
+            [3, 4],
+            [5, 6],
+        ];
+
+        $out = Formatter::format2DSummarized($matrix, 1, 1, 5, 5, 0, false, false, '---totals---', true);
+
+        self::assertMatchesRegularExpression('/\[\s*1,\s*2,\s*3\s*\]/', $out);
+        self::assertMatchesRegularExpression('/\[\s*5,\s*6,\s*11\s*\]/', $out);
+        self::assertStringContainsString('...', $out);
+    }
+
+    #[Test]
+    #[TestDox('format2DSummarized supports colsSummary and rowsSummary together with empty summary-row tail cell')]
+    public function testFormat2DSummarizedWithcolsSummaryAndrowsSummary(): void
+    {
+        $matrix = [
+            [1, 'x', 2.5, '4'],
+            [3, 'y', 4.5, 6],
+            ['n/a', 'z', 1.0, null],
+        ];
+
+        $out = Formatter::format2DSummarized($matrix, 5, 5, 5, 5, 4, true, false, '---totals---', true);
+
+        self::assertStringContainsString('---totals---', $out);
+        self::assertStringContainsString('3.5000', $out);
+        self::assertStringContainsString('13.5000', $out);
+        self::assertStringContainsString('1.0000', $out);
+        self::assertMatchesRegularExpression('/\[\s*4,\s*,\s*8\.0000,\s*6,\s*\]/', $out);
+    }
+
     public static function format2DTorchProvider(): array
     {
         return [
@@ -420,7 +474,7 @@ final class FormatterTest extends TestCase
             ],
         ];
 
-        $out = Formatter::format3DTorch($tensor3d, 5, 5, 5, 5, 5, 5, 'tensor', 2, true);
+        $out = Formatter::format3DTorch($tensor3d, 5, 5, 5, 5, 5, 5, 'tensor', 2, false, true);
 
         self::assertStringContainsString('---totals---', $out);
         self::assertStringContainsString('[4,    , 6.00]', $out);
@@ -437,10 +491,28 @@ final class FormatterTest extends TestCase
             ],
         ];
 
-        $out = Formatter::format3DTorch($tensor3d, 5, 5, 5, 5, 5, 5, 'tensor', 2, true, '===sum===', false);
+        $out = Formatter::format3DTorch($tensor3d, 5, 5, 5, 5, 5, 5, 'tensor', 2, false, true, '===sum===');
 
         self::assertStringContainsString('===sum===', $out);
         self::assertStringContainsString('[4,    , 6.00]', $out);
+    }
+
+    #[Test]
+    #[TestDox('format3DTorch propagates rowsSummary to inner 2D blocks as extra column')]
+    public function testFormat3DTorchWithrowsSummary(): void
+    {
+        $tensor3d = [
+            [
+                [1, 'x', 2],
+                [3, 'y', 4],
+            ],
+        ];
+
+        $out = Formatter::format3DTorch($tensor3d, 5, 5, 5, 5, 5, 5, 'tensor', 2, false, false, '---totals---', true);
+
+        self::assertStringNotContainsString('---rows---', $out);
+        self::assertMatchesRegularExpression('/\[\s*1,\s*\'x\',\s*2,\s*3\s*\]/', $out);
+        self::assertMatchesRegularExpression('/\[\s*3,\s*\'y\',\s*4,\s*7\s*\]/', $out);
     }
 
     public static function formatForArrayProvider(): array

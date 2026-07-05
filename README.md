@@ -194,6 +194,9 @@ pprint($matrix, colsSummary: true);
 
 // Customize the summary label (default is ---totals---)
 pprint($matrix, colsSummary: true, colsSummaryLabel: '===sum===');
+
+// Add per-row summary as an extra trailing column
+pprint($matrix, rowsSummary: true);
 ```
 
 Postfix and prefix control
@@ -353,6 +356,7 @@ Notes:
 - **headCols / tailCols**: ints. Columns shown per 2D slice with ellipsis between.
 - **colsSummary**: bool. Adds a final per-column summary row for displayed columns in 2D/3D output; only `int`/`float` values are summed.
 - **colsSummaryLabel**: string. Visual label printed above the `colsSummary` summary row. Default is `---totals---`.
+- **rowsSummary**: bool. Adds an extra trailing per-row summary column in 2D/3D output; only `int`/`float` values are summed.
 - **rowsOnly / colsOnly**: int or string. Limit visible rows/columns.
   - Single index: `3` or `'3'`.
   - Range: `'2-4'` (inclusive).

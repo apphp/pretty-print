@@ -991,4 +991,68 @@ final class PrettyPrintTest extends TestCase
         self::assertStringContainsString('===sum===', $out);
         self::assertMatchesRegularExpression('/\[\s*4,\s*,\s*7\.0000\s*\]/', $out);
     }
+
+    #[Test]
+    #[TestDox('rowsSummary adds numeric-only row sums and ignores non-numeric values')]
+    public function rowsSummarySumsOnlyNumericValues(): void
+    {
+        $pp = new PrettyPrint();
+
+        $matrix = [
+            [1, 'x', 2.5, '4'],
+            [3, 'y', 4.5, 6],
+            ['n/a', 'z', 1.0, null],
+        ];
+
+        ob_start();
+        $pp($matrix, rowsSummary: true);
+        $out = ob_get_clean();
+
+        self::assertStringNotContainsString('---rows---', $out);
+        self::assertStringContainsString('3.5000', $out);
+        self::assertStringContainsString('13.5000', $out);
+        self::assertStringContainsString('1.0000', $out);
+    }
+
+    #[Test]
+    #[TestDox('rowsSummary adds row sums as extra column via named options')]
+    public function rowsSummaryNamedOption(): void
+    {
+        $pp = new PrettyPrint();
+
+        $matrix = [
+            [1, 2],
+            [3, 4],
+            [5, 6],
+        ];
+
+        ob_start();
+        $pp($matrix, headRows: 1, tailRows: 1, rowsSummary: true);
+        $out = ob_get_clean();
+
+        self::assertMatchesRegularExpression('/\[\s*1,\s*2,\s*3\s*\]/', $out);
+        self::assertMatchesRegularExpression('/\[\s*5,\s*6,\s*11\s*\]/', $out);
+        self::assertStringContainsString('...', $out);
+    }
+
+    #[Test]
+    #[TestDox('rowsSummary adds row sums as extra column via trailing options array')]
+    public function rowsSummaryTrailingOptionsArray(): void
+    {
+        $pp = new PrettyPrint();
+
+        $matrix = [
+            [1, 2],
+            [3, 4],
+            [5, 6],
+        ];
+
+        ob_start();
+        $pp($matrix, ['headRows' => 1, 'tailRows' => 1, 'rowsSummary' => true]);
+        $out = ob_get_clean();
+
+        self::assertMatchesRegularExpression('/\[\s*1,\s*2,\s*3\s*\]/', $out);
+        self::assertMatchesRegularExpression('/\[\s*5,\s*6,\s*11\s*\]/', $out);
+        self::assertStringContainsString('...', $out);
+    }
 }
